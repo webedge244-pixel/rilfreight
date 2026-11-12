@@ -644,11 +644,11 @@ export default function NewShipmentPage() {
             {!hasValidRoute && (
               <div className="flex justify-end">
                 <PrimaryActionButton
+                  type="button"
                   label="Generate Route"
                   icon={<ArrowDown strokeWidth={2.5} />}
                   onClick={handleGenerateRoute}
                   loading={isCalculatingRoute}
-                  loadingLabel="Computing Route..."
                 />
               </div>
             )}
