@@ -2,9 +2,8 @@ import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
-export interface PrimaryActionButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Text shown inside the button — the same text is kept while loading. */
+export interface PrimaryActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Text shown inside the button the same text is kept while loading. */
   label: string;
   /** Icon rendered inside the circular badge on the trailing edge. */
   icon: React.ReactNode;
@@ -38,7 +37,7 @@ export function PrimaryActionButton({
       disabled={disabled || loading}
       className={cn(
         "inline-flex select-none items-center justify-center gap-3 pl-5 pr-3 py-1.5 rounded-xl bg-[#0F313A] text-white text-sm font-extrabold uppercase tracking-wider transition-all hover:opacity-90 active:opacity-100 disabled:opacity-50 shadow-sm",
-        className
+        className,
       )}
       {...props}
     >
