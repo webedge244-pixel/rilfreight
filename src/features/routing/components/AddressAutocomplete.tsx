@@ -21,6 +21,10 @@ export interface AddressAutocompleteProps {
   }) => void;
   onChangeText: (text: string) => void;
   className?: string;
+  /** Overrides the styling of the location-code badge. */
+  codeBadgeClassName?: string;
+  /** Overrides the styling of the field label. */
+  labelClassName?: string;
 }
 
 export default function AddressAutocomplete({
@@ -32,6 +36,8 @@ export default function AddressAutocomplete({
   onSelect,
   onChangeText,
   className = "",
+  codeBadgeClassName,
+  labelClassName,
 }: AddressAutocompleteProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [results, setResults] = React.useState<LocationData[]>([]);
@@ -100,11 +106,21 @@ export default function AddressAutocomplete({
   return (
     <div ref={wrapperRef} className={cn("relative", className)}>
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <label
+          className={cn(
+            "block text-[10px] font-semibold uppercase tracking-wider text-slate-400",
+            labelClassName
+          )}
+        >
           {label}
         </label>
         {codeValue && (
-          <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[#0F313A] dark:text-slate-300">
+          <span
+            className={cn(
+              "text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[#0F313A] dark:text-slate-300",
+              codeBadgeClassName
+            )}
+          >
             {codeValue}
           </span>
         )}

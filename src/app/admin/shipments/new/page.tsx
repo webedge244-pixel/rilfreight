@@ -4,7 +4,7 @@ import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
-import { PackagePlus } from "lucide-react";
+import { ArrowDown, PackagePlus } from "lucide-react";
 import type {
   TransportMode,
   Shipment,
@@ -14,9 +14,16 @@ import type {
 import { createShipmentRecord } from "@/shared/lib/firebase";
 import AddressAutocomplete from "@/features/routing/components/AddressAutocomplete";
 import CheckpointStepper from "@/features/routing/components/CheckpointStepper";
+import {
+  buildRouteOrder,
+  detectMilestoneIssues,
+  normalizeMilestones,
+  reconcileLocationOrder,
+  reassignTimestamps,
+} from "@/features/routing/lib/milestoneGuards";
 import { Select } from "@/shared/components/select";
 import { Button } from "@/shared/components/button";
-import { GenerateRouteButton } from "@/shared/components/generateRouteButton";
+import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 
 // SSR-safe dynamic import for Leaflet RouteMiniMap
 const RouteMiniMap = dynamic(
@@ -138,6 +145,113 @@ export default function NewShipmentPage() {
     setMilestones((prev) =>
       prev.map((m, i) => (i === index ? { ...m, isHoldGate: !m.isHoldGate } : m))
     );
+  };
+
+  /* ------------------------------------------------------------------ *
+   * Milestone timeline guardrails
+   * ------------------------------------------------------------------ */
+
+  /**
+   * The shipment window every checkpoint must live inside.
+   * Clearing either date invalidates the route (and therefore the milestones),
+   * so the fallbacks below only ever apply to an empty timeline.
+   */
+  const departureMs = React.useMemo(() => {
+    const ms = Date.parse(formState.departureDate);
+    return Number.isFinite(ms) ? ms : 0;
+  }, [formState.departureDate]);
+
+  const deliveryMs = React.useMemo(() => {
+    const ms = Date.parse(formState.estimatedDeliveryDate);
+    return Number.isFinite(ms) ? ms : departureMs + 24 * 3600 * 1000;
+  }, [formState.estimatedDeliveryDate, departureMs]);
+
+  /** Location codes in the order the corridor visits them. */
+  const routeOrder = React.useMemo(
+    () =>
+      buildRouteOrder(
+        formState.originCode,
+        waypoints.map((w) => w.code).filter((c): c is string => Boolean(c)),
+        formState.destinationCode
+      ),
+    [formState.originCode, waypoints, formState.destinationCode]
+  );
+
+  /** Live validation findings for the timeline. */
+  const milestoneIssues = React.useMemo(
+    () =>
+      detectMilestoneIssues(
+        milestones,
+        { departureMs, deliveryMs },
+        routeOrder,
+        formState.originCode,
+        formState.destinationCode
+      ),
+    [
+      milestones,
+      departureMs,
+      deliveryMs,
+      routeOrder,
+      formState.originCode,
+      formState.destinationCode,
+    ]
+  );
+
+  /**
+   * Appends a new checkpoint to the timeline and keeps the sequence valid.
+   */
+  const handleAddMilestone = (milestone: TrackingMilestone) => {
+    setMilestones((prev) =>
+      normalizeMilestones([...prev, milestone], { departureMs, deliveryMs })
+    );
+  };
+
+  /**
+   * Restores a previously captured timeline — used to roll back an edit the
+   * admin cancelled, including any reordering done while editing.
+   */
+  const handleRestoreMilestones = (list: TrackingMilestone[]) => {
+    setMilestones(list);
+  };
+
+  /**
+   * Applies an admin edit to a single checkpoint, then re-applies every
+   * guardrail: timestamps are clamped into the shipment window, kept
+   * chronological, and a location that would send the corridor back on
+   * itself is automatically re-sequenced.
+   */
+  const handleUpdateMilestone = (
+    index: number,
+    patch: Partial<TrackingMilestone>
+  ) => {
+    setMilestones((prev) => {
+      let next = prev.map((m, i) => (i === index ? { ...m, ...patch } : m));
+
+      if (patch.locationCode) {
+        const { list, moved } = reconcileLocationOrder(
+          next,
+          index,
+          routeOrder
+        );
+        next = moved ? reassignTimestamps(list) : list;
+      }
+
+      return normalizeMilestones(next, { departureMs, deliveryMs });
+    });
+  };
+
+  /**
+   * Moves a checkpoint to a new slot in the timeline. The existing time slots
+   * are re-assigned in order so the sequence always stays chronological.
+   */
+  const handleReorderMilestone = (fromIndex: number, toIndex: number) => {
+    setMilestones((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      if (!moved) return prev;
+      next.splice(toIndex, 0, moved);
+      return normalizeMilestones(reassignTimestamps(next), { departureMs, deliveryMs });
+    });
   };
 
   // Route Calculation Trigger
@@ -529,9 +643,12 @@ export default function NewShipmentPage() {
             {/* Generate Route Action — hidden once the route is computed */}
             {!hasValidRoute && (
               <div className="flex justify-end">
-                <GenerateRouteButton
+                <PrimaryActionButton
+                  label="Generate Route"
+                  icon={<ArrowDown strokeWidth={2.5} />}
                   onClick={handleGenerateRoute}
                   loading={isCalculatingRoute}
+                  loadingLabel="Computing Route..."
                 />
               </div>
             )}
@@ -666,6 +783,12 @@ export default function NewShipmentPage() {
             <CheckpointStepper
               milestones={milestones}
               onToggleHoldGate={handleToggleHoldGate}
+              onUpdateMilestone={handleUpdateMilestone}
+              onReorder={handleReorderMilestone}
+              onRestoreMilestones={handleRestoreMilestones}
+              onAddMilestone={handleAddMilestone}
+              mode={mode}
+              issues={milestoneIssues}
             />
           </div>
         </div>
