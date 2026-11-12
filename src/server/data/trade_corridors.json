@@ -1,0 +1,2459 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-11-12T14:21:06.876Z",
+  "totalCorridors": 22,
+  "corridors": [
+    {
+      "id": "corridor-ocean-transpacific",
+      "name": "Transpacific Maritime Container Express",
+      "mode": "ocean",
+      "from": "CNSHA",
+      "to": "USLAX",
+      "fromName": "Port of Shanghai",
+      "toName": "Port of Los Angeles",
+      "distanceKm": 10450,
+      "distanceNm": 5642,
+      "transitDaysTypical": 14,
+      "passages": [
+        "tsugaru_strait"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-tsugaru",
+          "name": "Tsugaru Strait Pacific Exit",
+          "coordinates": [
+            140.5,
+            41.5
+          ],
+          "countryCode": "JP",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          121.5,
+          31
+        ],
+        [
+          125,
+          31.5
+        ],
+        [
+          130,
+          32.5
+        ],
+        [
+          140.5,
+          41.5
+        ],
+        [
+          160,
+          45
+        ],
+        [
+          -170,
+          46
+        ],
+        [
+          -150,
+          43
+        ],
+        [
+          -135,
+          38
+        ],
+        [
+          -125,
+          34.5
+        ],
+        [
+          -118.261,
+          33.743
+        ]
+      ],
+      "description": "Primary high-volume transpacific container trade lane connecting East China manufacturing hub directly to San Pedro Bay gateways."
+    },
+    {
+      "id": "corridor-ocean-suez",
+      "name": "Asia - Europe Maritime Silk Route via Suez Canal",
+      "mode": "ocean",
+      "from": "CNSHA",
+      "to": "NLRTM",
+      "fromName": "Port of Shanghai",
+      "toName": "Port of Rotterdam",
+      "distanceKm": 19500,
+      "distanceNm": 10529,
+      "transitDaysTypical": 28,
+      "passages": [
+        "malacca",
+        "bab_el_mandeb",
+        "suez",
+        "gibraltar"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-malacca",
+          "name": "Strait of Malacca (Singapore Transshipment Gateway)",
+          "coordinates": [
+            103.85,
+            1.29
+          ],
+          "countryCode": "SG",
+          "type": "strait",
+          "dwellHours": 12,
+          "isHoldGate": false
+        },
+        {
+          "id": "cp-bab-el-mandeb",
+          "name": "Bab-el-Mandeb Strait (Red Sea Entry)",
+          "coordinates": [
+            43.3,
+            12.6
+          ],
+          "countryCode": "DJ",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        },
+        {
+          "id": "cp-suez-canal",
+          "name": "Suez Canal Transit (Port Said)",
+          "coordinates": [
+            32.32,
+            31.25
+          ],
+          "countryCode": "EG",
+          "type": "canal",
+          "dwellHours": 18,
+          "isHoldGate": true
+        },
+        {
+          "id": "cp-gibraltar",
+          "name": "Strait of Gibraltar (Atlantic Passage)",
+          "coordinates": [
+            -5.6,
+            36
+          ],
+          "countryCode": "ES",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          121.5,
+          31
+        ],
+        [
+          119,
+          24
+        ],
+        [
+          114.2,
+          22.3
+        ],
+        [
+          109.5,
+          12
+        ],
+        [
+          103.85,
+          1.29
+        ],
+        [
+          95,
+          5.5
+        ],
+        [
+          80,
+          5.5
+        ],
+        [
+          65,
+          11
+        ],
+        [
+          52,
+          12
+        ],
+        [
+          43.3,
+          12.6
+        ],
+        [
+          38,
+          18
+        ],
+        [
+          33.5,
+          27.5
+        ],
+        [
+          32.32,
+          31.25
+        ],
+        [
+          25,
+          34
+        ],
+        [
+          15,
+          36.5
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          -5.6,
+          36
+        ],
+        [
+          -9.5,
+          38.7
+        ],
+        [
+          -9,
+          44
+        ],
+        [
+          -4.5,
+          48.4
+        ],
+        [
+          1.5,
+          50.5
+        ],
+        [
+          4.49,
+          51.9
+        ]
+      ],
+      "description": "Vital maritime arterial linking manufacturing in East Asia through the Indian Ocean, Suez Canal, and Gibraltar to North European mainports."
+    },
+    {
+      "id": "corridor-ocean-transpanama",
+      "name": "Trans-Panama All-Water Service",
+      "mode": "ocean",
+      "from": "CNSHA",
+      "to": "USNYC",
+      "fromName": "Port of Shanghai",
+      "toName": "Port of New York and New Jersey",
+      "distanceKm": 18500,
+      "distanceNm": 9989,
+      "transitDaysTypical": 24,
+      "passages": [
+        "panama"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-panama-canal",
+          "name": "Panama Canal Neo-Panamax Locks (Balboa to Cristobal)",
+          "coordinates": [
+            -79.7,
+            9.15
+          ],
+          "countryCode": "PA",
+          "type": "canal",
+          "dwellHours": 24,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          121.5,
+          31
+        ],
+        [
+          140,
+          30
+        ],
+        [
+          160,
+          25
+        ],
+        [
+          180,
+          20
+        ],
+        [
+          -160,
+          18
+        ],
+        [
+          -135,
+          15
+        ],
+        [
+          -110,
+          12
+        ],
+        [
+          -85,
+          8.5
+        ],
+        [
+          -79.57,
+          8.95
+        ],
+        [
+          -79.7,
+          9.15
+        ],
+        [
+          -79.9,
+          9.35
+        ],
+        [
+          -78,
+          15
+        ],
+        [
+          -74.5,
+          21
+        ],
+        [
+          -73,
+          27
+        ],
+        [
+          -73.5,
+          35
+        ],
+        [
+          -74.072,
+          40.669
+        ]
+      ],
+      "description": "All-water container service connecting Asia to US East Coast gateways via the expanded Neo-Panamax locks of the Panama Canal."
+    },
+    {
+      "id": "corridor-ocean-transatlantic",
+      "name": "Transatlantic Maritime Freight Highway",
+      "mode": "ocean",
+      "from": "NLRTM",
+      "to": "USNYC",
+      "fromName": "Port of Rotterdam",
+      "toName": "Port of New York and New Jersey",
+      "distanceKm": 6450,
+      "distanceNm": 3482,
+      "transitDaysTypical": 9,
+      "passages": [
+        "english_channel"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-dover-strait",
+          "name": "Strait of Dover (English Channel Chokepoint)",
+          "coordinates": [
+            1.4,
+            51.1
+          ],
+          "countryCode": "GB",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          4.49,
+          51.9
+        ],
+        [
+          2,
+          51.5
+        ],
+        [
+          1.4,
+          51.1
+        ],
+        [
+          -1,
+          50
+        ],
+        [
+          -5,
+          49
+        ],
+        [
+          -15,
+          48
+        ],
+        [
+          -30,
+          46
+        ],
+        [
+          -45,
+          44
+        ],
+        [
+          -60,
+          42
+        ],
+        [
+          -70,
+          41
+        ],
+        [
+          -74.072,
+          40.669
+        ]
+      ],
+      "description": "Historic high-density northern shipping lane carrying industrial, consumer, and automotive cargo between Western Europe and the US Atlantic seaboard."
+    },
+    {
+      "id": "corridor-ocean-asia-mideast",
+      "name": "Gulf - Asia Container Route",
+      "mode": "ocean",
+      "from": "SGSIN",
+      "to": "AEJEA",
+      "fromName": "Port of Singapore",
+      "toName": "Port of Jebel Ali",
+      "distanceKm": 6200,
+      "distanceNm": 3347,
+      "transitDaysTypical": 10,
+      "passages": [
+        "malacca",
+        "hormuz"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-hormuz-strait",
+          "name": "Strait of Hormuz (Persian Gulf Entry)",
+          "coordinates": [
+            56.4,
+            26.5
+          ],
+          "countryCode": "OM",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          103.85,
+          1.29
+        ],
+        [
+          98,
+          4
+        ],
+        [
+          90,
+          6
+        ],
+        [
+          80,
+          6
+        ],
+        [
+          70,
+          10
+        ],
+        [
+          60,
+          18
+        ],
+        [
+          56.4,
+          26.5
+        ],
+        [
+          55.027,
+          24.985
+        ]
+      ],
+      "description": "Strategic maritime feeder artery connecting Southeast Asian transshipment hubs directly to Jebel Ali and Arabian Gulf commercial markets."
+    },
+    {
+      "id": "corridor-ocean-latam-pacific",
+      "name": "Pan-Pacific South America Express",
+      "mode": "ocean",
+      "from": "USLAX",
+      "to": "CLSAI",
+      "fromName": "Port of Los Angeles",
+      "toName": "Port of San Antonio",
+      "distanceKm": 9200,
+      "distanceNm": 4967,
+      "transitDaysTypical": 14,
+      "passages": [],
+      "chokepoints": [],
+      "path": [
+        [
+          -118.261,
+          33.743
+        ],
+        [
+          -112,
+          25
+        ],
+        [
+          -105,
+          18
+        ],
+        [
+          -95,
+          10
+        ],
+        [
+          -85,
+          0
+        ],
+        [
+          -80,
+          -10
+        ],
+        [
+          -75,
+          -22
+        ],
+        [
+          -71.62,
+          -33.59
+        ]
+      ],
+      "description": "Western coastal maritime service running along the Pacific coast of the Americas from Southern California to Central Chile."
+    },
+    {
+      "id": "corridor-ocean-intra-asia",
+      "name": "Intra-Asia Maritime Trunk Lane",
+      "mode": "ocean",
+      "from": "CNSHA",
+      "to": "SGSIN",
+      "fromName": "Port of Shanghai",
+      "toName": "Port of Singapore",
+      "distanceKm": 4200,
+      "distanceNm": 2267,
+      "transitDaysTypical": 6,
+      "passages": [
+        "taiwan_strait"
+      ],
+      "chokepoints": [
+        {
+          "id": "cp-taiwan-strait",
+          "name": "Taiwan Strait Transit Waypoint",
+          "coordinates": [
+            119.5,
+            24
+          ],
+          "countryCode": "TW",
+          "type": "strait",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          121.5,
+          31
+        ],
+        [
+          122.5,
+          28
+        ],
+        [
+          119.5,
+          24
+        ],
+        [
+          114.169,
+          22.319
+        ],
+        [
+          109,
+          14
+        ],
+        [
+          105,
+          6
+        ],
+        [
+          103.85,
+          1.29
+        ]
+      ],
+      "description": "Highest frequency regional feeder and trunk corridor in global logistics, linking Yangtze River Delta production to Southeast Asian transshipment."
+    },
+    {
+      "id": "corridor-air-transpacific-polar",
+      "name": "Transpacific Polar Air Cargo Express",
+      "mode": "air",
+      "from": "HKG",
+      "to": "MEM",
+      "fromName": "Hong Kong International Airport",
+      "toName": "Memphis International Airport",
+      "distanceKm": 12850,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 18,
+      "chokepoints": [
+        {
+          "id": "cp-anc-refuel",
+          "name": "Ted Stevens Anchorage Refueling Tech Stop",
+          "coordinates": [
+            -149.9964,
+            61.1743
+          ],
+          "countryCode": "US",
+          "type": "air_tech_stop",
+          "dwellHours": 4,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          113.9145,
+          22.308
+        ],
+        [
+          125,
+          35
+        ],
+        [
+          140,
+          45
+        ],
+        [
+          160,
+          55
+        ],
+        [
+          -170,
+          60
+        ],
+        [
+          -149.9964,
+          61.1743
+        ],
+        [
+          -130,
+          55
+        ],
+        [
+          -110,
+          48
+        ],
+        [
+          -95,
+          40
+        ],
+        [
+          -89.9767,
+          35.0424
+        ]
+      ],
+      "description": "Dedicated polar heavy freighter flight path utilized by global integrators (FedEx, UPS, Atlas Air) utilizing Anchorage for tech stops."
+    },
+    {
+      "id": "corridor-air-north-atlantic",
+      "name": "North Atlantic Air Cargo Tracks",
+      "mode": "air",
+      "from": "FRA",
+      "to": "ORD",
+      "fromName": "Frankfurt Airport",
+      "toName": "Chicago O'Hare International Airport",
+      "distanceKm": 6980,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 9,
+      "chokepoints": [
+        {
+          "id": "cp-shannon-oceanic",
+          "name": "Shannon Oceanic Entry Waypoint",
+          "coordinates": [
+            -10,
+            53
+          ],
+          "countryCode": "IE",
+          "type": "air_tech_stop",
+          "dwellHours": 0,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          8.5622,
+          50.0379
+        ],
+        [
+          0,
+          52
+        ],
+        [
+          -10,
+          53
+        ],
+        [
+          -25,
+          55
+        ],
+        [
+          -40,
+          56
+        ],
+        [
+          -55,
+          54
+        ],
+        [
+          -70,
+          48
+        ],
+        [
+          -80,
+          44
+        ],
+        [
+          -87.9048,
+          41.9742
+        ]
+      ],
+      "description": "North Atlantic organized track system carrying high-value pharmaceuticals, automotive precision parts, and e-commerce between Central Europe and the US Midwest."
+    },
+    {
+      "id": "corridor-air-eurasian-gulf",
+      "name": "Eurasian Air Cargo Bridge via Dubai Hub",
+      "mode": "air",
+      "from": "PVG",
+      "to": "FRA",
+      "fromName": "Shanghai Pudong International Airport",
+      "toName": "Frankfurt Airport",
+      "distanceKm": 9800,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 16,
+      "chokepoints": [
+        {
+          "id": "cp-dxb-transit",
+          "name": "Dubai DWC Air Cargo Intermediate Sort Hub",
+          "coordinates": [
+            55.1753,
+            24.896
+          ],
+          "countryCode": "AE",
+          "type": "air_tech_stop",
+          "dwellHours": 6,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          121.8052,
+          31.1443
+        ],
+        [
+          110,
+          28
+        ],
+        [
+          95,
+          25
+        ],
+        [
+          80,
+          24
+        ],
+        [
+          65,
+          25
+        ],
+        [
+          55.1753,
+          24.896
+        ],
+        [
+          45,
+          30
+        ],
+        [
+          35,
+          36
+        ],
+        [
+          25,
+          42
+        ],
+        [
+          15,
+          47
+        ],
+        [
+          8.5622,
+          50.0379
+        ]
+      ],
+      "description": "Major two-stage air cargo bridge carrying consumer electronics and tech goods from East China via Emirates / Qatar megahubs to Europe."
+    },
+    {
+      "id": "corridor-air-transatlantic-south",
+      "name": "Pan-American Southern Air Freight Lane",
+      "mode": "air",
+      "from": "MIA",
+      "to": "VCP",
+      "fromName": "Miami International Airport",
+      "toName": "Viracopos International Airport",
+      "distanceKm": 6500,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 9,
+      "chokepoints": [],
+      "path": [
+        [
+          -80.2906,
+          25.7959
+        ],
+        [
+          -75,
+          20
+        ],
+        [
+          -68,
+          10
+        ],
+        [
+          -60,
+          0
+        ],
+        [
+          -52,
+          -12
+        ],
+        [
+          -47.1345,
+          -23.0074
+        ]
+      ],
+      "description": "Direct air freight arterial connecting Miami cargo hub to the industrial heartland of Brazil at Campinas Viracopos."
+    },
+    {
+      "id": "corridor-air-transpacific-west",
+      "name": "Transpacific Direct Air Bridge",
+      "mode": "air",
+      "from": "ICN",
+      "to": "LAX",
+      "fromName": "Incheon International Airport",
+      "toName": "Los Angeles International Airport",
+      "distanceKm": 9650,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 11,
+      "chokepoints": [],
+      "path": [
+        [
+          126.4407,
+          37.4602
+        ],
+        [
+          140,
+          42
+        ],
+        [
+          160,
+          48
+        ],
+        [
+          -180,
+          50
+        ],
+        [
+          -160,
+          48
+        ],
+        [
+          -140,
+          42
+        ],
+        [
+          -125,
+          36
+        ],
+        [
+          -118.4085,
+          33.9416
+        ]
+      ],
+      "description": "High-tonnage direct flight lane operated by Korean Air Cargo and Asiana between Seoul Incheon and Southern California."
+    },
+    {
+      "id": "corridor-air-asia-europe-direct",
+      "name": "Trans-Eurasian Express Air Freight",
+      "mode": "air",
+      "from": "PVG",
+      "to": "AMS",
+      "fromName": "Shanghai Pudong International Airport",
+      "toName": "Amsterdam Airport Schiphol",
+      "distanceKm": 8900,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 12,
+      "chokepoints": [],
+      "path": [
+        [
+          121.8052,
+          31.1443
+        ],
+        [
+          115,
+          40
+        ],
+        [
+          100,
+          48
+        ],
+        [
+          80,
+          53
+        ],
+        [
+          60,
+          55
+        ],
+        [
+          40,
+          55
+        ],
+        [
+          20,
+          54
+        ],
+        [
+          4.7683,
+          52.3105
+        ]
+      ],
+      "description": "High-yield non-stop air cargo route delivering semiconductor equipment, flowers, and e-commerce between Shanghai and Amsterdam Schiphol."
+    },
+    {
+      "id": "corridor-air-us-domestic-express",
+      "name": "US National Express Air Trunk",
+      "mode": "air",
+      "from": "MEM",
+      "to": "LAX",
+      "fromName": "Memphis International Airport",
+      "toName": "Los Angeles International Airport",
+      "distanceKm": 2600,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 4,
+      "chokepoints": [],
+      "path": [
+        [
+          -89.9767,
+          35.0424
+        ],
+        [
+          -95,
+          35
+        ],
+        [
+          -102,
+          35
+        ],
+        [
+          -110,
+          34.5
+        ],
+        [
+          -115,
+          34
+        ],
+        [
+          -118.4085,
+          33.9416
+        ]
+      ],
+      "description": "Overnight express air trunk connecting the FedEx World Hub in Memphis to the Pacific coast gateway."
+    },
+    {
+      "id": "corridor-rail-trans-eurasian",
+      "name": "Trans-Eurasian Silk Road Railway Express",
+      "mode": "rail",
+      "from": "CNXIA",
+      "to": "DEDUI",
+      "fromName": "Xi'an International Trade Dry Port",
+      "toName": "Duisburg Intermodal Terminal",
+      "distanceKm": 10800,
+      "transitDaysTypical": 16,
+      "typicalDurationHours": 384,
+      "chokepoints": [
+        {
+          "id": "cp-alashankou-gauge",
+          "name": "Alashankou / Dostyk Rail Gauge Swap (Standard to Broad Gauge)",
+          "coordinates": [
+            82.57,
+            45.18
+          ],
+          "countryCode": "CN",
+          "type": "rail_interchange",
+          "dwellHours": 24,
+          "isHoldGate": true
+        },
+        {
+          "id": "cp-malaszewicze-gauge",
+          "name": "Małaszewicze Europort Gauge Swap (Broad to Standard Gauge)",
+          "coordinates": [
+            23.52,
+            52.02
+          ],
+          "countryCode": "PL",
+          "type": "rail_interchange",
+          "dwellHours": 24,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          109.055,
+          34.38
+        ],
+        [
+          103.8,
+          36.05
+        ],
+        [
+          98.5,
+          39.7
+        ],
+        [
+          87.6,
+          43.8
+        ],
+        [
+          82.57,
+          45.18
+        ],
+        [
+          76.9,
+          43.25
+        ],
+        [
+          69.5,
+          42.3
+        ],
+        [
+          58,
+          50
+        ],
+        [
+          48,
+          53
+        ],
+        [
+          37.6,
+          55.75
+        ],
+        [
+          30,
+          54
+        ],
+        [
+          23.52,
+          52.02
+        ],
+        [
+          20.95,
+          52.22
+        ],
+        [
+          16.9,
+          52.4
+        ],
+        [
+          12.3,
+          51.3
+        ],
+        [
+          6.75,
+          51.45
+        ]
+      ],
+      "description": "The flagship China-Europe Railway Express (CREX) intermodal container rail service carrying electronics and automotive freight between Central China and Germany."
+    },
+    {
+      "id": "corridor-rail-nafta-transcon",
+      "name": "BNSF Southern Transcon Rail Corridor",
+      "mode": "rail",
+      "from": "USHOB",
+      "to": "USCWI",
+      "fromName": "Los Angeles Hobart Yard",
+      "toName": "Chicago Corwith Yard",
+      "distanceKm": 3550,
+      "transitDaysTypical": 4,
+      "typicalDurationHours": 96,
+      "chokepoints": [
+        {
+          "id": "cp-kansas-city-intermodal",
+          "name": "Kansas City Logistics Park Rail Classification Yard",
+          "coordinates": [
+            -94.88,
+            38.83
+          ],
+          "countryCode": "US",
+          "type": "rail_interchange",
+          "dwellHours": 8,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          -118.195,
+          34.005
+        ],
+        [
+          -117.3,
+          34.1
+        ],
+        [
+          -114.6,
+          34.8
+        ],
+        [
+          -110,
+          35
+        ],
+        [
+          -106.6,
+          35.1
+        ],
+        [
+          -101.8,
+          35.2
+        ],
+        [
+          -97.3,
+          37.7
+        ],
+        [
+          -94.88,
+          38.83
+        ],
+        [
+          -91.5,
+          40.5
+        ],
+        [
+          -87.65,
+          41.85
+        ]
+      ],
+      "description": "Highest capacity intermodal freight railway in North America, running double-stack container trains continuously between Southern California and Chicago."
+    },
+    {
+      "id": "corridor-rail-nafta-north-south",
+      "name": "CPKC / UP NAFTA North-South Intermodal Rail",
+      "mode": "rail",
+      "from": "CATOR",
+      "to": "MXMTY",
+      "fromName": "Toronto MacMillan Yard",
+      "toName": "Monterrey Intermodal Hub",
+      "distanceKm": 3800,
+      "transitDaysTypical": 5,
+      "typicalDurationHours": 120,
+      "chokepoints": [
+        {
+          "id": "cp-detroit-crossborder",
+          "name": "Detroit River Rail Tunnel International Crossing",
+          "coordinates": [
+            -83.05,
+            42.33
+          ],
+          "countryCode": "US",
+          "type": "border_crossing",
+          "dwellHours": 6,
+          "isHoldGate": true
+        },
+        {
+          "id": "cp-laredo-rail-bridge",
+          "name": "Laredo International Rail Bridge Border Interchange",
+          "coordinates": [
+            -99.52,
+            27.59
+          ],
+          "countryCode": "US",
+          "type": "border_crossing",
+          "dwellHours": 8,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          -79.52,
+          43.81
+        ],
+        [
+          -81.25,
+          42.98
+        ],
+        [
+          -83.05,
+          42.33
+        ],
+        [
+          -85,
+          41.5
+        ],
+        [
+          -87.65,
+          41.85
+        ],
+        [
+          -90.2,
+          38.6
+        ],
+        [
+          -94.5,
+          36
+        ],
+        [
+          -96.75,
+          32.61
+        ],
+        [
+          -98.5,
+          29.4
+        ],
+        [
+          -99.52,
+          27.59
+        ],
+        [
+          -100.31,
+          25.68
+        ]
+      ],
+      "description": "Integrated cross-border USMCA rail route connecting Ontario industrial plants through the US Midwest to manufacturing facilities in Northern Mexico."
+    },
+    {
+      "id": "corridor-rail-rhine-alpine",
+      "name": "European Rhine-Alpine Freight Rail Corridor",
+      "mode": "rail",
+      "from": "NLRDP",
+      "to": "ITMIL",
+      "fromName": "Rotterdam Distripark Botlek",
+      "toName": "Milan Segrate Intermodal Hub",
+      "distanceKm": 1150,
+      "transitDaysTypical": 2,
+      "typicalDurationHours": 36,
+      "chokepoints": [
+        {
+          "id": "cp-gotthard-rail",
+          "name": "Gotthard Base Tunnel Rail Transit",
+          "coordinates": [
+            8.68,
+            46.3
+          ],
+          "countryCode": "CH",
+          "type": "rail_interchange",
+          "dwellHours": 2,
+          "isHoldGate": false
+        }
+      ],
+      "path": [
+        [
+          4.42,
+          51.88
+        ],
+        [
+          5.5,
+          51.7
+        ],
+        [
+          6.75,
+          51.45
+        ],
+        [
+          7,
+          50.8
+        ],
+        [
+          8,
+          49.5
+        ],
+        [
+          8.5,
+          48
+        ],
+        [
+          8.68,
+          46.3
+        ],
+        [
+          9,
+          45.8
+        ],
+        [
+          9.29,
+          45.48
+        ]
+      ],
+      "description": "Core European rail freight artery connecting the ports of Rotterdam and Antwerp through the Rhine industrial basin and Switzerland to Northern Italy."
+    },
+    {
+      "id": "corridor-road-nafta-i35",
+      "name": "NAFTA I-35 Commercial Freight Highway",
+      "mode": "road",
+      "from": "MXMTY",
+      "to": "USCWI",
+      "fromName": "Monterrey Intermodal Hub",
+      "toName": "Chicago Corwith Yard",
+      "distanceKm": 2750,
+      "transitDaysTypical": 3,
+      "typicalDurationHours": 48,
+      "chokepoints": [
+        {
+          "id": "cp-laredo-wtb-customs",
+          "name": "Laredo World Trade Bridge Commercial Customs Gate",
+          "coordinates": [
+            -99.52,
+            27.59
+          ],
+          "countryCode": "US",
+          "type": "customs_checkpoint",
+          "dwellHours": 6,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          -100.31,
+          25.68
+        ],
+        [
+          -99.9,
+          26.5
+        ],
+        [
+          -99.51,
+          27.48
+        ],
+        [
+          -99.52,
+          27.59
+        ],
+        [
+          -98.5,
+          29.4
+        ],
+        [
+          -97.7,
+          30.3
+        ],
+        [
+          -96.8,
+          32.8
+        ],
+        [
+          -97.3,
+          37.7
+        ],
+        [
+          -94.6,
+          39.1
+        ],
+        [
+          -91.5,
+          41.6
+        ],
+        [
+          -87.65,
+          41.85
+        ]
+      ],
+      "description": "Primary commercial trucking highway corridor connecting Mexican industrial manufacturing through the Laredo border gateway to the Midwestern distribution hubs."
+    },
+    {
+      "id": "corridor-road-blue-banana",
+      "name": "European Blue Banana Expressway (A3 / E35)",
+      "mode": "road",
+      "from": "NLRDP",
+      "to": "ITMIL",
+      "fromName": "Rotterdam Distripark Botlek",
+      "toName": "Milan Segrate Intermodal Hub",
+      "distanceKm": 1080,
+      "transitDaysTypical": 1,
+      "typicalDurationHours": 18,
+      "chokepoints": [
+        {
+          "id": "cp-basel-border",
+          "name": "Basel / Weil am Rhein Commercial Border Customs",
+          "coordinates": [
+            7.59,
+            47.59
+          ],
+          "countryCode": "CH",
+          "type": "customs_checkpoint",
+          "dwellHours": 3,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          4.42,
+          51.88
+        ],
+        [
+          5.5,
+          51.5
+        ],
+        [
+          6.8,
+          51.2
+        ],
+        [
+          7.2,
+          50.5
+        ],
+        [
+          8.58,
+          50.02
+        ],
+        [
+          8.3,
+          49
+        ],
+        [
+          7.8,
+          48
+        ],
+        [
+          7.59,
+          47.59
+        ],
+        [
+          8.5,
+          47
+        ],
+        [
+          9,
+          46
+        ],
+        [
+          9.29,
+          45.48
+        ]
+      ],
+      "description": "Core Western European highway route connecting the Benelux distriparks through the German Rhine valley and Swiss Alpine tunnels to the industrial zone of Lombardy."
+    },
+    {
+      "id": "corridor-road-us-i95",
+      "name": "US East Coast I-95 Freight Artery",
+      "mode": "road",
+      "from": "USMIA",
+      "to": "USNYC",
+      "fromName": "PortMiami / Miami Freight Hub",
+      "toName": "Port of New York and New Jersey",
+      "distanceKm": 2050,
+      "transitDaysTypical": 2,
+      "typicalDurationHours": 30,
+      "chokepoints": [],
+      "path": [
+        [
+          -80.191,
+          25.761
+        ],
+        [
+          -80.1,
+          26.5
+        ],
+        [
+          -81.5,
+          30.3
+        ],
+        [
+          -81.1,
+          32.1
+        ],
+        [
+          -80,
+          34
+        ],
+        [
+          -77.5,
+          37.5
+        ],
+        [
+          -77,
+          38.9
+        ],
+        [
+          -75.2,
+          39.9
+        ],
+        [
+          -74.072,
+          40.669
+        ]
+      ],
+      "description": "The primary north-south highway artery of the US East Coast connecting Florida perishables and Latin imports to the New York metropolitan area."
+    },
+    {
+      "id": "corridor-road-us-i5",
+      "name": "US West Coast I-5 Freight Highway",
+      "mode": "road",
+      "from": "USONT",
+      "to": "CAVAN",
+      "fromName": "Inland Empire Ontario Hub",
+      "toName": "Port of Vancouver",
+      "distanceKm": 2150,
+      "transitDaysTypical": 2,
+      "typicalDurationHours": 32,
+      "chokepoints": [
+        {
+          "id": "cp-peace-arch-border",
+          "name": "Blaine Peace Arch Commercial Truck Crossing (US-Canada Border)",
+          "coordinates": [
+            -122.75,
+            49
+          ],
+          "countryCode": "CA",
+          "type": "border_crossing",
+          "dwellHours": 3,
+          "isHoldGate": true
+        }
+      ],
+      "path": [
+        [
+          -117.58,
+          34.06
+        ],
+        [
+          -118.5,
+          34.5
+        ],
+        [
+          -119.5,
+          36.5
+        ],
+        [
+          -121.5,
+          38.5
+        ],
+        [
+          -122.3,
+          40.5
+        ],
+        [
+          -122.8,
+          42.3
+        ],
+        [
+          -123,
+          44.5
+        ],
+        [
+          -122.6,
+          47
+        ],
+        [
+          -122.3,
+          47.6
+        ],
+        [
+          -122.75,
+          49
+        ],
+        [
+          -123.1,
+          49.3
+        ]
+      ],
+      "description": "Crucial Pacific commercial trucking corridor connecting Southern California logistics centers to the Pacific Northwest and Vancouver."
+    }
+  ],
+  "networkNodes": [
+    {
+      "id": "CHI",
+      "name": "Chicago Intermodal Hub",
+      "code": "USCWI",
+      "city": "Chicago",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -87.65,
+        41.85
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "LAX",
+      "name": "Los Angeles Hobart Freight Terminal",
+      "code": "USHOB",
+      "city": "Los Angeles",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -118.195,
+        34.005
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "DET",
+      "name": "Detroit Cross-Border Gateway",
+      "code": "USDET",
+      "city": "Detroit",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -83.05,
+        42.33
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "TOR",
+      "name": "Toronto Logistics Terminal",
+      "code": "CATOR",
+      "city": "Toronto",
+      "country": "Canada",
+      "countryCode": "CA",
+      "coordinates": [
+        -79.52,
+        43.81
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "MTR",
+      "name": "Montreal Freight Terminal",
+      "code": "CAMTR",
+      "city": "Montreal",
+      "country": "Canada",
+      "countryCode": "CA",
+      "coordinates": [
+        -73.68,
+        45.48
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "KCK",
+      "name": "Kansas City Logistics Park",
+      "code": "USKCK",
+      "city": "Kansas City",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -94.88,
+        38.83
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "DFW",
+      "name": "Dallas-Fort Worth Intermodal Hub",
+      "code": "USDFW",
+      "city": "Dallas",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -96.75,
+        32.61
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "LRD",
+      "name": "Laredo World Trade Bridge",
+      "code": "USLRD",
+      "city": "Laredo",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -99.52,
+        27.59
+      ],
+      "modes": [
+        "road",
+        "rail"
+      ]
+    },
+    {
+      "id": "ATL",
+      "name": "Atlanta Freight Gateway",
+      "code": "USATL",
+      "city": "Atlanta",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -84.388,
+        33.749
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "MIA",
+      "name": "Miami Freight Terminal",
+      "code": "USMIA",
+      "city": "Miami",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -80.25,
+        25.8
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "NYC",
+      "name": "New York/New Jersey Gateway",
+      "code": "USNYC",
+      "city": "New York",
+      "country": "United States",
+      "countryCode": "US",
+      "coordinates": [
+        -74.072,
+        40.669
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "RTM",
+      "name": "Rotterdam Distripark",
+      "code": "NLRDP",
+      "city": "Rotterdam",
+      "country": "Netherlands",
+      "countryCode": "NL",
+      "coordinates": [
+        4.42,
+        51.88
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "DUI",
+      "name": "Duisburg Intermodal Terminal",
+      "code": "DEDUI",
+      "city": "Duisburg",
+      "country": "Germany",
+      "countryCode": "DE",
+      "coordinates": [
+        6.75,
+        51.45
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "FRA",
+      "name": "Frankfurt CargoCity",
+      "code": "DEFRA",
+      "city": "Frankfurt",
+      "country": "Germany",
+      "countryCode": "DE",
+      "coordinates": [
+        8.58,
+        50.02
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "HAM",
+      "name": "Hamburg Rail Terminal",
+      "code": "DEHAM",
+      "city": "Hamburg",
+      "country": "Germany",
+      "countryCode": "DE",
+      "coordinates": [
+        9.92,
+        53.52
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "WAR",
+      "name": "Warsaw Spedcont Hub",
+      "code": "PLWSC",
+      "city": "Warsaw",
+      "country": "Poland",
+      "countryCode": "PL",
+      "coordinates": [
+        20.95,
+        52.22
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "MIL",
+      "name": "Milan Segrate Hub",
+      "code": "ITMIL",
+      "city": "Milan",
+      "country": "Italy",
+      "countryCode": "IT",
+      "coordinates": [
+        9.29,
+        45.48
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "SHA",
+      "name": "Shanghai Intermodal Port",
+      "code": "CNSHA",
+      "city": "Shanghai",
+      "country": "China",
+      "countryCode": "CN",
+      "coordinates": [
+        121.5,
+        31
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "ZGO",
+      "name": "Zhengzhou Intermodal Hub",
+      "code": "CNZGO",
+      "city": "Zhengzhou",
+      "country": "China",
+      "countryCode": "CN",
+      "coordinates": [
+        113.72,
+        34.72
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "XIA",
+      "name": "Xi'an Dry Port",
+      "code": "CNXIA",
+      "city": "Xi'an",
+      "country": "China",
+      "countryCode": "CN",
+      "coordinates": [
+        109.055,
+        34.38
+      ],
+      "modes": [
+        "rail",
+        "road"
+      ]
+    },
+    {
+      "id": "ALA",
+      "name": "Alashankou Border Terminal",
+      "code": "CNALA",
+      "city": "Alashankou",
+      "country": "China",
+      "countryCode": "CN",
+      "coordinates": [
+        82.57,
+        45.18
+      ],
+      "modes": [
+        "rail"
+      ]
+    }
+  ],
+  "networkEdges": [
+    {
+      "id": "edge-chi-det",
+      "from": "CHI",
+      "to": "DET",
+      "distanceKm": 450,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -87.65,
+          41.85
+        ],
+        [
+          -86.2,
+          41.7
+        ],
+        [
+          -85.1,
+          42.3
+        ],
+        [
+          -83.7,
+          42.3
+        ],
+        [
+          -83.05,
+          42.33
+        ]
+      ]
+    },
+    {
+      "id": "edge-det-tor",
+      "from": "DET",
+      "to": "TOR",
+      "distanceKm": 370,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -83.05,
+          42.33
+        ],
+        [
+          -82.4,
+          42.97
+        ],
+        [
+          -81.25,
+          42.98
+        ],
+        [
+          -80,
+          43.3
+        ],
+        [
+          -79.52,
+          43.81
+        ]
+      ]
+    },
+    {
+      "id": "edge-tor-mtr",
+      "from": "TOR",
+      "to": "MTR",
+      "distanceKm": 540,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -79.52,
+          43.81
+        ],
+        [
+          -78.3,
+          44
+        ],
+        [
+          -76.5,
+          44.23
+        ],
+        [
+          -74.5,
+          45.2
+        ],
+        [
+          -73.68,
+          45.48
+        ]
+      ]
+    },
+    {
+      "id": "edge-chi-kck",
+      "from": "CHI",
+      "to": "KCK",
+      "distanceKm": 700,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -87.65,
+          41.85
+        ],
+        [
+          -89.5,
+          41.2
+        ],
+        [
+          -91.5,
+          40.5
+        ],
+        [
+          -93.5,
+          39.8
+        ],
+        [
+          -94.88,
+          38.83
+        ]
+      ]
+    },
+    {
+      "id": "edge-kck-dfw",
+      "from": "KCK",
+      "to": "DFW",
+      "distanceKm": 780,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -94.88,
+          38.83
+        ],
+        [
+          -95.5,
+          37
+        ],
+        [
+          -96,
+          35
+        ],
+        [
+          -96.75,
+          32.61
+        ]
+      ]
+    },
+    {
+      "id": "edge-dfw-lrd",
+      "from": "DFW",
+      "to": "LRD",
+      "distanceKm": 680,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -96.75,
+          32.61
+        ],
+        [
+          -97.5,
+          30.5
+        ],
+        [
+          -98.5,
+          29.4
+        ],
+        [
+          -99.52,
+          27.59
+        ]
+      ]
+    },
+    {
+      "id": "edge-kck-lax",
+      "from": "KCK",
+      "to": "LAX",
+      "distanceKm": 2550,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -94.88,
+          38.83
+        ],
+        [
+          -101.8,
+          35.2
+        ],
+        [
+          -106.6,
+          35.1
+        ],
+        [
+          -114.6,
+          34.8
+        ],
+        [
+          -118.195,
+          34.005
+        ]
+      ]
+    },
+    {
+      "id": "edge-chi-atl",
+      "from": "CHI",
+      "to": "ATL",
+      "distanceKm": 1050,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -87.65,
+          41.85
+        ],
+        [
+          -86,
+          39.5
+        ],
+        [
+          -85.5,
+          38
+        ],
+        [
+          -84.388,
+          33.749
+        ]
+      ]
+    },
+    {
+      "id": "edge-atl-mia",
+      "from": "ATL",
+      "to": "MIA",
+      "distanceKm": 1060,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -84.388,
+          33.749
+        ],
+        [
+          -82.5,
+          30.5
+        ],
+        [
+          -81.5,
+          28.5
+        ],
+        [
+          -80.25,
+          25.8
+        ]
+      ]
+    },
+    {
+      "id": "edge-chi-nyc",
+      "from": "CHI",
+      "to": "NYC",
+      "distanceKm": 1280,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          -87.65,
+          41.85
+        ],
+        [
+          -83.5,
+          41.5
+        ],
+        [
+          -80,
+          41
+        ],
+        [
+          -76.5,
+          41
+        ],
+        [
+          -74.072,
+          40.669
+        ]
+      ]
+    },
+    {
+      "id": "edge-rtm-dui",
+      "from": "RTM",
+      "to": "DUI",
+      "distanceKm": 210,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          4.42,
+          51.88
+        ],
+        [
+          5.5,
+          51.7
+        ],
+        [
+          6.75,
+          51.45
+        ]
+      ]
+    },
+    {
+      "id": "edge-dui-fra",
+      "from": "DUI",
+      "to": "FRA",
+      "distanceKm": 240,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          6.75,
+          51.45
+        ],
+        [
+          7.1,
+          50.8
+        ],
+        [
+          8.58,
+          50.02
+        ]
+      ]
+    },
+    {
+      "id": "edge-dui-ham",
+      "from": "DUI",
+      "to": "HAM",
+      "distanceKm": 380,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          6.75,
+          51.45
+        ],
+        [
+          7.8,
+          52.3
+        ],
+        [
+          8.8,
+          53
+        ],
+        [
+          9.92,
+          53.52
+        ]
+      ]
+    },
+    {
+      "id": "edge-fra-mil",
+      "from": "FRA",
+      "to": "MIL",
+      "distanceKm": 650,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          8.58,
+          50.02
+        ],
+        [
+          8.3,
+          49
+        ],
+        [
+          7.6,
+          47.6
+        ],
+        [
+          8.7,
+          46.3
+        ],
+        [
+          9.29,
+          45.48
+        ]
+      ]
+    },
+    {
+      "id": "edge-ham-war",
+      "from": "HAM",
+      "to": "WAR",
+      "distanceKm": 780,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          9.92,
+          53.52
+        ],
+        [
+          13.4,
+          52.5
+        ],
+        [
+          17,
+          52.4
+        ],
+        [
+          20.95,
+          52.22
+        ]
+      ]
+    },
+    {
+      "id": "edge-sha-zgo",
+      "from": "SHA",
+      "to": "ZGO",
+      "distanceKm": 980,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          121.5,
+          31
+        ],
+        [
+          118.8,
+          32
+        ],
+        [
+          116,
+          33.5
+        ],
+        [
+          113.72,
+          34.72
+        ]
+      ]
+    },
+    {
+      "id": "edge-zgo-xia",
+      "from": "ZGO",
+      "to": "XIA",
+      "distanceKm": 480,
+      "modes": [
+        "rail",
+        "road"
+      ],
+      "path": [
+        [
+          113.72,
+          34.72
+        ],
+        [
+          111,
+          34.5
+        ],
+        [
+          109.055,
+          34.38
+        ]
+      ]
+    },
+    {
+      "id": "edge-xia-ala",
+      "from": "XIA",
+      "to": "ALA",
+      "distanceKm": 3200,
+      "modes": [
+        "rail"
+      ],
+      "path": [
+        [
+          109.055,
+          34.38
+        ],
+        [
+          103.8,
+          36.05
+        ],
+        [
+          98.5,
+          39.7
+        ],
+        [
+          87.6,
+          43.8
+        ],
+        [
+          82.57,
+          45.18
+        ]
+      ]
+    },
+    {
+      "id": "edge-ala-war",
+      "from": "ALA",
+      "to": "WAR",
+      "distanceKm": 6100,
+      "modes": [
+        "rail"
+      ],
+      "path": [
+        [
+          82.57,
+          45.18
+        ],
+        [
+          69.5,
+          42.3
+        ],
+        [
+          58,
+          50
+        ],
+        [
+          37.6,
+          55.75
+        ],
+        [
+          23.52,
+          52.02
+        ],
+        [
+          20.95,
+          52.22
+        ]
+      ]
+    }
+  ]
+}

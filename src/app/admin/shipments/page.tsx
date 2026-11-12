@@ -1,0 +1,666 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { cn } from "@/shared/lib/utils";
+import { DEMO_SHIPMENTS } from "@/shared/lib/demoData";
+import {
+  shipmentsCollection,
+  updateShipmentRecord,
+  listShipments,
+} from "@/shared/lib/firebase";
+import { onSnapshot, query, orderBy, limit } from "firebase/firestore";
+import type { TransportMode, ShipmentStatus, Shipment } from "@/shared/types";
+import {
+  releaseShipmentGate,
+  triggerShipmentException,
+} from "@/features/tracking/services/trackingService";
+import {
+  Search,
+  Filter,
+  PlayCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ShieldAlert,
+  X,
+  ExternalLink,
+} from "lucide-react";
+
+type FilterMode = "all" | TransportMode;
+type TabStatus = "all" | "in_transit" | "paused_hold" | "delivered" | "exceptions";
+
+export default function ShipmentsPage() {
+  const [shipments, setShipments] = React.useState<Shipment[]>(DEMO_SHIPMENTS);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [modeFilter, setModeFilter] = React.useState<FilterMode>("all");
+  const [activeTab, setActiveTab] = React.useState<TabStatus>("all");
+  const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Exception Modal State
+  const [selectedShipmentForException, setSelectedShipmentForException] = React.useState<Shipment | null>(null);
+  const [exceptionReasonPreset, setExceptionReasonPreset] = React.useState<string>("Customs Inspection Hold Gate");
+  const [customExceptionReason, setCustomExceptionReason] = React.useState<string>("");
+  const [exceptionStatusType, setExceptionStatusType] = React.useState<ShipmentStatus>("customs_hold");
+  const [isSubmittingAction, setIsSubmittingAction] = React.useState<boolean>(false);
+
+  // 1. Subscribe to Firestore shipments collection in real time
+  React.useEffect(() => {
+    setIsLoading(true);
+
+    try {
+      const q = query(shipmentsCollection, orderBy("createdAt", "desc"), limit(100));
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const liveList = snapshot.docs.map((docSnap) => docSnap.data() as Shipment);
+            // Merge with demo data so mock records remain available for test suites
+            const liveIds = new Set(liveList.map((s) => s.id));
+            const merged = [...liveList, ...DEMO_SHIPMENTS.filter((d) => !liveIds.has(d.id))];
+            setShipments(merged);
+          } else {
+            setShipments(DEMO_SHIPMENTS);
+          }
+          setIsLoading(false);
+        },
+        (error) => {
+          console.warn("Firestore onSnapshot error, falling back to initial data:", error);
+          listShipments(100)
+            .then((list) => {
+              if (list.length > 0) {
+                const liveIds = new Set(list.map((s) => s.id));
+                setShipments([...list, ...DEMO_SHIPMENTS.filter((d) => !liveIds.has(d.id))]);
+              } else {
+                setShipments(DEMO_SHIPMENTS);
+              }
+            })
+            .catch(() => setShipments(DEMO_SHIPMENTS))
+            .finally(() => setIsLoading(false));
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.warn("Error establishing live Firestore subscription:", err);
+      setShipments(DEMO_SHIPMENTS);
+      setIsLoading(false);
+    }
+  }, []);
+
+  const showToast = (text: string, type: "success" | "error" = "success") => {
+    setToastMessage({ text, type });
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4500);
+  };
+
+  // Quick Action 1: "Release Gate"
+  const handleReleaseGate = async (shipment: Shipment) => {
+    try {
+      setIsSubmittingAction(true);
+      const updatedShipment = releaseShipmentGate(shipment);
+
+      // 1. Update Firestore
+      await updateShipmentRecord(shipment.id, {
+        isPaused: false,
+        status: "in_transit",
+        pausedReason: "",
+        pausedAtTimestamp: "",
+        pausedLocationName: "",
+        milestones: updatedShipment.milestones,
+      });
+
+      // 2. Update local state
+      setShipments((prev) =>
+        prev.map((s) => (s.id === shipment.id ? updatedShipment : s))
+      );
+
+      showToast(`Release Gate: Shipment ${shipment.trackingCode} is now in transit!`, "success");
+    } catch (err: unknown) {
+      console.error("Failed to release gate:", err);
+      showToast(`Failed to release hold gate for ${shipment.trackingCode}`, "error");
+    } finally {
+      setIsSubmittingAction(false);
+    }
+  };
+
+  // Quick Action 2: Open "Trigger Exception" modal
+  const openExceptionModal = (shipment: Shipment) => {
+    setSelectedShipmentForException(shipment);
+    setExceptionReasonPreset("Customs Inspection Hold Gate");
+    setCustomExceptionReason("");
+    setExceptionStatusType("customs_hold");
+  };
+
+  // Quick Action 2: Submit Exception
+  const handleConfirmTriggerException = async () => {
+    if (!selectedShipmentForException) return;
+
+    const finalReason = customExceptionReason.trim()
+      ? customExceptionReason.trim()
+      : exceptionReasonPreset;
+
+    try {
+      setIsSubmittingAction(true);
+      const updatedShipment = triggerShipmentException(
+        selectedShipmentForException,
+        finalReason,
+        exceptionStatusType
+      );
+
+      // 1. Update Firestore
+      await updateShipmentRecord(selectedShipmentForException.id, {
+        isPaused: true,
+        status: exceptionStatusType,
+        pausedReason: finalReason,
+        pausedAtTimestamp: updatedShipment.pausedAtTimestamp,
+        pausedCoordinates: updatedShipment.pausedCoordinates,
+      });
+
+      // 2. Update local state
+      setShipments((prev) =>
+        prev.map((s) => (s.id === selectedShipmentForException.id ? updatedShipment : s))
+      );
+
+      showToast(`Exception Triggered: ${selectedShipmentForException.trackingCode} placed on hold.`, "success");
+      setSelectedShipmentForException(null);
+    } catch (err: unknown) {
+      console.error("Failed to trigger exception:", err);
+      showToast(`Failed to trigger exception for ${selectedShipmentForException.trackingCode}`, "error");
+    } finally {
+      setIsSubmittingAction(false);
+    }
+  };
+
+  // Filtering Logic
+  const filteredShipments = React.useMemo(() => {
+    return shipments.filter((s) => {
+      // Full-text search
+      const matchesSearch =
+        searchQuery === "" ||
+        s.trackingCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.consignmentReference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.originName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.destinationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.goodsDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.conveyanceName && s.conveyanceName.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      // Mode filter
+      const matchesMode = modeFilter === "all" || s.mode === modeFilter;
+
+      // Status Tab filter
+      let matchesTab = true;
+      if (activeTab === "in_transit") {
+        matchesTab = s.status === "in_transit" && !s.isPaused;
+      } else if (activeTab === "paused_hold") {
+        matchesTab = s.isPaused === true || s.status === "customs_hold";
+      } else if (activeTab === "delivered") {
+        matchesTab = s.status === "delivered";
+      } else if (activeTab === "exceptions") {
+        matchesTab =
+          s.status === "weather_delay" ||
+          s.status === "customs_hold" ||
+          Boolean(s.pausedReason);
+      }
+
+      return matchesSearch && matchesMode && matchesTab;
+    });
+  }, [shipments, searchQuery, modeFilter, activeTab]);
+
+  // Tab counters
+  const tabCounts = React.useMemo(() => {
+    return {
+      all: shipments.length,
+      in_transit: shipments.filter((s) => s.status === "in_transit" && !s.isPaused).length,
+      paused_hold: shipments.filter((s) => s.isPaused === true || s.status === "customs_hold").length,
+      delivered: shipments.filter((s) => s.status === "delivered").length,
+      exceptions: shipments.filter(
+        (s) => s.status === "weather_delay" || s.status === "customs_hold" || Boolean(s.pausedReason)
+      ).length,
+    };
+  }, [shipments]);
+
+  const modes: { label: string; value: FilterMode }[] = [
+    { label: "All Modes", value: "all" },
+    { label: "Ocean", value: "ocean" },
+    { label: "Air", value: "air" },
+    { label: "Rail", value: "rail" },
+    { label: "Road", value: "road" },
+  ];
+
+  const formatStatus = (status: string) =>
+    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return (
+    <div className="space-y-6">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold transition-all ${
+            toastMessage.type === "success"
+              ? "bg-emerald-600 text-white"
+              : "bg-red-600 text-white"
+          }`}
+        >
+          {toastMessage.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+          <span>{toastMessage.text}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-80">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Top Action Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
+            Admin Management Matrix
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Real-time multi-corridor transit registry, pause gate resolution & exception dispatch
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/tracking"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider transition-colors"
+          >
+            Customer Portal <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            href="/admin/shipments/new"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors active:scale-[0.98] shadow-md shadow-red-600/20"
+          >
+            + Create New Shipment
+          </Link>
+        </div>
+      </div>
+
+      {/* Status Filter Tabs with Live Counters */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={() => setActiveTab("all")}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+            activeTab === "all"
+              ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
+              : "text-slate-500 hover:text-black dark:hover:text-white"
+          )}
+        >
+          All
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200/50 dark:bg-slate-700/50 font-mono">
+            {tabCounts.all}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("in_transit")}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+            activeTab === "in_transit"
+              ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
+              : "text-slate-500 hover:text-black dark:hover:text-white"
+          )}
+        >
+          In Transit
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200 font-mono">
+            {tabCounts.in_transit}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("paused_hold")}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+            activeTab === "paused_hold"
+              ? "bg-amber-600 text-white"
+              : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+          )}
+        >
+          Paused / Customs Hold
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 font-mono">
+            {tabCounts.paused_hold}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("delivered")}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+            activeTab === "delivered"
+              ? "bg-emerald-600 text-white"
+              : "text-slate-500 hover:text-black dark:hover:text-white"
+          )}
+        >
+          Delivered
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 font-mono">
+            {tabCounts.delivered}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("exceptions")}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+            activeTab === "exceptions"
+              ? "bg-[#BA1C20] text-white"
+              : "text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+          )}
+        >
+          Exceptions
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-200 font-mono">
+            {tabCounts.exceptions}
+          </span>
+        </button>
+      </div>
+
+      {/* Search & Mode Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search tracking code, reference, vessel, route..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+          />
+        </div>
+
+        {/* Mode Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {modes.map((m) => (
+            <button
+              key={m.value}
+              type="button"
+              onClick={() => setModeFilter(m.value)}
+              className={cn(
+                "px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
+                modeFilter === m.value
+                  ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+              )}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Matrix Table */}
+      <div className="bg-white dark:bg-slate-900/60 rounded-3xl p-5 lg:p-6 border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-slate-200 dark:border-slate-700">
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Tracking Code</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Mode</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden md:table-cell">Conveyance</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden sm:table-cell">Route</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Status & Gates</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden lg:table-cell">Weight</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">ETA</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredShipments.map((s) => {
+              const hasHoldGate = s.isPaused || s.status === "customs_hold" || s.milestones?.some((m) => m.isHoldGate && !m.isCompleted);
+              const canTriggerException = s.status !== "delivered";
+
+              return (
+                <tr
+                  key={s.id}
+                  className="border-b border-slate-100 dark:border-slate-800 last:border-b-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                >
+                  {/* Tracking Code */}
+                  <td className="py-4 pr-4">
+                    <Link
+                      href={`/tracking/${s.trackingCode}`}
+                      className="font-mono font-bold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors inline-flex items-center gap-1.5"
+                    >
+                      {s.trackingCode}
+                    </Link>
+                    <p className="text-[11px] font-mono text-slate-400 truncate max-w-[140px]">
+                      {s.consignmentReference}
+                    </p>
+                  </td>
+
+                  {/* Mode */}
+                  <td className="py-4 pr-4">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                      {s.mode}
+                    </span>
+                  </td>
+
+                  {/* Conveyance */}
+                  <td className="py-4 pr-4 hidden md:table-cell">
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {s.conveyanceName}
+                    </span>
+                  </td>
+
+                  {/* Route */}
+                  <td className="py-4 pr-4 hidden sm:table-cell">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      {s.originCode} → {s.destinationCode}
+                    </span>
+                  </td>
+
+                  {/* Status & Pause Gate Indicator */}
+                  <td className="py-4 pr-4">
+                    {s.isPaused ? (
+                      <div className="space-y-1">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                          HOLD GATE ACTIVE
+                        </span>
+                        {s.pausedReason && (
+                          <p className="text-[11px] text-amber-700 dark:text-amber-300 max-w-[180px] truncate" title={s.pausedReason}>
+                            {s.pausedReason}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span
+                        className={cn(
+                          "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                          s.status === "delivered"
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            : s.status === "weather_delay"
+                            ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300"
+                            : "bg-[#0F313A]/10 text-[#0F313A] dark:bg-sky-950/60 dark:text-sky-300"
+                        )}
+                      >
+                        {formatStatus(s.status)}
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Weight */}
+                  <td className="py-4 pr-4 hidden lg:table-cell">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                      {s.grossWeightKg.toLocaleString()} kg
+                    </span>
+                  </td>
+
+                  {/* ETA */}
+                  <td className="py-4 pr-4">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {new Date(s.actualDeliveryDate || s.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </td>
+
+                  {/* Quick Actions */}
+                  <td className="py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {/* Quick Action 1: Release Gate */}
+                      {hasHoldGate ? (
+                        <button
+                          type="button"
+                          onClick={() => handleReleaseGate(s)}
+                          disabled={isSubmittingAction}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                          title="Release Hold Gate and Resume Tracking"
+                        >
+                          <PlayCircle className="w-3.5 h-3.5" />
+                          Release Gate
+                        </button>
+                      ) : null}
+
+                      {/* Quick Action 2: Trigger Exception */}
+                      {canTriggerException ? (
+                        <button
+                          type="button"
+                          onClick={() => openExceptionModal(s)}
+                          disabled={isSubmittingAction}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                          title="Report Exception or Delay"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          Trigger Exception
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+
+            {filteredShipments.length === 0 && (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-sm text-slate-400">
+                  No shipments found matching current query and filters.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Exception Trigger Dialog Modal */}
+      {selectedShipmentForException && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="text-base font-bold text-black dark:text-white">
+                  Trigger Operational Exception
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedShipmentForException(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-black dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-xs">
+                <p>
+                  Target Shipment: <strong className="font-mono text-black dark:text-white">{selectedShipmentForException.trackingCode}</strong>
+                </p>
+                <p className="text-slate-500 mt-0.5">
+                  Conveyance: {selectedShipmentForException.conveyanceName} ({selectedShipmentForException.mode})
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Exception Category
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExceptionStatusType("customs_hold")}
+                    className={cn(
+                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider border text-left transition-all",
+                      exceptionStatusType === "customs_hold"
+                        ? "bg-amber-500 text-white border-amber-600 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Customs Hold Gate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExceptionStatusType("weather_delay")}
+                    className={cn(
+                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider border text-left transition-all",
+                      exceptionStatusType === "weather_delay"
+                        ? "bg-red-500 text-white border-red-600 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Weather / Route Delay
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Preset Reason
+                </label>
+                <select
+                  value={exceptionReasonPreset}
+                  onChange={(e) => setExceptionReasonPreset(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="Customs Inspection Hold Gate">Customs Inspection Hold Gate</option>
+                  <option value="Port Congestion Dwell Hold">Port Congestion Dwell Hold</option>
+                  <option value="Severe Typhoon Warning — Vessel Anchored">Severe Typhoon Warning — Vessel Anchored</option>
+                  <option value="Mechanical Conveyance Inspection">Mechanical Conveyance Inspection</option>
+                  <option value="Border Transit Security Verification">Border Transit Security Verification</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Custom Operational Note (Optional)
+                </label>
+                <textarea
+                  value={customExceptionReason}
+                  onChange={(e) => setCustomExceptionReason(e.target.value)}
+                  placeholder="Specify custom reason or operational instructions..."
+                  rows={2}
+                  className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setSelectedShipmentForException(null)}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmTriggerException}
+                disabled={isSubmittingAction}
+                className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md shadow-amber-500/20"
+              >
+                {isSubmittingAction ? "Applying..." : "Confirm & Pause Gate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

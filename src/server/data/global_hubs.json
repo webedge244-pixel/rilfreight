@@ -1,0 +1,5279 @@
+[
+  {
+    "id": "hub-airport-MEM",
+    "code": "MEM",
+    "name": "Memphis International Airport (FedEx SuperHub)",
+    "city": "Memphis",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -89.9767,
+      35.0424
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MEM",
+    "icaoCode": "KMEM",
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-SDF",
+    "code": "SDF",
+    "name": "Louisville Muhammad Ali International (UPS Worldport)",
+    "city": "Louisville",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -85.736,
+      38.1744
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SDF",
+    "icaoCode": "KSDF",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-MIA",
+    "code": "MIA",
+    "name": "Miami International Airport (Cargo Gateway of the Americas)",
+    "city": "Miami",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -80.2906,
+      25.7959
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MIA",
+    "icaoCode": "KMIA",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-ANC",
+    "code": "ANC",
+    "name": "Ted Stevens Anchorage International (Polar Tech Stop)",
+    "city": "Anchorage",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -149.9964,
+      61.1743
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ANC",
+    "icaoCode": "PANC",
+    "timezone": "America/Anchorage",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-airport-ORD",
+    "code": "ORD",
+    "name": "Chicago O'Hare International Airport Cargo Area",
+    "city": "Chicago",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -87.9048,
+      41.9742
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ORD",
+    "icaoCode": "KORD",
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-LAX",
+    "code": "LAX",
+    "name": "Los Angeles International Airport World Way Cargo Center",
+    "city": "Los Angeles",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -118.4085,
+      33.9416
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LAX",
+    "icaoCode": "KLAX",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-JFK",
+    "code": "JFK",
+    "name": "John F. Kennedy International Airport Cargo City",
+    "city": "New York",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -73.7781,
+      40.6413
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "JFK",
+    "icaoCode": "KJFK",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-CVG",
+    "code": "CVG",
+    "name": "Cincinnati/Northern Kentucky International (Amazon / DHL Global Hub)",
+    "city": "Cincinnati",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -84.6678,
+      39.0488
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CVG",
+    "icaoCode": "KCVG",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-ATL",
+    "code": "ATL",
+    "name": "Hartsfield-Jackson Atlanta International Airport Cargo",
+    "city": "Atlanta",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -84.4281,
+      33.6407
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ATL",
+    "icaoCode": "KATL",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-DFW",
+    "code": "DFW",
+    "name": "Dallas/Fort Worth International Airport Air Cargo Center",
+    "city": "Dallas",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -97.038,
+      32.8998
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "DFW",
+    "icaoCode": "KDFW",
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-IND",
+    "code": "IND",
+    "name": "Indianapolis International Airport (FedEx National Hub)",
+    "city": "Indianapolis",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -86.2944,
+      39.7173
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "IND",
+    "icaoCode": "KIND",
+    "timezone": "America/Indiana/Indianapolis",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-YYZ",
+    "code": "YYZ",
+    "name": "Toronto Pearson International Airport Cargo",
+    "city": "Toronto",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -79.6248,
+      43.6777
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "YYZ",
+    "icaoCode": "CYYZ",
+    "timezone": "America/Toronto",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-YVR",
+    "code": "YVR",
+    "name": "Vancouver International Airport Cargo Facility",
+    "city": "Vancouver",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -123.1844,
+      49.1967
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "YVR",
+    "icaoCode": "CYVR",
+    "timezone": "America/Vancouver",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-YMX",
+    "code": "YMX",
+    "name": "Montréal-Mirabel International Cargo Airport",
+    "city": "Montreal",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -74.0053,
+      45.6819
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "YMX",
+    "icaoCode": "CYMX",
+    "timezone": "America/Toronto",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-MEX",
+    "code": "MEX",
+    "name": "Mexico City Benito Juárez International Cargo Area",
+    "city": "Mexico City",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -99.0721,
+      19.4361
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MEX",
+    "icaoCode": "MMMX",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 14
+  },
+  {
+    "id": "hub-airport-NLU",
+    "code": "NLU",
+    "name": "Felipe Ángeles International Airport Dedicated Cargo Terminal",
+    "city": "Zumpango",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -99.0153,
+      19.7456
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "NLU",
+    "icaoCode": "MMSM",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-GDL",
+    "code": "GDL",
+    "name": "Guadalajara Miguel Hidalgo International Cargo Terminal",
+    "city": "Guadalajara",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -103.3111,
+      20.5218
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "GDL",
+    "icaoCode": "MMGL",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-VCP",
+    "code": "VCP",
+    "name": "Viracopos International Airport (Campinas Air Freight Terminal)",
+    "city": "Campinas",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "coordinates": [
+      -47.1345,
+      -23.0074
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "VCP",
+    "icaoCode": "SBKP",
+    "timezone": "America/Sao_Paulo",
+    "continent": "SA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-airport-GRU",
+    "code": "GRU",
+    "name": "São Paulo/Guarulhos International Cargo Logistics Terminal",
+    "city": "São Paulo",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "coordinates": [
+      -46.4731,
+      -23.4356
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "GRU",
+    "icaoCode": "SBGR",
+    "timezone": "America/Sao_Paulo",
+    "continent": "SA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 14
+  },
+  {
+    "id": "hub-airport-BOG",
+    "code": "BOG",
+    "name": "El Dorado International Airport Cargo Hub (Floriculture Gateway)",
+    "city": "Bogotá",
+    "country": "Colombia",
+    "countryCode": "CO",
+    "coordinates": [
+      -74.1469,
+      4.7016
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "BOG",
+    "icaoCode": "SKBO",
+    "timezone": "America/Bogota",
+    "continent": "SA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-SCL",
+    "code": "SCL",
+    "name": "Arturo Merino Benítez International Airport Cargo Terminal",
+    "city": "Santiago",
+    "country": "Chile",
+    "countryCode": "CL",
+    "coordinates": [
+      -70.7942,
+      -33.393
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SCL",
+    "icaoCode": "SCEL",
+    "timezone": "America/Santiago",
+    "continent": "SA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-LIM",
+    "code": "LIM",
+    "name": "Jorge Chávez International Airport Cargo Terminal",
+    "city": "Lima",
+    "country": "Peru",
+    "countryCode": "PE",
+    "coordinates": [
+      -77.1143,
+      -12.0219
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LIM",
+    "icaoCode": "SPJC",
+    "timezone": "America/Lima",
+    "continent": "SA",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-HKG",
+    "code": "HKG",
+    "name": "Hong Kong International Airport (SuperTerminal 1)",
+    "city": "Hong Kong",
+    "country": "Hong Kong",
+    "countryCode": "HK",
+    "coordinates": [
+      113.9145,
+      22.308
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "HKG",
+    "icaoCode": "VHHH",
+    "timezone": "Asia/Hong_Kong",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-PVG",
+    "code": "PVG",
+    "name": "Shanghai Pudong International Airport PACTL Cargo Terminal",
+    "city": "Shanghai",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      121.8052,
+      31.1443
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "PVG",
+    "icaoCode": "ZSPD",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-CAN",
+    "code": "CAN",
+    "name": "Guangzhou Baiyun International Airport (FedEx APAC Hub)",
+    "city": "Guangzhou",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      113.2988,
+      23.3924
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CAN",
+    "icaoCode": "ZGGG",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-SZX",
+    "code": "SZX",
+    "name": "Shenzhen Bao'an International Airport International Cargo Hub",
+    "city": "Shenzhen",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      113.8107,
+      22.6393
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SZX",
+    "icaoCode": "ZGSZ",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-CGO",
+    "code": "CGO",
+    "name": "Zhengzhou Xinzheng International Airport (Belt & Road Air Cargo Hub)",
+    "city": "Zhengzhou",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      113.8409,
+      34.5197
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CGO",
+    "icaoCode": "ZHCC",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-CTU",
+    "code": "CTU",
+    "name": "Chengdu Shuangliu & Tianfu International Cargo Hub",
+    "city": "Chengdu",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      103.9471,
+      30.5785
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CTU",
+    "icaoCode": "ZUUU",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-PEK",
+    "code": "PEK",
+    "name": "Beijing Capital International Airport Cargo Area",
+    "city": "Beijing",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      116.5975,
+      40.0799
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "PEK",
+    "icaoCode": "ZBAA",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-PKX",
+    "code": "PKX",
+    "name": "Beijing Daxing International Airport Air Cargo City",
+    "city": "Beijing",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      116.4105,
+      39.5098
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "PKX",
+    "icaoCode": "ZBAD",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-ICN",
+    "code": "ICN",
+    "name": "Incheon International Airport Integrated Cargo Terminal",
+    "city": "Seoul",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "coordinates": [
+      126.4407,
+      37.4602
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ICN",
+    "icaoCode": "RKSI",
+    "timezone": "Asia/Seoul",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-NRT",
+    "code": "NRT",
+    "name": "Narita International Airport Cargo City",
+    "city": "Tokyo",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      140.3929,
+      35.772
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "NRT",
+    "icaoCode": "RJAA",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-HND",
+    "code": "HND",
+    "name": "Tokyo Haneda Airport International Air Cargo Terminal",
+    "city": "Tokyo",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      139.7798,
+      35.5494
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "HND",
+    "icaoCode": "RJTT",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-KIX",
+    "code": "KIX",
+    "name": "Kansai International Airport Ocean Island Cargo Hub",
+    "city": "Osaka",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      135.2328,
+      34.432
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "KIX",
+    "icaoCode": "RJBB",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-TPE",
+    "code": "TPE",
+    "name": "Taiwan Taoyuan International Airport Air Cargo Terminal",
+    "city": "Taipei",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "coordinates": [
+      121.2328,
+      25.0797
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "TPE",
+    "icaoCode": "RCTP",
+    "timezone": "Asia/Taipei",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-SIN",
+    "code": "SIN",
+    "name": "Singapore Changi Airport (Changi Airfreight Centre)",
+    "city": "Singapore",
+    "country": "Singapore",
+    "countryCode": "SG",
+    "coordinates": [
+      103.9915,
+      1.3644
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SIN",
+    "icaoCode": "WSSS",
+    "timezone": "Asia/Singapore",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-BKK",
+    "code": "BKK",
+    "name": "Suvarnabhumi Airport Cargo Clearance Customs Bureau",
+    "city": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "coordinates": [
+      100.7501,
+      13.69
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "BKK",
+    "icaoCode": "VTBS",
+    "timezone": "Asia/Bangkok",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-KUL",
+    "code": "KUL",
+    "name": "Kuala Lumpur International Airport Free Commercial Zone",
+    "city": "Kuala Lumpur",
+    "country": "Malaysia",
+    "countryCode": "MY",
+    "coordinates": [
+      101.7099,
+      2.7456
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "KUL",
+    "icaoCode": "WMKK",
+    "timezone": "Asia/Kuala_Lumpur",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-PEN",
+    "code": "PEN",
+    "name": "Penang International Airport High-Tech Air Cargo Hub",
+    "city": "Penang",
+    "country": "Malaysia",
+    "countryCode": "MY",
+    "coordinates": [
+      100.2766,
+      5.2971
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "PEN",
+    "icaoCode": "WMKP",
+    "timezone": "Asia/Kuala_Lumpur",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-CGK",
+    "code": "CGK",
+    "name": "Soekarno-Hatta International Airport Cargo Village",
+    "city": "Jakarta",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "coordinates": [
+      106.6559,
+      -6.1256
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CGK",
+    "icaoCode": "WIII",
+    "timezone": "Asia/Jakarta",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-HAN",
+    "code": "HAN",
+    "name": "Noi Bai International Airport Air Cargo Terminal",
+    "city": "Hanoi",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "coordinates": [
+      105.8072,
+      21.2212
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "HAN",
+    "icaoCode": "VVNB",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-SGN",
+    "code": "SGN",
+    "name": "Tan Son Nhat International Airport Cargo Express",
+    "city": "Ho Chi Minh City",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "coordinates": [
+      106.6519,
+      10.8188
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SGN",
+    "icaoCode": "VVTS",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-DEL",
+    "code": "DEL",
+    "name": "Indira Gandhi International Airport Dedicated Cargo City",
+    "city": "Delhi",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      77.1,
+      28.5562
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "DEL",
+    "icaoCode": "VIDP",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-BOM",
+    "code": "BOM",
+    "name": "Chhatrapati Shivaji Maharaj International Cargo Terminal",
+    "city": "Mumbai",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      72.8679,
+      19.0896
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "BOM",
+    "icaoCode": "VABB",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-BLR",
+    "code": "BLR",
+    "name": "Kempegowda International Airport Bengaluru Cargo Complex",
+    "city": "Bengaluru",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      77.7064,
+      13.1986
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "BLR",
+    "icaoCode": "VOBL",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-MAA",
+    "code": "MAA",
+    "name": "Chennai International Airport Integrated Air Cargo Complex",
+    "city": "Chennai",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      80.1693,
+      12.9941
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "MAA",
+    "icaoCode": "VOMM",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-SYD",
+    "code": "SYD",
+    "name": "Sydney Kingsford Smith Airport International Freight Precinct",
+    "city": "Sydney",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      151.1772,
+      -33.9461
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "SYD",
+    "icaoCode": "YSSY",
+    "timezone": "Australia/Sydney",
+    "continent": "OC",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-MEL",
+    "code": "MEL",
+    "name": "Melbourne Airport International Freight Hub",
+    "city": "Melbourne",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      144.8433,
+      -37.669
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MEL",
+    "icaoCode": "YMML",
+    "timezone": "Australia/Melbourne",
+    "continent": "OC",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-AKL",
+    "code": "AKL",
+    "name": "Auckland Airport Cargo Precinct",
+    "city": "Auckland",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "coordinates": [
+      174.7917,
+      -37.0082
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "AKL",
+    "icaoCode": "NZAA",
+    "timezone": "Pacific/Auckland",
+    "continent": "OC",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-FRA",
+    "code": "FRA",
+    "name": "Frankfurt Airport (CargoCity Nord & Süd)",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      8.5622,
+      50.0379
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "FRA",
+    "icaoCode": "EDDF",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-LEJ",
+    "code": "LEJ",
+    "name": "Leipzig/Halle Airport (DHL European Express Megahub)",
+    "city": "Leipzig",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      12.2364,
+      51.4239
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LEJ",
+    "icaoCode": "EDDP",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-CGN",
+    "code": "CGN",
+    "name": "Cologne Bonn Airport (UPS European Air Hub)",
+    "city": "Cologne",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      7.1427,
+      50.8659
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CGN",
+    "icaoCode": "EDDK",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-CDG",
+    "code": "CDG",
+    "name": "Paris Charles de Gaulle International Airport Cargo City",
+    "city": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "coordinates": [
+      2.55,
+      49.0097
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CDG",
+    "icaoCode": "LFPG",
+    "timezone": "Europe/Paris",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-AMS",
+    "code": "AMS",
+    "name": "Amsterdam Airport Schiphol Cargo Mainport",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "coordinates": [
+      4.7683,
+      52.3105
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "AMS",
+    "icaoCode": "EHAM",
+    "timezone": "Europe/Amsterdam",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-LHR",
+    "code": "LHR",
+    "name": "London Heathrow Airport (Heathrow Cargo Centre)",
+    "city": "London",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      -0.4543,
+      51.47
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LHR",
+    "icaoCode": "EGLL",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-EMA",
+    "code": "EMA",
+    "name": "East Midlands Airport (UK Express Air Cargo Hub)",
+    "city": "Derby",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      -1.3281,
+      52.8311
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "EMA",
+    "icaoCode": "EGNX",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-STN",
+    "code": "STN",
+    "name": "London Stansted Airport Cargo Facilities",
+    "city": "London",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      0.235,
+      51.886
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "STN",
+    "icaoCode": "EGSS",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-MXP",
+    "code": "MXP",
+    "name": "Milan Malpensa Airport (Malpensa Cargo City)",
+    "city": "Milan",
+    "country": "Italy",
+    "countryCode": "IT",
+    "coordinates": [
+      8.7231,
+      45.6301
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MXP",
+    "icaoCode": "LIMC",
+    "timezone": "Europe/Rome",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-MAD",
+    "code": "MAD",
+    "name": "Adolfo Suárez Madrid-Barajas Airport Cargo Terminal",
+    "city": "Madrid",
+    "country": "Spain",
+    "countryCode": "ES",
+    "coordinates": [
+      -3.5673,
+      40.4839
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "MAD",
+    "icaoCode": "LEMD",
+    "timezone": "Europe/Madrid",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-BCN",
+    "code": "BCN",
+    "name": "Josep Tarradellas Barcelona-El Prat Cargo Terminal",
+    "city": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "coordinates": [
+      2.0785,
+      41.2974
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "BCN",
+    "icaoCode": "LEBL",
+    "timezone": "Europe/Madrid",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-BRU",
+    "code": "BRU",
+    "name": "Brussels Airport (Brucargo Integrated Logistics Zone)",
+    "city": "Brussels",
+    "country": "Belgium",
+    "countryCode": "BE",
+    "coordinates": [
+      4.4844,
+      50.9014
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "BRU",
+    "icaoCode": "EBBR",
+    "timezone": "Europe/Brussels",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-LGG",
+    "code": "LGG",
+    "name": "Liège Airport (European Air Cargo Lifeline)",
+    "city": "Liège",
+    "country": "Belgium",
+    "countryCode": "BE",
+    "coordinates": [
+      5.4432,
+      50.6374
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LGG",
+    "icaoCode": "EBLG",
+    "timezone": "Europe/Brussels",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-LUX",
+    "code": "LUX",
+    "name": "Luxembourg Findel Airport (Cargolux Global Hub)",
+    "city": "Luxembourg",
+    "country": "Luxembourg",
+    "countryCode": "LU",
+    "coordinates": [
+      6.2115,
+      49.6233
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LUX",
+    "icaoCode": "ELLX",
+    "timezone": "Europe/Luxembourg",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-ZRH",
+    "code": "ZRH",
+    "name": "Zurich Airport Freight Terminal",
+    "city": "Zurich",
+    "country": "Switzerland",
+    "countryCode": "CH",
+    "coordinates": [
+      8.5492,
+      47.4582
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ZRH",
+    "icaoCode": "LSZH",
+    "timezone": "Europe/Zurich",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-VIE",
+    "code": "VIE",
+    "name": "Vienna International Airport Air Cargo Center",
+    "city": "Vienna",
+    "country": "Austria",
+    "countryCode": "AT",
+    "coordinates": [
+      16.5697,
+      48.1103
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "VIE",
+    "icaoCode": "LOWW",
+    "timezone": "Europe/Vienna",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-IST",
+    "code": "IST",
+    "name": "Istanbul Airport (Turkish Cargo SmartIST Megahub)",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "coordinates": [
+      28.7519,
+      41.2753
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "IST",
+    "icaoCode": "LTFM",
+    "timezone": "Europe/Istanbul",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-ISL",
+    "code": "ISL",
+    "name": "Istanbul Atatürk Airport Dedicated Cargo Center",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "coordinates": [
+      28.8146,
+      40.9769
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "ISL",
+    "icaoCode": "LTBA",
+    "timezone": "Europe/Istanbul",
+    "continent": "EU",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-DXB",
+    "code": "DXB",
+    "name": "Dubai International Airport (Emirates SkyCargo Mega Terminal)",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "coordinates": [
+      55.3644,
+      25.2532
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "DXB",
+    "icaoCode": "OMDB",
+    "timezone": "Asia/Dubai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-DWC",
+    "code": "DWC",
+    "name": "Al Maktoum International Airport (Dubai South Logistics District)",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "coordinates": [
+      55.1753,
+      24.896
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "DWC",
+    "icaoCode": "OMDW",
+    "timezone": "Asia/Dubai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-DOH",
+    "code": "DOH",
+    "name": "Hamad International Airport (Qatar Airways Cargo Superhub)",
+    "city": "Doha",
+    "country": "Qatar",
+    "countryCode": "QA",
+    "coordinates": [
+      51.6081,
+      25.2731
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "DOH",
+    "icaoCode": "OTHH",
+    "timezone": "Asia/Qatar",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-airport-AUH",
+    "code": "AUH",
+    "name": "Zayed International Airport Abu Dhabi Cargo Complex",
+    "city": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "coordinates": [
+      54.6511,
+      24.433
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "AUH",
+    "icaoCode": "OMAA",
+    "timezone": "Asia/Dubai",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-RUH",
+    "code": "RUH",
+    "name": "King Khalid International Airport Riyadh Cargo Zone",
+    "city": "Riyadh",
+    "country": "Saudi Arabia",
+    "countryCode": "SA",
+    "coordinates": [
+      46.6988,
+      24.9576
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "RUH",
+    "icaoCode": "OERK",
+    "timezone": "Asia/Riyadh",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-JED",
+    "code": "JED",
+    "name": "King Abdulaziz International Airport Jeddah Cargo Village",
+    "city": "Jeddah",
+    "country": "Saudi Arabia",
+    "countryCode": "SA",
+    "coordinates": [
+      39.1565,
+      21.6796
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "JED",
+    "icaoCode": "OEJN",
+    "timezone": "Asia/Riyadh",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-TLV",
+    "code": "TLV",
+    "name": "Ben Gurion Airport Dedicated Maman Air Cargo Terminal",
+    "city": "Tel Aviv",
+    "country": "Israel",
+    "countryCode": "IL",
+    "coordinates": [
+      34.8867,
+      32.0055
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "TLV",
+    "icaoCode": "LLBG",
+    "timezone": "Asia/Jerusalem",
+    "continent": "AS",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-JNB",
+    "code": "JNB",
+    "name": "O.R. Tambo International Airport Cargo Terminal",
+    "city": "Johannesburg",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "coordinates": [
+      28.246,
+      -26.1392
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "JNB",
+    "icaoCode": "FAOR",
+    "timezone": "Africa/Johannesburg",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-CPT",
+    "code": "CPT",
+    "name": "Cape Town International Airport Air Freight Precinct",
+    "city": "Cape Town",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "coordinates": [
+      18.6017,
+      -33.9715
+    ],
+    "type": "airport",
+    "tier": 2,
+    "source": "OurAirports",
+    "iataCode": "CPT",
+    "icaoCode": "FACT",
+    "timezone": "Africa/Johannesburg",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-CAI",
+    "code": "CAI",
+    "name": "Cairo International Airport EgyptAir Cargo Village",
+    "city": "Cairo",
+    "country": "Egypt",
+    "countryCode": "EG",
+    "coordinates": [
+      31.4056,
+      30.1219
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CAI",
+    "icaoCode": "HECA",
+    "timezone": "Africa/Cairo",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-airport-NBO",
+    "code": "NBO",
+    "name": "Jomo Kenyatta International Airport (East Africa Perishables Hub)",
+    "city": "Nairobi",
+    "country": "Kenya",
+    "countryCode": "KE",
+    "coordinates": [
+      36.9275,
+      -1.3192
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "NBO",
+    "icaoCode": "HKJK",
+    "timezone": "Africa/Nairobi",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 10
+  },
+  {
+    "id": "hub-airport-ADD",
+    "code": "ADD",
+    "name": "Addis Ababa Bole International (Ethiopian Cargo Megahub)",
+    "city": "Addis Ababa",
+    "country": "Ethiopia",
+    "countryCode": "ET",
+    "coordinates": [
+      38.7994,
+      8.9779
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "ADD",
+    "icaoCode": "HAAB",
+    "timezone": "Africa/Addis_Ababa",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-airport-LOS",
+    "code": "LOS",
+    "name": "Murtala Muhammed International Airport Cargo Village",
+    "city": "Lagos",
+    "country": "Nigeria",
+    "countryCode": "NG",
+    "coordinates": [
+      3.3211,
+      6.5774
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "LOS",
+    "icaoCode": "DNMM",
+    "timezone": "Africa/Lagos",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-airport-CMN",
+    "code": "CMN",
+    "name": "Mohammed V International Airport Cargo Center",
+    "city": "Casablanca",
+    "country": "Morocco",
+    "countryCode": "MA",
+    "coordinates": [
+      -7.5899,
+      33.3675
+    ],
+    "type": "airport",
+    "tier": 1,
+    "source": "OurAirports",
+    "iataCode": "CMN",
+    "icaoCode": "GMMN",
+    "timezone": "Africa/Casablanca",
+    "continent": "AF",
+    "modesSupported": [
+      "air"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-seaport-CNSHA",
+    "code": "CNSHA",
+    "name": "Port of Shanghai (Yangshan Deepwater Terminal)",
+    "city": "Shanghai",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      121.5,
+      31
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNSHA",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNNGB",
+    "code": "CNNGB",
+    "name": "Port of Ningbo-Zhoushan Container Terminal",
+    "city": "Ningbo",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      121.85,
+      29.89
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNNGB",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNSZX",
+    "code": "CNSZX",
+    "name": "Port of Shenzhen (Yantian & Shekou Terminals)",
+    "city": "Shenzhen",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      114.27,
+      22.57
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNSZX",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNCAN",
+    "code": "CNCAN",
+    "name": "Port of Guangzhou (Nansha International Container Terminal)",
+    "city": "Guangzhou",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      113.6,
+      22.75
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNCAN",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNTAO",
+    "code": "CNTAO",
+    "name": "Port of Qingdao (Qianwan Container Terminal)",
+    "city": "Qingdao",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      120.32,
+      36.08
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNTAO",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNTNJ",
+    "code": "CNTNJ",
+    "name": "Port of Tianjin (Pacific International Container Terminal)",
+    "city": "Tianjin",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      117.75,
+      38.98
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNTNJ",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNXMN",
+    "code": "CNXMN",
+    "name": "Port of Xiamen (Haicang Container Port Area)",
+    "city": "Xiamen",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      118.06,
+      24.48
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CNXMN",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CNDLC",
+    "code": "CNDLC",
+    "name": "Port of Dalian (Dayao Bay Container Terminal)",
+    "city": "Dalian",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      121.65,
+      38.93
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "CNDLC",
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-SGSIN",
+    "code": "SGSIN",
+    "name": "Port of Singapore (PSA Pasir Panjang & Tuas Mega Port)",
+    "city": "Singapore",
+    "country": "Singapore",
+    "countryCode": "SG",
+    "coordinates": [
+      103.85,
+      1.29
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "SGSIN",
+    "timezone": "Asia/Singapore",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-HKHKG",
+    "code": "HKHKG",
+    "name": "Port of Hong Kong (Kwai Tsing Container Terminals)",
+    "city": "Hong Kong",
+    "country": "Hong Kong",
+    "countryCode": "HK",
+    "coordinates": [
+      114.169,
+      22.319
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "HKHKG",
+    "timezone": "Asia/Hong_Kong",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-KRPUS",
+    "code": "KRPUS",
+    "name": "Port of Busan (Busan New Port Container Terminal)",
+    "city": "Busan",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "coordinates": [
+      129.04,
+      35.1
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "KRPUS",
+    "timezone": "Asia/Seoul",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-KRINC",
+    "code": "KRINC",
+    "name": "Port of Incheon (Incheon New Port)",
+    "city": "Incheon",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "coordinates": [
+      126.62,
+      37.45
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "KRINC",
+    "timezone": "Asia/Seoul",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-KRKAN",
+    "code": "KRKAN",
+    "name": "Port of Gwangyang Container Terminal",
+    "city": "Gwangyang",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "coordinates": [
+      127.7,
+      34.91
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "KRKAN",
+    "timezone": "Asia/Seoul",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-TPKHH",
+    "code": "TPKHH",
+    "name": "Port of Kaohsiung (Intercontinental Container Terminal)",
+    "city": "Kaohsiung",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "coordinates": [
+      120.28,
+      22.61
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "TPKHH",
+    "timezone": "Asia/Taipei",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-TPTPE",
+    "code": "TPTPE",
+    "name": "Port of Taipei Container Port",
+    "city": "Taipei",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "coordinates": [
+      121.37,
+      25.15
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "TPTPE",
+    "timezone": "Asia/Taipei",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-TPKEL",
+    "code": "TPKEL",
+    "name": "Port of Keelung Harbor",
+    "city": "Keelung",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "coordinates": [
+      121.74,
+      25.13
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "TPKEL",
+    "timezone": "Asia/Taipei",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-JPTYO",
+    "code": "JPTYO",
+    "name": "Port of Tokyo (Oi Container Terminal)",
+    "city": "Tokyo",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      139.77,
+      35.62
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "JPTYO",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-JPYOK",
+    "code": "JPYOK",
+    "name": "Port of Yokohama (Minami Honmoku Terminal)",
+    "city": "Yokohama",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      139.65,
+      35.44
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "JPYOK",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-JPNGO",
+    "code": "JPNGO",
+    "name": "Port of Nagoya (Tobishima Container Berth)",
+    "city": "Nagoya",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      136.88,
+      35.08
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "JPNGO",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-JPOKB",
+    "code": "JPOKB",
+    "name": "Port of Kobe (Rokko Island Container Terminal)",
+    "city": "Kobe",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      135.2,
+      34.68
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "JPOKB",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-JPOSA",
+    "code": "JPOSA",
+    "name": "Port of Osaka (Nanko Container Terminal)",
+    "city": "Osaka",
+    "country": "Japan",
+    "countryCode": "JP",
+    "coordinates": [
+      135.43,
+      34.64
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "JPOSA",
+    "timezone": "Asia/Tokyo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-MYPKG",
+    "code": "MYPKG",
+    "name": "Port Klang (Westports & Northport Malaysia)",
+    "city": "Port Klang",
+    "country": "Malaysia",
+    "countryCode": "MY",
+    "coordinates": [
+      101.4,
+      3
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MYPKG",
+    "timezone": "Asia/Kuala_Lumpur",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-MYTPP",
+    "code": "MYTPP",
+    "name": "Port of Tanjung Pelepas (PTP Johor)",
+    "city": "Johor Bahru",
+    "country": "Malaysia",
+    "countryCode": "MY",
+    "coordinates": [
+      103.55,
+      1.36
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MYTPP",
+    "timezone": "Asia/Kuala_Lumpur",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-THLCH",
+    "code": "THLCH",
+    "name": "Port of Laem Chabang Deep Seaport",
+    "city": "Chonburi",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "coordinates": [
+      100.88,
+      13.08
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "THLCH",
+    "timezone": "Asia/Bangkok",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-VNSGN",
+    "code": "VNSGN",
+    "name": "Port of Ho Chi Minh City (Cat Lai Port)",
+    "city": "Ho Chi Minh City",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "coordinates": [
+      106.79,
+      10.76
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "VNSGN",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-VNHPH",
+    "code": "VNHPH",
+    "name": "Port of Haiphong (Lach Huyen Deepsea Terminal)",
+    "city": "Haiphong",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "coordinates": [
+      106.69,
+      20.86
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "VNHPH",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-VNVUT",
+    "code": "VNVUT",
+    "name": "Port of Cai Mep - Thi Vai International Port",
+    "city": "Vung Tau",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "coordinates": [
+      107.03,
+      10.51
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "VNVUT",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-IDTPP",
+    "code": "IDTPP",
+    "name": "Port of Tanjung Priok (Jakarta International Container Terminal)",
+    "city": "Jakarta",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "coordinates": [
+      106.88,
+      -6.1
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "IDTPP",
+    "timezone": "Asia/Jakarta",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-PHMNL",
+    "code": "PHMNL",
+    "name": "Port of Manila (Manila International Container Terminal)",
+    "city": "Manila",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "coordinates": [
+      120.96,
+      14.58
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "PHMNL",
+    "timezone": "Asia/Manila",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-INNSA",
+    "code": "INNSA",
+    "name": "Port of Jawaharlal Nehru (Nhava Sheva Navi Mumbai)",
+    "city": "Mumbai",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      72.95,
+      18.95
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "INNSA",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-INMUN",
+    "code": "INMUN",
+    "name": "Port of Mundra (Adani Container Terminal)",
+    "city": "Mundra",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      69.72,
+      22.74
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "INMUN",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-INMAA",
+    "code": "INMAA",
+    "name": "Port of Chennai (Chennai Container Terminal)",
+    "city": "Chennai",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      80.3,
+      13.1
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "INMAA",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-INCOK",
+    "code": "INCOK",
+    "name": "Port of Cochin (Vallarpadam International Transshipment)",
+    "city": "Kochi",
+    "country": "India",
+    "countryCode": "IN",
+    "coordinates": [
+      76.26,
+      9.97
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "INCOK",
+    "timezone": "Asia/Kolkata",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-LKCMB",
+    "code": "LKCMB",
+    "name": "Port of Colombo (South Asia Transshipment Hub)",
+    "city": "Colombo",
+    "country": "Sri Lanka",
+    "countryCode": "LK",
+    "coordinates": [
+      79.85,
+      6.94
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "LKCMB",
+    "timezone": "Asia/Colombo",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-AUSYD",
+    "code": "AUSYD",
+    "name": "Port of Sydney (Port Botany Container Terminal)",
+    "city": "Sydney",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      151.22,
+      -33.97
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "AUSYD",
+    "timezone": "Australia/Sydney",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-AUMEL",
+    "code": "AUMEL",
+    "name": "Port of Melbourne (Swanson Dock Container Facility)",
+    "city": "Melbourne",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      144.93,
+      -37.82
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "AUMEL",
+    "timezone": "Australia/Melbourne",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-AUBNE",
+    "code": "AUBNE",
+    "name": "Port of Brisbane (Fisherman Islands Container Berth)",
+    "city": "Brisbane",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      153.17,
+      -27.37
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "AUBNE",
+    "timezone": "Australia/Brisbane",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-AUMRE",
+    "code": "AUMRE",
+    "name": "Port of Fremantle (Perth Container Berth)",
+    "city": "Fremantle",
+    "country": "Australia",
+    "countryCode": "AU",
+    "coordinates": [
+      115.74,
+      -32.05
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "AUMRE",
+    "timezone": "Australia/Perth",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-NZAKL",
+    "code": "NZAKL",
+    "name": "Port of Auckland (Fergusson Container Terminal)",
+    "city": "Auckland",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "coordinates": [
+      174.78,
+      -36.84
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "NZAKL",
+    "timezone": "Pacific/Auckland",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-NZTRG",
+    "code": "NZTRG",
+    "name": "Port of Tauranga (Sulphur Point Container Terminal)",
+    "city": "Tauranga",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "coordinates": [
+      176.19,
+      -37.66
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "NZTRG",
+    "timezone": "Pacific/Auckland",
+    "continent": "OC",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USLAX",
+    "code": "USLAX",
+    "name": "Port of Los Angeles (San Pedro Bay Complex)",
+    "city": "Los Angeles",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -118.261,
+      33.743
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USLAX",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USLGB",
+    "code": "USLGB",
+    "name": "Port of Long Beach (Middle Harbor Automated Terminal)",
+    "city": "Long Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -118.214,
+      33.754
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USLGB",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USNYC",
+    "code": "USNYC",
+    "name": "Port of New York and New Jersey (Maher & APM Terminals)",
+    "city": "New York",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -74.072,
+      40.669
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USNYC",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USSAV",
+    "code": "USSAV",
+    "name": "Port of Savannah (Garden City Terminal)",
+    "city": "Savannah",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -81.14,
+      32.12
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USSAV",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-USHOU",
+    "code": "USHOU",
+    "name": "Port of Houston (Barbours Cut & Bayport Terminals)",
+    "city": "Houston",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -95.02,
+      29.68
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USHOU",
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USMIA",
+    "code": "USMIA",
+    "name": "PortMiami (Dante B. Fascell Port of Miami)",
+    "city": "Miami",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -80.191,
+      25.761
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USMIA",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-USCHS",
+    "code": "USCHS",
+    "name": "Port of Charleston (Wando Welch & Leatherman Terminals)",
+    "city": "Charleston",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -79.92,
+      32.78
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USCHS",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-USORF",
+    "code": "USORF",
+    "name": "Port of Virginia (Norfolk International Terminals)",
+    "city": "Norfolk",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -76.33,
+      36.93
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USORF",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-USSEA",
+    "code": "USSEA",
+    "name": "Port of Seattle (Northwest Seaport Alliance T5 / T18)",
+    "city": "Seattle",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -122.35,
+      47.58
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USSEA",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USTAC",
+    "code": "USTAC",
+    "name": "Port of Tacoma (Northwest Seaport Alliance Terminals)",
+    "city": "Tacoma",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -122.42,
+      47.27
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USTAC",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USOAK",
+    "code": "USOAK",
+    "name": "Port of Oakland (Oakland International Container Terminal)",
+    "city": "Oakland",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -122.31,
+      37.8
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "USOAK",
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-USBAL",
+    "code": "USBAL",
+    "name": "Port of Baltimore (Seagirt Marine Terminal)",
+    "city": "Baltimore",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -76.58,
+      39.26
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "USBAL",
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CAVAN",
+    "code": "CAVAN",
+    "name": "Port of Vancouver (Roberts Bank & Deltaport)",
+    "city": "Vancouver",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -123.1,
+      49.3
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CAVAN",
+    "timezone": "America/Vancouver",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CAMTR",
+    "code": "CAMTR",
+    "name": "Port of Montreal (Cast & Maisonneuve Terminals)",
+    "city": "Montreal",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -73.54,
+      45.51
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CAMTR",
+    "timezone": "America/Toronto",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CAPRR",
+    "code": "CAPRR",
+    "name": "Port of Prince Rupert (Fairview Container Terminal)",
+    "city": "Prince Rupert",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -130.34,
+      54.3
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CAPRR",
+    "timezone": "America/Vancouver",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-CAHAL",
+    "code": "CAHAL",
+    "name": "Port of Halifax (South End & Fairview Terminals)",
+    "city": "Halifax",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -63.57,
+      44.63
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CAHAL",
+    "timezone": "America/Halifax",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-MXLZC",
+    "code": "MXLZC",
+    "name": "Port of Lázaro Cárdenas (APM & Hutchison Terminals)",
+    "city": "Lázaro Cárdenas",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -102.17,
+      17.95
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MXLZC",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-MXMAN",
+    "code": "MXMAN",
+    "name": "Port of Manzanillo (Contecon & SSA Mexico)",
+    "city": "Manzanillo",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -104.32,
+      19.06
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MXMAN",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-MXVER",
+    "code": "MXVER",
+    "name": "Port of Veracruz (ICA VE Container Terminal)",
+    "city": "Veracruz",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -96.13,
+      19.2
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MXVER",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-MXATM",
+    "code": "MXATM",
+    "name": "Port of Altamira (Altamira Industrial Port)",
+    "city": "Altamira",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -97.9,
+      22.5
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "MXATM",
+    "timezone": "America/Mexico_City",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-PAPOB",
+    "code": "PAPOB",
+    "name": "Port of Balboa (Panama Pacific Canal Entry)",
+    "city": "Panama City",
+    "country": "Panama",
+    "countryCode": "PA",
+    "coordinates": [
+      -79.57,
+      8.95
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "PAPOB",
+    "timezone": "America/Panama",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-seaport-PACRI",
+    "code": "PACRI",
+    "name": "Port of Cristobal / Manzanillo (Panama Atlantic Entry)",
+    "city": "Colón",
+    "country": "Panama",
+    "countryCode": "PA",
+    "coordinates": [
+      -79.9,
+      9.35
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "PACRI",
+    "timezone": "America/Panama",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-seaport-COCTG",
+    "code": "COCTG",
+    "name": "Port of Cartagena (Contecar & SPRC Terminals)",
+    "city": "Cartagena",
+    "country": "Colombia",
+    "countryCode": "CO",
+    "coordinates": [
+      -75.52,
+      10.4
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "COCTG",
+    "timezone": "America/Bogota",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-COBUN",
+    "code": "COBUN",
+    "name": "Port of Buenaventura (TCBUEN Container Terminal)",
+    "city": "Buenaventura",
+    "country": "Colombia",
+    "countryCode": "CO",
+    "coordinates": [
+      -77.07,
+      3.88
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "COBUN",
+    "timezone": "America/Bogota",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-BRSSZ",
+    "code": "BRSSZ",
+    "name": "Port of Santos (BTP & Santos Brasil Terminals)",
+    "city": "Santos",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "coordinates": [
+      -46.315,
+      -23.967
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "BRSSZ",
+    "timezone": "America/Sao_Paulo",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-BRPNG",
+    "code": "BRPNG",
+    "name": "Port of Paranaguá (TCP Terminal de Contêineres)",
+    "city": "Paranaguá",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "coordinates": [
+      -48.51,
+      -25.5
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "BRPNG",
+    "timezone": "America/Sao_Paulo",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-BRSUA",
+    "code": "BRSUA",
+    "name": "Port of Suape (Tecon Suape Terminal)",
+    "city": "Ipojuca",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "coordinates": [
+      -34.97,
+      -8.39
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "BRSUA",
+    "timezone": "America/Recife",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CLSAI",
+    "code": "CLSAI",
+    "name": "Port of San Antonio (STI & Puerto Panul)",
+    "city": "San Antonio",
+    "country": "Chile",
+    "countryCode": "CL",
+    "coordinates": [
+      -71.62,
+      -33.59
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CLSAI",
+    "timezone": "America/Santiago",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CLVAP",
+    "code": "CLVAP",
+    "name": "Port of Valparaíso (TPS Terminal Pacífico Sur)",
+    "city": "Valparaíso",
+    "country": "Chile",
+    "countryCode": "CL",
+    "coordinates": [
+      -71.62,
+      -33.03
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CLVAP",
+    "timezone": "America/Santiago",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-ARBUE",
+    "code": "ARBUE",
+    "name": "Port of Buenos Aires (TRP & BACTSSA Terminals)",
+    "city": "Buenos Aires",
+    "country": "Argentina",
+    "countryCode": "AR",
+    "coordinates": [
+      -58.37,
+      -34.58
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ARBUE",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-UYMVD",
+    "code": "UYMVD",
+    "name": "Port of Montevideo (Katoen Natie TCP)",
+    "city": "Montevideo",
+    "country": "Uruguay",
+    "countryCode": "UY",
+    "coordinates": [
+      -56.21,
+      -34.9
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "UYMVD",
+    "timezone": "America/Montevideo",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-PECLL",
+    "code": "PECLL",
+    "name": "Port of Callao (DP World & APM Terminals Callao)",
+    "city": "Callao",
+    "country": "Peru",
+    "countryCode": "PE",
+    "coordinates": [
+      -77.15,
+      -12.05
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "PECLL",
+    "timezone": "America/Lima",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-ECSTE",
+    "code": "ECSTE",
+    "name": "Port of Guayaquil (Contecon Guayaquil)",
+    "city": "Guayaquil",
+    "country": "Ecuador",
+    "countryCode": "EC",
+    "coordinates": [
+      -79.9,
+      -2.28
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "ECSTE",
+    "timezone": "America/Guayaquil",
+    "continent": "SA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-JAMKG",
+    "code": "JAMKG",
+    "name": "Port of Kingston (Kingston Freeport Terminal)",
+    "city": "Kingston",
+    "country": "Jamaica",
+    "countryCode": "JM",
+    "coordinates": [
+      -76.8,
+      17.97
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "JAMKG",
+    "timezone": "America/Jamaica",
+    "continent": "NA",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-NLRTM",
+    "code": "NLRTM",
+    "name": "Port of Rotterdam (Maasvlakte 1 & 2 Terminals)",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "coordinates": [
+      4.49,
+      51.9
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "NLRTM",
+    "timezone": "Europe/Amsterdam",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-BEANR",
+    "code": "BEANR",
+    "name": "Port of Antwerp-Bruges (Deurganckdock)",
+    "city": "Antwerp",
+    "country": "Belgium",
+    "countryCode": "BE",
+    "coordinates": [
+      4.36,
+      51.28
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "BEANR",
+    "timezone": "Europe/Brussels",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-DEHAM",
+    "code": "DEHAM",
+    "name": "Port of Hamburg (Burchardkai & Altenwerder)",
+    "city": "Hamburg",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      9.97,
+      53.53
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "DEHAM",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-DEBRE",
+    "code": "DEBRE",
+    "name": "Port of Bremerhaven Container Terminal (NTB)",
+    "city": "Bremerhaven",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      8.55,
+      53.56
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "DEBRE",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-DEWVN",
+    "code": "DEWVN",
+    "name": "Port of Wilhelmshaven (JadeWeserPort Deepwater)",
+    "city": "Wilhelmshaven",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      8.14,
+      53.59
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "DEWVN",
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-ESVLC",
+    "code": "ESVLC",
+    "name": "Port of Valencia (Noatum & MSC Container Terminals)",
+    "city": "Valencia",
+    "country": "Spain",
+    "countryCode": "ES",
+    "coordinates": [
+      -0.32,
+      39.45
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ESVLC",
+    "timezone": "Europe/Madrid",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-ESALG",
+    "code": "ESALG",
+    "name": "Port of Algeciras (APM & TTI Algeciras)",
+    "city": "Algeciras",
+    "country": "Spain",
+    "countryCode": "ES",
+    "coordinates": [
+      -5.44,
+      36.14
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ESALG",
+    "timezone": "Europe/Madrid",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-seaport-ESBCN",
+    "code": "ESBCN",
+    "name": "Port of Barcelona (BEST Terminal Hutchison)",
+    "city": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "coordinates": [
+      2.17,
+      41.35
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ESBCN",
+    "timezone": "Europe/Madrid",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-FRLEH",
+    "code": "FRLEH",
+    "name": "Port of Le Havre (HAROPA Port 2000)",
+    "city": "Le Havre",
+    "country": "France",
+    "countryCode": "FR",
+    "coordinates": [
+      0.12,
+      49.48
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "FRLEH",
+    "timezone": "Europe/Paris",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-FRFOS",
+    "code": "FRFOS",
+    "name": "Port of Marseille-Fos (Fos 2XL Terminal)",
+    "city": "Marseille",
+    "country": "France",
+    "countryCode": "FR",
+    "coordinates": [
+      4.88,
+      43.43
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "FRFOS",
+    "timezone": "Europe/Paris",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-ITGOA",
+    "code": "ITGOA",
+    "name": "Port of Genoa (PSA Genova Pra' Terminal)",
+    "city": "Genoa",
+    "country": "Italy",
+    "countryCode": "IT",
+    "coordinates": [
+      8.9,
+      44.41
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ITGOA",
+    "timezone": "Europe/Rome",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-ITTRS",
+    "code": "ITTRS",
+    "name": "Port of Trieste (Molo VII Container Terminal)",
+    "city": "Trieste",
+    "country": "Italy",
+    "countryCode": "IT",
+    "coordinates": [
+      13.76,
+      45.64
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ITTRS",
+    "timezone": "Europe/Rome",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-ITGIT",
+    "code": "ITGIT",
+    "name": "Port of Gioia Tauro (Medcenter Container Terminal)",
+    "city": "Gioia Tauro",
+    "country": "Italy",
+    "countryCode": "IT",
+    "coordinates": [
+      15.9,
+      38.43
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ITGIT",
+    "timezone": "Europe/Rome",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-GBSOU",
+    "code": "GBSOU",
+    "name": "Port of Southampton (DP World Southampton)",
+    "city": "Southampton",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      -1.43,
+      50.9
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "GBSOU",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-GBFXT",
+    "code": "GBFXT",
+    "name": "Port of Felixstowe (Trinity & Berths 8/9)",
+    "city": "Felixstowe",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      1.32,
+      51.95
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "GBFXT",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-GBLGP",
+    "code": "GBLGP",
+    "name": "London Gateway Port (DP World Thames)",
+    "city": "London",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "coordinates": [
+      0.48,
+      51.5
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "GBLGP",
+    "timezone": "Europe/London",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-GRPIR",
+    "code": "GRPIR",
+    "name": "Port of Piraeus (Piraeus Container Terminal COSCO)",
+    "city": "Piraeus",
+    "country": "Greece",
+    "countryCode": "GR",
+    "coordinates": [
+      23.63,
+      37.94
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "GRPIR",
+    "timezone": "Europe/Athens",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-PLGDN",
+    "code": "PLGDN",
+    "name": "Port of Gdańsk (Baltic Hub T1/T2)",
+    "city": "Gdańsk",
+    "country": "Poland",
+    "countryCode": "PL",
+    "coordinates": [
+      18.67,
+      54.38
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "PLGDN",
+    "timezone": "Europe/Warsaw",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-PLGDY",
+    "code": "PLGDY",
+    "name": "Port of Gdynia (BCT Baltic Container Terminal)",
+    "city": "Gdynia",
+    "country": "Poland",
+    "countryCode": "PL",
+    "coordinates": [
+      18.54,
+      54.53
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "PLGDY",
+    "timezone": "Europe/Warsaw",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-TRMER",
+    "code": "TRMER",
+    "name": "Port of Mersin (Mersin International Port)",
+    "city": "Mersin",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "coordinates": [
+      34.65,
+      36.8
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "TRMER",
+    "timezone": "Europe/Istanbul",
+    "continent": "EU",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-AEJEA",
+    "code": "AEJEA",
+    "name": "Port of Jebel Ali (DP World Flagship Terminal)",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "coordinates": [
+      55.027,
+      24.985
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "AEJEA",
+    "timezone": "Asia/Dubai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-AEKHL",
+    "code": "AEKHL",
+    "name": "Port of Khalifa (Abu Dhabi Ports)",
+    "city": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "coordinates": [
+      54.68,
+      24.81
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "AEKHL",
+    "timezone": "Asia/Dubai",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-QAHMD",
+    "code": "QAHMD",
+    "name": "Port of Hamad (Mwani Qatar Terminal)",
+    "city": "Doha",
+    "country": "Qatar",
+    "countryCode": "QA",
+    "coordinates": [
+      51.62,
+      25.01
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "QAHMD",
+    "timezone": "Asia/Qatar",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-SAJED",
+    "code": "SAJED",
+    "name": "Port of Jeddah Islamic Port (Red Sea Gateway Terminal)",
+    "city": "Jeddah",
+    "country": "Saudi Arabia",
+    "countryCode": "SA",
+    "coordinates": [
+      39.16,
+      21.47
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "SAJED",
+    "timezone": "Asia/Riyadh",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-SADMM",
+    "code": "SADMM",
+    "name": "Port of King Abdulaziz (Dammam Arabian Gulf Port)",
+    "city": "Dammam",
+    "country": "Saudi Arabia",
+    "countryCode": "SA",
+    "coordinates": [
+      50.18,
+      26.46
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "SADMM",
+    "timezone": "Asia/Riyadh",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-OMSLL",
+    "code": "OMSLL",
+    "name": "Port of Salalah (Indian Ocean Transshipment)",
+    "city": "Salalah",
+    "country": "Oman",
+    "countryCode": "OM",
+    "coordinates": [
+      54,
+      16.94
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "OMSLL",
+    "timezone": "Asia/Muscat",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 18
+  },
+  {
+    "id": "hub-seaport-OMSOH",
+    "code": "OMSOH",
+    "name": "Port of Sohar Container Terminal",
+    "city": "Sohar",
+    "country": "Oman",
+    "countryCode": "OM",
+    "coordinates": [
+      56.63,
+      24.5
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "OMSOH",
+    "timezone": "Asia/Muscat",
+    "continent": "AS",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-seaport-EGPSD",
+    "code": "EGPSD",
+    "name": "Port Said (East & West Port Said, Suez Canal Entry)",
+    "city": "Port Said",
+    "country": "Egypt",
+    "countryCode": "EG",
+    "coordinates": [
+      32.32,
+      31.25
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "EGPSD",
+    "timezone": "Africa/Cairo",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-seaport-EGDAM",
+    "code": "EGDAM",
+    "name": "Port of Damietta Container Terminal",
+    "city": "Damietta",
+    "country": "Egypt",
+    "countryCode": "EG",
+    "coordinates": [
+      31.75,
+      31.47
+    ],
+    "type": "seaport",
+    "tier": 2,
+    "source": "UN/LOCODE",
+    "unlocode": "EGDAM",
+    "timezone": "Africa/Cairo",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-EGALX",
+    "code": "EGALX",
+    "name": "Port of Alexandria Container Terminal",
+    "city": "Alexandria",
+    "country": "Egypt",
+    "countryCode": "EG",
+    "coordinates": [
+      29.87,
+      31.18
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "EGALX",
+    "timezone": "Africa/Cairo",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-MATNG",
+    "code": "MATNG",
+    "name": "Port of Tanger Med (Gibraltar Strait Transshipment)",
+    "city": "Tangier",
+    "country": "Morocco",
+    "countryCode": "MA",
+    "coordinates": [
+      -5.5,
+      35.88
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "MATNG",
+    "timezone": "Africa/Casablanca",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 16
+  },
+  {
+    "id": "hub-seaport-ZADUR",
+    "code": "ZADUR",
+    "name": "Port of Durban (Durban Container Terminal Pier 1 & 2)",
+    "city": "Durban",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "coordinates": [
+      31.02,
+      -29.87
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ZADUR",
+    "timezone": "Africa/Johannesburg",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-ZACPT",
+    "code": "ZACPT",
+    "name": "Port of Cape Town Container Terminal",
+    "city": "Cape Town",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "coordinates": [
+      18.44,
+      -33.91
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "ZACPT",
+    "timezone": "Africa/Johannesburg",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-KEKEY",
+    "code": "KEKEY",
+    "name": "Port of Mombasa (Kilindini Harbour)",
+    "city": "Mombasa",
+    "country": "Kenya",
+    "countryCode": "KE",
+    "coordinates": [
+      39.65,
+      -4.05
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "KEKEY",
+    "timezone": "Africa/Nairobi",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-TZDAR",
+    "code": "TZDAR",
+    "name": "Port of Dar es Salaam Container Terminal",
+    "city": "Dar es Salaam",
+    "country": "Tanzania",
+    "countryCode": "TZ",
+    "coordinates": [
+      39.29,
+      -6.83
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "TZDAR",
+    "timezone": "Africa/Dar_es_Salaam",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 28
+  },
+  {
+    "id": "hub-seaport-NGLOS",
+    "code": "NGLOS",
+    "name": "Port of Lagos (Apapa & Tin Can Island Terminals)",
+    "city": "Lagos",
+    "country": "Nigeria",
+    "countryCode": "NG",
+    "coordinates": [
+      3.37,
+      6.44
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "NGLOS",
+    "timezone": "Africa/Lagos",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 36
+  },
+  {
+    "id": "hub-seaport-NGLKK",
+    "code": "NGLKK",
+    "name": "Port of Lekki Deep Sea Port",
+    "city": "Lekki",
+    "country": "Nigeria",
+    "countryCode": "NG",
+    "coordinates": [
+      3.97,
+      6.42
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "NGLKK",
+    "timezone": "Africa/Lagos",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-CIABJ",
+    "code": "CIABJ",
+    "name": "Port of Abidjan (Côte d'Ivoire Terminal 2)",
+    "city": "Abidjan",
+    "country": "Ivory Coast",
+    "countryCode": "CI",
+    "coordinates": [
+      -4.01,
+      5.28
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "CIABJ",
+    "timezone": "Africa/Abidjan",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-seaport-DJJIB",
+    "code": "DJJIB",
+    "name": "Port of Doraleh Multipurpose Port (Djibouti Gateway)",
+    "city": "Djibouti City",
+    "country": "Djibouti",
+    "countryCode": "DJ",
+    "coordinates": [
+      43.1,
+      11.6
+    ],
+    "type": "seaport",
+    "tier": 1,
+    "source": "UN/LOCODE",
+    "unlocode": "DJJIB",
+    "timezone": "Africa/Djibouti",
+    "continent": "AF",
+    "modesSupported": [
+      "ocean"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-rail-USCWI",
+    "code": "USCWI",
+    "name": "Chicago Corwith Yard (BNSF Railway Intermodal)",
+    "city": "Chicago",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -87.65,
+      41.85
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4887398,
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-USHOB",
+    "code": "USHOB",
+    "name": "Los Angeles Hobart Yard (BNSF Mainline Intermodal)",
+    "city": "Los Angeles",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -118.195,
+      34.005
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 5368361,
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-USKCK",
+    "code": "USKCK",
+    "name": "Kansas City Logistics Park (BNSF Transcon Interchange)",
+    "city": "Kansas City",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -94.88,
+      38.83
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4273837,
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-USDFW",
+    "code": "USDFW",
+    "name": "Dallas-Fort Worth Alliance Intermodal Yard",
+    "city": "Dallas",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -97.32,
+      32.96
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4684888,
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-USATL",
+    "code": "USATL",
+    "name": "Atlanta Inman Intermodal Yard (Norfolk Southern)",
+    "city": "Atlanta",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -84.44,
+      33.8
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4180439,
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-USDET",
+    "code": "USDET",
+    "name": "Detroit Livernois Rail Yard (Conrail Shared Assets)",
+    "city": "Detroit",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -83.12,
+      42.32
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4990729,
+    "timezone": "America/Detroit",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CATOR",
+    "code": "CATOR",
+    "name": "Toronto MacMillan Intermodal Yard (CN Rail)",
+    "city": "Toronto",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -79.52,
+      43.81
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 6167865,
+    "timezone": "America/Toronto",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CAMTR",
+    "code": "CAMTR",
+    "name": "Montreal Taschereau Intermodal Yard (CN Rail)",
+    "city": "Montreal",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -73.68,
+      45.48
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 6077243,
+    "timezone": "America/Toronto",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CACAL",
+    "code": "CACAL",
+    "name": "Calgary Darrow Intermodal Yard (CPKC Rail)",
+    "city": "Calgary",
+    "country": "Canada",
+    "countryCode": "CA",
+    "coordinates": [
+      -113.96,
+      50.95
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 5913490,
+    "timezone": "America/Edmonton",
+    "continent": "NA",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-road-USLRD",
+    "code": "USLRD",
+    "name": "Laredo World Trade Bridge Commercial Port of Entry",
+    "city": "Laredo",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -99.52,
+      27.59
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4705349,
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-road-MXNLD",
+    "code": "MXNLD",
+    "name": "Nuevo Laredo Puente de Comercio Mundial Commercial Crossing",
+    "city": "Nuevo Laredo",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -99.51,
+      27.48
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 3522656,
+    "timezone": "America/Matamoros",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 6
+  },
+  {
+    "id": "hub-road-MXMTY",
+    "code": "MXMTY",
+    "name": "Monterrey Salinas Victoria Intermodal Hub",
+    "city": "Monterrey",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "coordinates": [
+      -100.31,
+      25.68
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 3995402,
+    "timezone": "America/Monterrey",
+    "continent": "NA",
+    "modesSupported": [
+      "road",
+      "rail"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-road-USONT",
+    "code": "USONT",
+    "name": "Inland Empire Ontario Logistics Center",
+    "city": "Ontario",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -117.58,
+      34.06
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 5379533,
+    "timezone": "America/Los_Angeles",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": false,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-road-USDETB",
+    "code": "USDETB",
+    "name": "Detroit Ambassador Bridge Commercial Truck Gateway",
+    "city": "Detroit",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -83.07,
+      42.31
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4990729,
+    "timezone": "America/Detroit",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-road-USMEMH",
+    "code": "USMEMH",
+    "name": "Memphis Interstate Freight Crossroads (I-40 / I-55)",
+    "city": "Memphis",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -90.01,
+      35.08
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 4641239,
+    "timezone": "America/Chicago",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": false,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-road-USPAI",
+    "code": "USPAI",
+    "name": "Pennsylvania I-81 / I-78 Logistics Corridor Nexus",
+    "city": "Harrisburg",
+    "country": "United States",
+    "countryCode": "US",
+    "coordinates": [
+      -76.88,
+      40.27
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 5192723,
+    "timezone": "America/New_York",
+    "continent": "NA",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": false,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-rail-DEDUI",
+    "code": "DEDUI",
+    "name": "Duisburg Intermodal Terminal (DIT - Rhine Gateway)",
+    "city": "Duisburg",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      6.75,
+      51.45
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 2934691,
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-road-DEFRA",
+    "code": "DEFRA",
+    "name": "Frankfurt CargoCity Süd Highway Nexus (A3/A5 Frankfurter Kreuz)",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      8.58,
+      50.02
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 2925533,
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-rail-DEHAM",
+    "code": "DEHAM",
+    "name": "Hamburg Waltershof Rail Hub (Alte Süderelbe)",
+    "city": "Hamburg",
+    "country": "Germany",
+    "countryCode": "DE",
+    "coordinates": [
+      9.92,
+      53.52
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 2911298,
+    "timezone": "Europe/Berlin",
+    "continent": "EU",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-road-NLRDP",
+    "code": "NLRDP",
+    "name": "Rotterdam Distripark Botlek Logistics Zone",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "coordinates": [
+      4.42,
+      51.88
+    ],
+    "type": "road_hub",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 2750053,
+    "timezone": "Europe/Amsterdam",
+    "continent": "EU",
+    "modesSupported": [
+      "road",
+      "rail"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 4
+  },
+  {
+    "id": "hub-rail-PLWSC",
+    "code": "PLWSC",
+    "name": "Warsaw Spedcont Intermodal Rail Terminal",
+    "city": "Warsaw",
+    "country": "Poland",
+    "countryCode": "PL",
+    "coordinates": [
+      20.95,
+      52.22
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 756135,
+    "timezone": "Europe/Warsaw",
+    "continent": "EU",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-rail-PLMAL",
+    "code": "PLMAL",
+    "name": "Małaszewicze Europort (Trans-Eurasian Gauge Change Interchange)",
+    "city": "Małaszewicze",
+    "country": "Poland",
+    "countryCode": "PL",
+    "coordinates": [
+      23.52,
+      52.02
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 764491,
+    "timezone": "Europe/Warsaw",
+    "continent": "EU",
+    "modesSupported": [
+      "rail"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-rail-ITMIL",
+    "code": "ITMIL",
+    "name": "Milan Segrate Intermodal Hub (Rhine-Alpine Rail Gate)",
+    "city": "Milan",
+    "country": "Italy",
+    "countryCode": "IT",
+    "coordinates": [
+      9.29,
+      45.48
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 3169700,
+    "timezone": "Europe/Rome",
+    "continent": "EU",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-rail-ATVIE",
+    "code": "ATVIE",
+    "name": "Vienna Inzersdorf Cargo Terminal",
+    "city": "Vienna",
+    "country": "Austria",
+    "countryCode": "AT",
+    "coordinates": [
+      16.36,
+      48.15
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 2761369,
+    "timezone": "Europe/Vienna",
+    "continent": "EU",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 8
+  },
+  {
+    "id": "hub-rail-CNXIA",
+    "code": "CNXIA",
+    "name": "Xi'an International Trade & Logistics Park (Silk Road Dry Port)",
+    "city": "Xi'an",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      109.055,
+      34.38
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1790630,
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CNZGO",
+    "code": "CNZGO",
+    "name": "Zhengzhou International Hub Development Dry Port",
+    "city": "Zhengzhou",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      113.72,
+      34.72
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1784964,
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CNALA",
+    "code": "CNALA",
+    "name": "Alashankou Border Rail Interchange (China-Kazakhstan Port of Entry)",
+    "city": "Alashankou",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      82.57,
+      45.18
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1529651,
+    "timezone": "Asia/Urumqi",
+    "continent": "AS",
+    "modesSupported": [
+      "rail"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  },
+  {
+    "id": "hub-rail-CNCRG",
+    "code": "CNCRG",
+    "name": "Chengdu Qingbaijiang International Railway Port",
+    "city": "Chengdu",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      104.25,
+      30.88
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1815286,
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-CNWHN",
+    "code": "CNWHN",
+    "name": "Wuhan Wujiashan Central Rail Terminal",
+    "city": "Wuhan",
+    "country": "China",
+    "countryCode": "CN",
+    "coordinates": [
+      114.12,
+      30.63
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1791247,
+    "timezone": "Asia/Shanghai",
+    "continent": "AS",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 12
+  },
+  {
+    "id": "hub-rail-KZKOR",
+    "code": "KZKOR",
+    "name": "Khorgos Gateway Dry Port (Eastern Gate)",
+    "city": "Khorgos",
+    "country": "Kazakhstan",
+    "countryCode": "KZ",
+    "coordinates": [
+      80.37,
+      44.13
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1516048,
+    "timezone": "Asia/Almaty",
+    "continent": "AS",
+    "modesSupported": [
+      "rail",
+      "road"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 20
+  },
+  {
+    "id": "hub-rail-KZDST",
+    "code": "KZDST",
+    "name": "Dostyk Rail Interchange (Kazakhstan Rail Bogey Interchange)",
+    "city": "Dostyk",
+    "country": "Kazakhstan",
+    "countryCode": "KZ",
+    "coordinates": [
+      82.48,
+      45.25
+    ],
+    "type": "rail_terminal",
+    "tier": 1,
+    "source": "GeoNames",
+    "geonameId": 1524684,
+    "timezone": "Asia/Almaty",
+    "continent": "AS",
+    "modesSupported": [
+      "rail"
+    ],
+    "customsFacility": true,
+    "averageDwellHours": 24
+  }
+]
