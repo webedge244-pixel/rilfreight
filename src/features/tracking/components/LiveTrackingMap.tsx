@@ -3,7 +3,6 @@
 import * as React from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from "react-leaflet";
 import type { Shipment, TransportMode } from "@/shared/types";
 import { partitionRoutePolyline } from "@/features/tracking/services/trackingService";
 
@@ -19,16 +18,6 @@ function toLatLng(coord: [number, number]): [number, number] {
   return [coord[1], coord[0]];
 }
 
-// Smooth auto-fit bounds controller
-function MapBoundsController({ bounds }: { bounds: L.LatLngBoundsExpression | null }) {
-  const map = useMap();
-  React.useEffect(() => {
-    if (bounds) {
-      map.fitBounds(bounds, { padding: [45, 45], maxZoom: 12 });
-    }
-  }, [map, bounds]);
-  return null;
-}
 
 // Mode-specific SVG glyphs
 function getModeGlyph(mode: TransportMode): string {
@@ -49,19 +38,20 @@ function getModeGlyph(mode: TransportMode): string {
   }
 }
 
-// Create pulsing vehicle marker icon
+// Create the vehicle marker icon.
+// No pulsing halo and no shadows: the design system forbids animated
+// indicators and decorative elevation.
 function createVehicleIcon(mode: TransportMode, isPaused: boolean) {
   const glyph = getModeGlyph(mode);
   const primaryColor = isPaused ? "#f59e0b" : "#0284c7";
-  const haloColor = isPaused ? "rgba(245, 158, 11, 0.45)" : "rgba(2, 132, 199, 0.4)";
 
   const html = `
     <div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
-      <!-- Outer Pulsing Radar Halo -->
-      <span style="position:absolute;width:100%;height:100%;border-radius:50%;background:${haloColor};animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;opacity:0.75;"></span>
-      
-      <!-- Inner Glowing Core Badge -->
-      <div style="position:relative;z-index:10;width:34px;height:34px;border-radius:50%;background:${primaryColor};border:2px solid #ffffff;box-shadow:0 3px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#ffffff;">
+      <!-- Static positioning ring -->
+      <span style="position:absolute;width:100%;height:100%;border-radius:50%;background:${primaryColor}33;"></span>
+
+      <!-- Core Badge -->
+      <div style="position:relative;z-index:10;width:34px;height:34px;border-radius:50%;background:${primaryColor};border:2px solid #ffffff;display:flex;align-items:center;justify-content:center;color:#ffffff;">
         <svg viewBox="0 0 24 24" width="18" height="18" style="display:block;">
           ${glyph}
         </svg>
@@ -70,7 +60,7 @@ function createVehicleIcon(mode: TransportMode, isPaused: boolean) {
   `;
 
   return L.divIcon({
-    className: "vehicle-pulsing-icon",
+    className: "vehicle-icon",
     html,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
@@ -82,7 +72,7 @@ function createPinIcon(label: string, color: string) {
   return L.divIcon({
     className: "map-pin-icon",
     html: `
-      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
+      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="${color}" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0z"/>
           <circle cx="12" cy="10" r="3" fill="#ffffff" stroke="none"/>
@@ -99,7 +89,7 @@ function createWaypointIcon() {
   return L.divIcon({
     className: "map-waypoint-icon",
     html: `
-      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#0284c7" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0z"/>
           <circle cx="12" cy="10" r="2.5" fill="#ffffff" stroke="none"/>
@@ -118,6 +108,10 @@ export default function LiveTrackingMap({
   height = "520px",
   className = "",
 }: LiveTrackingMapProps) {
+  const mapContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const mapRef = React.useRef<L.Map | null>(null);
+  const layersRef = React.useRef<L.LayerGroup | null>(null);
+
   // Partition polyline into solid completed and dashed upcoming legs
   const partition = React.useMemo(() => {
     return partitionRoutePolyline(shipment, currentTimestamp);
@@ -151,125 +145,176 @@ export default function LiveTrackingMap({
   const destIcon = React.useMemo(() => createPinIcon("B", "#ba1c20"), []);
   const waypointIcon = React.useMemo(() => createWaypointIcon(), []);
 
-  // Format status for popup
-  const formattedStatus = shipment.status.replace(/_/g, " ").toUpperCase();
+  // Initialize map instance once on mount with strict cleanup
+  React.useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    if ((container as unknown as { _leaflet_id?: number })._leaflet_id) {
+      delete (container as unknown as { _leaflet_id?: number })._leaflet_id;
+      container.innerHTML = "";
+    }
+
+    const map = L.map(container, {
+      center: vehicleLatLng,
+      zoom: 3,
+      scrollWheelZoom: false,
+      attributionControl: false,
+    });
+
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 19 }
+    ).addTo(map);
+
+    const layers = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    layersRef.current = layers;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      layersRef.current = null;
+      if (container) {
+        delete (container as unknown as { _leaflet_id?: number })._leaflet_id;
+        container.innerHTML = "";
+      }
+    };
+  }, []);
+
+  // Update route polylines, markers, popups, and bounds whenever data changes
+  React.useEffect(() => {
+    const map = mapRef.current;
+    const layers = layersRef.current;
+    if (!map || !layers) return;
+
+    layers.clearLayers();
+
+    // 1. Solid Completed Route Leg
+    if (completedLatLngs.length > 1) {
+      L.polyline(completedLatLngs, {
+        color: "#0284c7",
+        weight: 4,
+        opacity: 1.0,
+        lineCap: "round",
+        lineJoin: "round",
+      }).addTo(layers);
+    }
+
+    // 2. Dashed Upcoming Route Leg
+    if (upcomingLatLngs.length > 1) {
+      L.polyline(upcomingLatLngs, {
+        color: "#94a3b8",
+        weight: 3.5,
+        opacity: 0.85,
+        dashArray: "6, 8",
+        lineCap: "round",
+        lineJoin: "round",
+      }).addTo(layers);
+    }
+
+    // Origin Marker
+    if (shipment.originCoordinates) {
+      const originPopup = `
+        <div class="text-xs font-sans">
+          <span class="font-bold text-emerald-600 uppercase tracking-wide">Origin Port</span>
+          <p class="font-semibold text-slate-900 dark:text-white">${shipment.originName}</p>
+          <p class="text-[11px] text-slate-500">${shipment.originCountry} (${shipment.originCode})</p>
+        </div>
+      `;
+      L.marker(toLatLng(shipment.originCoordinates), { icon: originIcon })
+        .bindPopup(originPopup)
+        .addTo(layers);
+    }
+
+    // Destination Marker
+    if (shipment.destinationCoordinates) {
+      const destPopup = `
+        <div class="text-xs font-sans">
+          <span class="font-bold text-red-600 uppercase tracking-wide">Destination</span>
+          <p class="font-semibold text-slate-900 dark:text-white">${shipment.destinationName}</p>
+          <p class="text-[11px] text-slate-500">${shipment.destinationCountry} (${shipment.destinationCode})</p>
+        </div>
+      `;
+      L.marker(toLatLng(shipment.destinationCoordinates), { icon: destIcon })
+        .bindPopup(destPopup)
+        .addTo(layers);
+    }
+
+    // Intermediate Waypoints
+    (shipment.waypoints || []).forEach((wp) => {
+      const wpPopup = `
+        <div class="text-xs font-sans">
+          <span class="font-bold text-cyan-600 uppercase tracking-wide">Transit Checkpoint</span>
+          <p class="font-semibold text-slate-900 dark:text-white">${wp.name}</p>
+          ${wp.notes ? `<p class="text-slate-500 text-[11px] mt-0.5">${wp.notes}</p>` : ""}
+        </div>
+      `;
+      L.marker(toLatLng(wp.coordinates), { icon: waypointIcon })
+        .bindPopup(wpPopup)
+        .addTo(layers);
+    });
+
+    // 3. Live Vehicle Marker
+    const formattedStatus = shipment.status.replace(/_/g, " ").toUpperCase();
+    const statusBadgeClass = shipment.isPaused
+      ? "bg-amber-100 text-amber-800"
+      : "bg-sky-100 text-sky-800";
+    const statusText = shipment.isPaused ? "ON HOLD" : formattedStatus;
+    const pauseHtml =
+      shipment.isPaused && shipment.pausedReason
+        ? `<div class="mt-2 p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-[11px] text-amber-900 dark:text-amber-200">
+             ⚠️ <strong>Pause Reason:</strong> ${shipment.pausedReason}
+           </div>`
+        : "";
+
+    const vehiclePopup = `
+      <div class="text-xs font-sans min-w-[180px]">
+        <div class="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
+          <span class="font-mono font-bold text-slate-900 dark:text-white">${shipment.conveyanceName}</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${statusBadgeClass}">
+            ${statusText}
+          </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-300">
+          <strong class="text-slate-800 dark:text-white">Progress:</strong> ${partition.progressPercentage}%
+        </p>
+        <p class="text-slate-500 text-[11px] font-mono mt-0.5">
+          Lat: ${partition.vehicleCoordinate[1].toFixed(4)}°, Lon: ${partition.vehicleCoordinate[0].toFixed(4)}°
+        </p>
+        ${pauseHtml}
+      </div>
+    `;
+
+    L.marker(vehicleLatLng, { icon: vehicleIcon, zIndexOffset: 1000 })
+      .bindPopup(vehiclePopup)
+      .addTo(layers);
+
+    if (bounds) {
+      map.fitBounds(bounds, { padding: [45, 45], maxZoom: 12 });
+    }
+  }, [
+    completedLatLngs,
+    upcomingLatLngs,
+    vehicleLatLng,
+    bounds,
+    shipment,
+    partition,
+    originIcon,
+    destIcon,
+    waypointIcon,
+    vehicleIcon,
+  ]);
 
   return (
     <div
       style={{ height }}
-      className={`relative w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shadow-inner ${className}`}
+      className={`relative w-full rounded-3xl overflow-hidden bg-slate-950 ${className}`}
     >
-      <MapContainer
-        center={vehicleLatLng}
-        zoom={3}
-        scrollWheelZoom={false}
-        attributionControl={false}
+      <div
+        ref={mapContainerRef}
         style={{ height: "100%", width: "100%", zIndex: 0 }}
-      >
-        <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}"
-          maxZoom={19}
-        />
-
-        {bounds && <MapBoundsController bounds={bounds} />}
-
-        {/* 1. Solid Completed Route Leg */}
-        {completedLatLngs.length > 1 && (
-          <Polyline
-            positions={completedLatLngs}
-            pathOptions={{
-              color: "#0284c7",
-              weight: 4,
-              opacity: 1.0,
-              lineCap: "round",
-              lineJoin: "round",
-            }}
-          />
-        )}
-
-        {/* 2. Dashed Upcoming Route Leg */}
-        {upcomingLatLngs.length > 1 && (
-          <Polyline
-            positions={upcomingLatLngs}
-            pathOptions={{
-              color: "#94a3b8",
-              weight: 3.5,
-              opacity: 0.85,
-              dashArray: "6, 8",
-              lineCap: "round",
-              lineJoin: "round",
-            }}
-          />
-        )}
-
-        {/* Origin Marker */}
-        {shipment.originCoordinates && (
-          <Marker position={toLatLng(shipment.originCoordinates)} icon={originIcon}>
-            <Popup>
-              <div className="text-xs font-sans">
-                <span className="font-bold text-emerald-600 uppercase tracking-wide">Origin Port</span>
-                <p className="font-semibold text-slate-900 dark:text-white">{shipment.originName}</p>
-                <p className="text-[11px] text-slate-500">{shipment.originCountry} ({shipment.originCode})</p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Destination Marker */}
-        {shipment.destinationCoordinates && (
-          <Marker position={toLatLng(shipment.destinationCoordinates)} icon={destIcon}>
-            <Popup>
-              <div className="text-xs font-sans">
-                <span className="font-bold text-red-600 uppercase tracking-wide">Destination</span>
-                <p className="font-semibold text-slate-900 dark:text-white">{shipment.destinationName}</p>
-                <p className="text-[11px] text-slate-500">{shipment.destinationCountry} ({shipment.destinationCode})</p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Intermediate Waypoints */}
-        {(shipment.waypoints || []).map((wp, idx) => (
-          <Marker key={wp.id || `wp-${idx}`} position={toLatLng(wp.coordinates)} icon={waypointIcon}>
-            <Popup>
-              <div className="text-xs font-sans">
-                <span className="font-bold text-cyan-600 uppercase tracking-wide">Transit Checkpoint</span>
-                <p className="font-semibold text-slate-900 dark:text-white">{wp.name}</p>
-                {wp.notes && <p className="text-slate-500 text-[11px] mt-0.5">{wp.notes}</p>}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-
-        {/* 3. Pulsing Live Vehicle Marker */}
-        <Marker position={vehicleLatLng} icon={vehicleIcon} zIndexOffset={1000}>
-          <Popup>
-            <div className="text-xs font-sans min-w-[180px]">
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{shipment.conveyanceName}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                    shipment.isPaused ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-800"
-                  }`}
-                >
-                  {shipment.isPaused ? "ON HOLD" : formattedStatus}
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-300">
-                <strong className="text-slate-800 dark:text-white">Progress:</strong> {partition.progressPercentage}%
-              </p>
-              <p className="text-slate-500 text-[11px] font-mono mt-0.5">
-                Lat: {partition.vehicleCoordinate[1].toFixed(4)}°, Lon: {partition.vehicleCoordinate[0].toFixed(4)}°
-              </p>
-              {shipment.isPaused && shipment.pausedReason && (
-                <div className="mt-2 p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-[11px] text-amber-900 dark:text-amber-200">
-                  ⚠️ <strong>Pause Reason:</strong> {shipment.pausedReason}
-                </div>
-              )}
-            </div>
-          </Popup>
-        </Marker>
-      </MapContainer>
+      />
 
       {/* Map Legend Overlay */}
       <div className="absolute bottom-4 left-4 z-[400] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg text-[11px] flex items-center gap-4">
@@ -282,7 +327,11 @@ export default function LiveTrackingMap({
           <span className="text-slate-700 dark:text-slate-300 font-medium">Scheduled Leg</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className={`w-2.5 h-2.5 rounded-full inline-block ${shipment.isPaused ? "bg-amber-500 animate-pulse" : "bg-sky-600 animate-pulse"}`}></span>
+          <span
+            className={`w-2.5 h-2.5 rounded-full inline-block ${
+              shipment.isPaused ? "bg-amber-500 animate-pulse" : "bg-sky-600 animate-pulse"
+            }`}
+          ></span>
           <span className="text-slate-700 dark:text-slate-300 font-medium">Live Vessel</span>
         </div>
       </div>

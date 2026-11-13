@@ -19,7 +19,8 @@ import {
 
 import { Navbar } from "@/shared/components/navbar";
 import { PageFooter } from "@/shared/components/page-footer";
-import { DEMO_SHIPMENTS } from "@/shared/lib/demoData";
+import { getShipmentByTrackingCode } from "@/shared/lib/firebase";
+import type { Shipment } from "@/shared/types";
 
 // ==========================================
 // TYPES
@@ -113,27 +114,32 @@ export default function TrackingSearchPage() {
     setRecentItems(getRecentlyTracked());
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = trackingInput.trim().toUpperCase();
     if (!clean) return;
 
     setIsSearching(true);
 
+    // Resolve the shipment so the recently-tracked list carries real detail.
+    let shipment: Shipment | null = null;
+    try {
+      shipment = await getShipmentByTrackingCode(clean);
+    } catch (err) {
+      console.warn("Shipment lookup failed:", err);
+    }
+
     // Save to recently tracked in localStorage
     try {
       const existing = getRecentlyTracked();
-      const demo = DEMO_SHIPMENTS.find(
-        (s) => s.trackingCode.toUpperCase() === clean,
-      );
       const newItem: RecentlyTrackedItem = {
         code: clean,
-        mode: demo?.mode || "ocean",
-        origin: demo
-          ? `${demo.originName} (${demo.originCode})`
+        mode: shipment?.mode || "ocean",
+        origin: shipment
+          ? `${shipment.originName} (${shipment.originCode})`
           : "Unknown Origin",
-        destination: demo
-          ? `${demo.destinationName} (${demo.destinationCode})`
+        destination: shipment
+          ? `${shipment.destinationName} (${shipment.destinationCode})`
           : "Unknown Destination",
         timestamp: Date.now(),
       };
@@ -149,9 +155,8 @@ export default function TrackingSearchPage() {
     }
 
     // Navigate to the detail page
-    setTimeout(() => {
-      router.push(`/tracking/${encodeURIComponent(clean)}`);
-    }, 150);
+    setIsSearching(false);
+    router.push(`/tracking/${encodeURIComponent(clean)}`);
   };
 
   const toggleFaq = (index: number) => {

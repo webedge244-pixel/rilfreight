@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:auth": "node --no-warnings scripts/verify-admin-auth.mjs",
+    "verify:shipments": "node --no-warnings scripts/verify-shipments.mjs",
+    "verify:e2e": "node --no-warnings scripts/verify-e2e.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",

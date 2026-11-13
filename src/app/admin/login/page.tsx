@@ -2,24 +2,176 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { getClientAuth } from "@/shared/lib/firebaseAuth";
+import { checkPermittedEmail } from "@/shared/lib/permissions";
+
+/**
+ * Admin sign-in.
+ *
+ * The operator's e-mail must appear on the operations allowlist
+ * (`NEXT_PUBLIC_PERMITTED_EMAILS`). The check runs twice on purpose:
+ *
+ *   1. here, before the Firebase sign-in call, so an unauthorised account is
+ *      rejected immediately;
+ *   2. on the server, in `/api/admin/session`, which is the check that
+ *      actually grants access.
+ */
+
+/**
+ * Resolves the post-login destination. Only internal admin paths are allowed
+ * so the `next` parameter cannot be used as an open redirect.
+ */
+function resolveNextPath(raw: string | null): string {
+  if (!raw) return "/admin/dashboard";
+  if (!raw.startsWith("/admin")) return "/admin/dashboard";
+  if (raw.startsWith("//") || raw.startsWith("/admin/login")) {
+    return "/admin/dashboard";
+  }
+  return raw;
+}
+
+/**
+ * Maps Firebase auth error codes onto operator-facing copy.
+ */
+function describeAuthError(error: unknown): string {
+  const code = (error as { code?: string } | null)?.code;
+
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Those operator credentials were not recognised.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please wait a moment and try again.";
+    case "auth/network-request-failed":
+      return "Network error. Check your connection and try again.";
+    case "auth/user-disabled":
+      return "This operator account has been disabled.";
+    case "auth/operation-not-allowed":
+      return "Email and password sign-in is not enabled for this project.";
+    default:
+      return (
+        (error as Error | null)?.message ||
+        "Sign-in could not be completed. Please try again."
+      );
+  }
+}
 
 export default function AdminLoginPage() {
+  return (
+    <React.Suspense
+      fallback={<div className="min-h-screen bg-white dark:bg-[#0a0a0a]" />}
+    >
+      <AdminLoginContent />
+    </React.Suspense>
+  );
+}
+
+function AdminLoginContent() {
   const router = useRouter();
-  const [email, setEmail] = React.useState("admin@rilfreight.com");
-  const [password, setPassword] = React.useState("••••••••••••");
+  const searchParams = useSearchParams();
+
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const nextPath = resolveNextPath(searchParams.get("next"));
+
+  // An operator who already holds a valid Firebase session skips the form.
+  // The server stays the authority: the console is only entered once it has
+  // confirmed the session is authorised.
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      getClientAuth(),
+      async (firebaseUser) => {
+        if (!firebaseUser) return;
+
+        if (checkPermittedEmail(firebaseUser.email) === false) {
+          await signOut(getClientAuth());
+          return;
+        }
+
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          const response = await fetch("/api/admin/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          });
+          if (response.ok) {
+            router.replace(nextPath);
+          }
+        } catch {
+          // Leave the form in place so the operator can sign in explicitly.
+        }
+      }
+    );
+
+    return unsubscribe;
+  }, [router, nextPath]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
+    const operatorEmail = email.trim().toLowerCase();
+
+    // Gate 1 — allowlist pre-check, before any credentials leave the browser.
+    // When the allowlist is not visible client-side this defers to the server.
+    if (checkPermittedEmail(operatorEmail) === false) {
+      setErrorMessage(
+        "This account is not on the operations allowlist and cannot sign in."
+      );
+      return;
+    }
+
     setIsLoading(true);
 
-    // Demo authentication handler (Firebase Auth will be wired here)
-    setTimeout(() => {
+    try {
+      const clientAuth = getClientAuth();
+      const credential = await signInWithEmailAndPassword(
+        clientAuth,
+        operatorEmail,
+        password
+      );
+
+      const idToken = await credential.user.getIdToken();
+
+      // Gate 2 — the server verifies the token and re-checks the allowlist
+      // before minting the session cookie.
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, remember: rememberMe }),
+      });
+
+      if (response.status === 403) {
+        await signOut(clientAuth);
+        setErrorMessage(
+          "This account is not on the operations allowlist and cannot sign in."
+        );
+        return;
+      }
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
+        throw new Error(payload?.message || "Unable to establish an admin session.");
+      }
+
+      router.replace(nextPath);
+    } catch (error) {
+      setErrorMessage(describeAuthError(error));
+    } finally {
       setIsLoading(false);
-      router.push("/admin/dashboard");
-    }, 600);
+    }
   };
 
   return (
@@ -32,14 +184,11 @@ export default function AdminLoginPage() {
         >
           ← Return to Public Site
         </Link>
-        <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
-          RIL Secure Terminal v1.0
-        </span>
       </div>
 
       {/* Main Login Card */}
       <div className="w-full max-w-md mx-auto my-auto">
-        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-3xl p-8 sm:p-10 border border-slate-200/80 dark:border-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-3xl p-8 sm:p-10">
           {/* Brand Header */}
           <div className="mb-8">
             <div className="flex items-center gap-1.5 mb-2">
@@ -62,9 +211,10 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 required
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@rilfreight.com"
+                placeholder="operator@rilfreight.com"
                 className="w-full font-mono px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
               />
             </div>
@@ -73,14 +223,31 @@ export default function AdminLoginPage() {
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                 Security Password
               </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full font-mono px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="w-full font-mono px-4 py-3 pr-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-xs pt-1">
@@ -93,22 +260,31 @@ export default function AdminLoginPage() {
                 />
                 Remember this terminal
               </label>
-              <span className="text-slate-400">Demo Active</span>
+              <span className="text-slate-400">Access Controlled</span>
             </div>
+
+            {errorMessage && (
+              <p
+                role="alert"
+                className="text-xs font-medium text-[#BA1C20] leading-relaxed"
+              >
+                {errorMessage}
+              </p>
+            )}
 
             <button
               type="submit"
               disabled={isLoading}
               className="w-full py-4 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-sm font-bold uppercase tracking-wider transition-colors active:scale-[0.98] disabled:opacity-50"
             >
-              {isLoading ? "Authenticating..." : "Sign In to Dispatch Console"}
+              {isLoading ? "Authenticating..." : "Sign In"}
             </button>
           </form>
 
-          {/* Demo Note */}
+          {/* Access Notice */}
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-xs text-slate-400 font-mono">
-              Demo Credentials: Any email / password
+              Access restricted to authorised operations personnel.
             </p>
           </div>
         </div>

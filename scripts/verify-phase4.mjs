@@ -621,16 +621,16 @@ async function runPhase4Verification() {
       console.error(`  ${index + 1}. ${err.message}`);
       if (err.details) console.error(`     ${colors.gray}${err.details}${colors.reset}`);
     }
-    process.exit(1);
+    process.exitCode = 1;
   } else {
     console.log(`\n${colors.green}${colors.bold}====================================================${colors.reset}`);
     console.log(`${colors.green}${colors.bold}  ✓ PHASE 4 VERIFICATION PASSED WITH ZERO ERRORS    ${colors.reset}`);
     console.log(`${colors.green}${colors.bold}====================================================${colors.reset}\n`);
-    process.exit(0);
+    process.exitCode = 0;
   }
 }
 
 runPhase4Verification().catch((err) => {
   console.error(`\n${colors.red}Unhandled Exception in Phase 4 Verifier:${colors.reset}`, err);
-  process.exit(1);
+  process.exitCode = 1;
 });

@@ -38,6 +38,17 @@ const RouteMiniMap = dynamic(
   }
 );
 
+// Default schedule: departure tomorrow, delivery +14 days.
+// Kept outside the component so the clock read is not evaluated during render.
+function defaultSchedule(): { departure: string; delivery: string } {
+  const departure = new Date(Date.now() + 24 * 3600 * 1000);
+  const delivery = new Date(Date.now() + 15 * 24 * 3600 * 1000);
+  return {
+    departure: departure.toISOString().slice(0, 16),
+    delivery: delivery.toISOString().slice(0, 16),
+  };
+}
+
 export default function NewShipmentPage() {
   const [mode, setMode] = React.useState<TransportMode>("ocean");
   const [isCalculatingRoute, setIsCalculatingRoute] = React.useState(false);
@@ -49,15 +60,9 @@ export default function NewShipmentPage() {
   } | null>(null);
 
   // Default dates: departure tomorrow, delivery +14 days
-  const defaultDep = React.useMemo(() => {
-    const d = new Date(Date.now() + 24 * 3600 * 1000);
-    return d.toISOString().slice(0, 16);
-  }, []);
-
-  const defaultDel = React.useMemo(() => {
-    const d = new Date(Date.now() + 15 * 24 * 3600 * 1000);
-    return d.toISOString().slice(0, 16);
-  }, []);
+  const schedule = React.useMemo(() => defaultSchedule(), []);
+  const defaultDep = schedule.departure;
+  const defaultDel = schedule.delivery;
 
   // Form State
   const [formState, setFormState] = React.useState({
@@ -83,11 +88,11 @@ export default function NewShipmentPage() {
     containerNumber: "",
     sealNumber: "",
 
-    totalPieces: "500",
-    grossWeightKg: "18450",
-    volumeCbm: "68.5",
-    goodsDescription: "Industrial automation robotics & precision sensors",
-    clientName: "Pacific Rim Logistics Corp",
+    totalPieces: "",
+    grossWeightKg: "",
+    volumeCbm: "",
+    goodsDescription: "",
+    clientName: "",
   });
 
   // Routing State
@@ -336,8 +341,33 @@ export default function NewShipmentPage() {
   // Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setErrorMessage(null);
+
+    const pieces = Number(formState.totalPieces);
+    const weight = Number(formState.grossWeightKg);
+    const goods = formState.goodsDescription.trim();
+    const conveyance = formState.conveyanceName.trim();
+
+    if (!Number.isFinite(pieces) || pieces <= 0) {
+      setErrorMessage("Total pieces must be a positive number.");
+      return;
+    }
+    if (!Number.isFinite(weight) || weight <= 0) {
+      setErrorMessage("Gross weight must be a positive number.");
+      return;
+    }
+    if (!goods) {
+      setErrorMessage("A goods description is required.");
+      return;
+    }
+    if (!conveyance) {
+      setErrorMessage(
+        "A conveyance is required. Generate the route to populate one, or enter it manually."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const generatedCode =
@@ -358,7 +388,7 @@ export default function NewShipmentPage() {
 
       // Assemble complete strictly typed Shipment payload with ZERO undefined
       const shipmentPayload: Shipment = {
-        id: `shipment-${Date.now()}`,
+        id: generatedCode,
         trackingCode: generatedCode,
         mode,
         status: initialStatus,
@@ -378,18 +408,20 @@ export default function NewShipmentPage() {
 
         isPaused: false,
 
-        conveyanceName: formState.conveyanceName || "RIL Scheduled Logistics",
-        conveyanceIdentifier: formState.conveyanceIdentifier || "",
-        voyageNumber: formState.voyageNumber || "",
-        consignmentReference: formState.consignmentReference || `REF-${Date.now().toString().slice(-6)}`,
-        containerNumber: formState.containerNumber || "",
-        sealNumber: formState.sealNumber || "",
+        conveyanceName: conveyance,
+        conveyanceIdentifier: formState.conveyanceIdentifier.trim(),
+        voyageNumber: formState.voyageNumber.trim(),
+        consignmentReference:
+          formState.consignmentReference.trim() ||
+          `REF-${Date.now().toString().slice(-6)}`,
+        containerNumber: formState.containerNumber.trim(),
+        sealNumber: formState.sealNumber.trim(),
 
-        totalPieces: Number(formState.totalPieces) || 1,
-        grossWeightKg: Number(formState.grossWeightKg) || 100,
-        volumeCbm: Number(formState.volumeCbm) || 1,
-        goodsDescription: formState.goodsDescription || "Standard commercial cargo",
-        clientName: formState.clientName || "Corporate Consignee",
+        totalPieces: pieces,
+        grossWeightKg: weight,
+        volumeCbm: Number(formState.volumeCbm) || 0,
+        goodsDescription: goods,
+        clientName: formState.clientName.trim(),
 
         routeCoordinates: finalCoords,
         waypoints: waypoints,
@@ -399,11 +431,20 @@ export default function NewShipmentPage() {
         updatedAt: new Date().toISOString(),
       };
 
-      const docId = await createShipmentRecord(shipmentPayload);
-      setSuccessShipment({ id: docId, trackingCode: generatedCode });
-    } catch (err: any) {
+      // The data layer allocates a unique document id and guarantees it can
+      // never collide with an existing shipment.
+      const created = await createShipmentRecord(shipmentPayload);
+      setSuccessShipment({
+        id: created.id,
+        trackingCode: created.trackingCode,
+      });
+    } catch (err) {
       console.error("Failed to create shipment:", err);
-      setErrorMessage(err.message || "Failed to persist shipment record");
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Failed to persist shipment record"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -601,6 +642,7 @@ export default function NewShipmentPage() {
                 <InputField
                   label="Total Pieces"
                   type="number"
+                  required
                   value={formState.totalPieces}
                   onChange={(v) => handleChange("totalPieces", v)}
                   placeholder="500"
@@ -608,6 +650,7 @@ export default function NewShipmentPage() {
                 <InputField
                   label="Gross Weight (KG)"
                   type="number"
+                  required
                   value={formState.grossWeightKg}
                   onChange={(v) => handleChange("grossWeightKg", v)}
                   placeholder="18450"
@@ -632,6 +675,7 @@ export default function NewShipmentPage() {
                 </label>
                 <textarea
                   value={formState.goodsDescription}
+                  required
                   onChange={(e) => handleChange("goodsDescription", e.target.value)}
                   placeholder="Describe cargo contents and packaging..."
                   rows={2}
@@ -808,6 +852,7 @@ function InputField({
   placeholder,
   type = "text",
   mono = false,
+  required = false,
 }: {
   label: string;
   value: string;
@@ -815,6 +860,7 @@ function InputField({
   placeholder?: string;
   type?: string;
   mono?: boolean;
+  required?: boolean;
 }) {
   return (
     <div>
@@ -824,6 +870,7 @@ function InputField({
       <input
         type={type}
         value={value}
+        required={required}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(

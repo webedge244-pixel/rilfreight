@@ -1,0 +1,97 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────
+// RILFREIGHT — Firestore Security Rules
+//
+// Deploy from the Firebase console:
+//   Firestore → Rules → paste this file → Publish
+//
+// ─────────────────────────────────────────────────────────
+// IMPORTANT — KEEP IN SYNC WITH THE APP ALLOWLIST
+//
+// Security Rules cannot read environment variables, so the authorised
+// operator addresses are listed literally below. They must match
+// `NEXT_PUBLIC_PERMITTED_EMAILS` in `.env.local`.
+//
+// If you add or remove an operator, update BOTH places.
+// ─────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────
+    // Authorisation helpers
+    // ─────────────────────────────────────────────────────
+
+    // True when the request carries a Firebase ID token for an operator on
+    // the allowlist. The client SDK attaches the token automatically once the
+    // operator has signed in through the admin console.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email in [
+          'webedge244@gmail.com'
+        ];
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Shipments
+    //
+    // `get`  — a single shipment may be read by anyone who knows its
+    //           document id. Shipment documents are keyed by their public
+    //           tracking code, so this is the customer-facing lookup.
+    // `list` — collection queries (the admin directory) require an admin.
+    // ─────────────────────────────────────────────────────
+    match /shipments/{shipmentId} {
+      allow get:   if true;
+      allow list:  if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Platform users
+    //
+    // Customer accounts are never readable or writable by the public.
+    // ─────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Operations configuration
+    // ─────────────────────────────────────────────────────
+    match /emailTemplates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /emailMessages/{messageId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Public enquiries (quote + contact forms)
+    //
+    // Anyone may submit. Only an admin may read them back.
+    // ─────────────────────────────────────────────────────
+    match /quoteRequests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /contactMessages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Default deny
+    // ─────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

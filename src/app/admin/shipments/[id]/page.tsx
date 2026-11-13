@@ -2,9 +2,66 @@
 
 import * as React from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
-import { DEMO_SHIPMENTS } from "@/shared/lib/demoData";
+import {
+  listenToShipmentRecord,
+  replaceShipmentRecord,
+} from "@/shared/lib/firebase";
+import {
+  releaseShipmentGate,
+  triggerShipmentException,
+} from "@/features/tracking/services/trackingService";
+import type { Shipment, ShipmentStatus } from "@/shared/types";
+
+// SSR-safe dynamic import for the Leaflet map
+const LiveTrackingMap = dynamic(
+  () => import("@/features/tracking/components/LiveTrackingMap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[280px] sm:h-[360px] rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+        <span className="text-sm text-slate-400 font-semibold">
+          Loading route map...
+        </span>
+      </div>
+    ),
+  }
+);
+
+/**
+ * Preset operational reasons for a hold gate.
+ */
+const EXCEPTION_PRESETS = [
+  "Customs Inspection Hold Gate",
+  "Port Congestion Dwell Hold",
+  "Severe Typhoon Warning — Vessel Anchored",
+  "Mechanical Conveyance Inspection",
+  "Border Transit Security Verification",
+];
+
+/**
+ * Computes progress along the scheduled window.
+ * Kept outside the component so the clock read is not evaluated during render.
+ */
+function computeProgressPercent(shipment: Shipment): number {
+  const start = new Date(shipment.departureDate).getTime();
+  const end = new Date(shipment.estimatedDeliveryDate).getTime();
+  const now = Date.now();
+  if (now <= start) return 0;
+  if (now >= end) return 100;
+  return Math.round(((now - start) / (end - start)) * 100);
+}
+
+/**
+ * Human readable label for where a shipment currently sits.
+ */
+function currentLocationLabel(shipment: Shipment): string {
+  const completed = (shipment.waypoints || []).filter((w) => w.isCompleted);
+  const last = completed[completed.length - 1];
+  return last?.name || shipment.originName || "In transit";
+}
 
 export default function ShipmentDetailPage() {
   return (
@@ -17,7 +74,136 @@ export default function ShipmentDetailPage() {
 function ShipmentDetailContent() {
   const params = useParams();
   const shipmentId = params.id as string;
-  const shipment = DEMO_SHIPMENTS.find((s) => s.id === shipmentId);
+
+  const [shipment, setShipment] = React.useState<Shipment | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  const [isActionPending, setIsActionPending] = React.useState<boolean>(false);
+  const [actionError, setActionError] = React.useState<string | null>(null);
+  const [showExceptionForm, setShowExceptionForm] = React.useState<boolean>(false);
+  const [exceptionStatusType, setExceptionStatusType] =
+    React.useState<ShipmentStatus>("customs_hold");
+  const [exceptionReasonPreset, setExceptionReasonPreset] =
+    React.useState<string>(EXCEPTION_PRESETS[0]);
+  const [customExceptionReason, setCustomExceptionReason] = React.useState("");
+
+  // Live listener — the record is pushed to the client whenever it changes.
+  React.useEffect(() => {
+    const unsubscribe = listenToShipmentRecord(
+      shipmentId,
+      (live) => {
+        setShipment(live);
+        setIsLoading(false);
+        setLoadError(null);
+      },
+      (error) => {
+        console.error(`Failed to subscribe to shipment ${shipmentId}:`, error);
+        setLoadError(
+          "Unable to reach the shipment database. Check the connection and try again."
+        );
+        setIsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [shipmentId]);
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "in_transit":
+        return "text-[#0F313A] bg-[#0F313A]/10 dark:text-teal-300 dark:bg-teal-900/30";
+      case "delivered":
+        return "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30";
+      case "customs_hold":
+      case "weather_delay":
+        return "text-[#BA1C20] bg-[#BA1C20]/10";
+      default:
+        return "text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800";
+    }
+  };
+
+  const formatStatus = (status: string) =>
+    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const progressPercent = React.useMemo(
+    () => (shipment ? computeProgressPercent(shipment) : 0),
+    [shipment]
+  );
+
+  // ── Actions ────────────────────────────────────────────
+
+  const handleResume = async () => {
+    if (!shipment) return;
+
+    setIsActionPending(true);
+    setActionError(null);
+
+    try {
+      const released = releaseShipmentGate(shipment);
+      await replaceShipmentRecord(shipment.id, released);
+      setShowExceptionForm(false);
+    } catch (error) {
+      console.error("Failed to release hold gate:", error);
+      setActionError("Could not release the hold gate. Please try again.");
+    } finally {
+      setIsActionPending(false);
+    }
+  };
+
+  const handlePause = async () => {
+    if (!shipment) return;
+
+    setIsActionPending(true);
+    setActionError(null);
+
+    const reason = customExceptionReason.trim() || exceptionReasonPreset;
+
+    try {
+      const paused = triggerShipmentException(
+        shipment,
+        reason,
+        exceptionStatusType
+      );
+
+      await replaceShipmentRecord(shipment.id, {
+        ...paused,
+        pausedLocationName: currentLocationLabel(shipment),
+      });
+
+      setShowExceptionForm(false);
+      setCustomExceptionReason("");
+    } catch (error) {
+      console.error("Failed to trigger exception:", error);
+      setActionError("Could not place the shipment on hold. Please try again.");
+    } finally {
+      setIsActionPending(false);
+    }
+  };
+
+  // ── Render states ──────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <div className="py-24 text-center text-sm text-slate-400">
+        Loading shipment record...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="py-24 text-center">
+        <p className="text-sm font-semibold text-[#BA1C20]">{loadError}</p>
+        <Link
+          href="/admin/shipments"
+          className="inline-block mt-4 text-sm font-bold uppercase tracking-wider text-[#BA1C20] hover:underline"
+        >
+          Back to Shipments
+        </Link>
+      </div>
+    );
+  }
 
   if (!shipment) {
     return (
@@ -37,32 +223,6 @@ function ShipmentDetailContent() {
       </div>
     );
   }
-
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "in_transit":
-        return "text-[#0F313A] bg-[#0F313A]/10 dark:text-teal-300 dark:bg-teal-900/30";
-      case "delivered":
-        return "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30";
-      case "customs_hold":
-      case "weather_delay":
-        return "text-[#BA1C20] bg-[#BA1C20]/10";
-      default:
-        return "text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800";
-    }
-  };
-
-  const formatStatus = (status: string) =>
-    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-  const progressPercent = React.useMemo(() => {
-    const start = new Date(shipment.departureDate).getTime();
-    const end = new Date(shipment.estimatedDeliveryDate).getTime();
-    const now = Date.now();
-    if (now <= start) return 0;
-    if (now >= end) return 100;
-    return Math.round(((now - start) / (end - start)) * 100);
-  }, [shipment]);
 
   return (
     <div>
@@ -91,20 +251,24 @@ function ShipmentDetailContent() {
           </div>
         </div>
 
-        {/* Pause / Resume Controls (demo) */}
+        {/* Pause / Resume Controls */}
         {shipment.status !== "delivered" && (
           <div className="flex gap-2">
             {shipment.isPaused ? (
               <button
                 type="button"
-                className="px-5 py-2.5 rounded-2xl bg-[#0F313A] hover:bg-[#0b252c] text-white text-xs font-bold uppercase tracking-wider transition-colors"
+                onClick={handleResume}
+                disabled={isActionPending}
+                className="px-5 py-2.5 rounded-2xl bg-[#0F313A] hover:bg-[#0b252c] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
               >
-                Resume Tracking
+                {isActionPending ? "Working..." : "Resume Tracking"}
               </button>
             ) : (
               <button
                 type="button"
-                className="px-5 py-2.5 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors"
+                onClick={() => setShowExceptionForm((open) => !open)}
+                disabled={isActionPending}
+                className="px-5 py-2.5 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
               >
                 Pause Shipment
               </button>
@@ -112,6 +276,107 @@ function ShipmentDetailContent() {
           </div>
         )}
       </div>
+
+      {/* Action Error */}
+      {actionError && (
+        <p role="alert" className="mb-6 text-sm font-semibold text-[#BA1C20]">
+          {actionError}
+        </p>
+      )}
+
+      {/* Hold Gate Form */}
+      {showExceptionForm && !shipment.isPaused && (
+        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 mb-6 space-y-5">
+          <div>
+            <h2 className="text-sm font-semibold text-black dark:text-white">
+              Place Shipment On Hold
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              The live position is frozen and the hold reason is published to the tracking timeline.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              Exception Category
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setExceptionStatusType("customs_hold")}
+                className={cn(
+                  "p-3 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-colors",
+                  exceptionStatusType === "customs_hold"
+                    ? "bg-[#0F313A] text-white"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                )}
+              >
+                Customs Hold Gate
+              </button>
+              <button
+                type="button"
+                onClick={() => setExceptionStatusType("weather_delay")}
+                className={cn(
+                  "p-3 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-colors",
+                  exceptionStatusType === "weather_delay"
+                    ? "bg-[#BA1C20] text-white"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                )}
+              >
+                Weather / Route Delay
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              Preset Reason
+            </label>
+            <select
+              value={exceptionReasonPreset}
+              onChange={(e) => setExceptionReasonPreset(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+            >
+              {EXCEPTION_PRESETS.map((preset) => (
+                <option key={preset} value={preset}>
+                  {preset}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              Custom Operational Note (Optional)
+            </label>
+            <textarea
+              value={customExceptionReason}
+              onChange={(e) => setCustomExceptionReason(e.target.value)}
+              placeholder="Specify custom reason or operational instructions..."
+              rows={2}
+              className="w-full px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowExceptionForm(false)}
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handlePause}
+              disabled={isActionPending}
+              className="px-6 py-2.5 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+            >
+              {isActionPending ? "Applying..." : "Confirm & Place On Hold"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Paused Banner */}
       {shipment.isPaused && shipment.pausedReason && (
@@ -148,11 +413,9 @@ function ShipmentDetailContent() {
             />
           </div>
 
-          {/* Map Placeholder */}
-          <div className="mt-6 h-[280px] sm:h-[360px] rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-            <span className="text-sm text-slate-400 font-semibold">
-              Interactive Leaflet Map — Route Visualization
-            </span>
+          {/* Live Route Map */}
+          <div className="mt-6">
+            <LiveTrackingMap shipment={shipment} height="360px" />
           </div>
         </div>
 
@@ -187,6 +450,15 @@ function ShipmentDetailContent() {
               <span className="block text-xs text-slate-400 mb-1">Goods</span>
               <span className="text-sm text-black dark:text-white">{shipment.goodsDescription}</span>
             </div>
+            {shipment.clientName && (
+              <>
+                <div className="h-px bg-slate-200 dark:bg-slate-700" />
+                <div>
+                  <span className="block text-xs text-slate-400 mb-1">Consignee</span>
+                  <span className="text-sm text-black dark:text-white">{shipment.clientName}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

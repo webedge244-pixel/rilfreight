@@ -5,21 +5,97 @@ import Link from "next/link";
 import { Ship, Plane, Train, Truck, ArrowUpRight, Users } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
-  DEMO_DASHBOARD_KPIS,
-  DEMO_SHIPMENTS,
-} from "@/shared/lib/demoData";
+  listenToShipments,
+  getShipmentCounts,
+  getMonthlyModeBreakdown,
+  getPlatformUserCount,
+} from "@/shared/lib/firebase";
+import type { Shipment } from "@/shared/types";
+
+/**
+ * Gauge geometry.
+ *
+ * The three segments sit at fixed positions around the ring, taken from the
+ * reference design. Each segment's length scales with that mode's share of
+ * the month's shipments, so the arc always tells the truth about the data.
+ */
+const GAUGE_CIRCUMFERENCE = 414.7;
+
+const GAUGE_SEGMENTS = [
+  { key: "ocean", start: 96, max: 212, color: "#38BDF8" },
+  { key: "air", start: -22, max: 112, color: "#A78BFA" },
+  { key: "ground", start: 315, max: 66, color: "#A3E635" },
+] as const;
 
 export default function DashboardPage() {
-  const kpis = DEMO_DASHBOARD_KPIS;
-  const recentShipments = DEMO_SHIPMENTS.slice(0, 6);
+  const [counts, setCounts] = React.useState({
+    total: 0,
+    inTransit: 0,
+    onHold: 0,
+    delivered: 0,
+  });
+  const [userCount, setUserCount] = React.useState(0);
+  const [thisMonthBreakdown, setThisMonthBreakdown] = React.useState({
+    ocean: 0,
+    air: 0,
+    ground: 0,
+    total: 0,
+  });
+  const [recentShipments, setRecentShipments] = React.useState<Shipment[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
-  // Exact 3-mode breakdown matching the reference image's 3 segments
-  const thisMonthBreakdown = {
-    ocean: 20,
-    air: 11,
-    ground: 7, // Road & Rail
-    total: 38,
-  };
+  // Live metrics + the latest dispatches
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const refreshMetrics = async () => {
+      try {
+        const [shipmentCounts, breakdown, users] = await Promise.all([
+          getShipmentCounts(),
+          getMonthlyModeBreakdown(),
+          getPlatformUserCount(),
+        ]);
+        if (cancelled) return;
+        setCounts(shipmentCounts);
+        setThisMonthBreakdown(breakdown);
+        setUserCount(users);
+        setLoadError(null);
+      } catch (error) {
+        console.error("Failed to load dashboard metrics:", error);
+        if (cancelled) return;
+        setLoadError(
+          "Unable to reach the shipment database. Check the connection and try again."
+        );
+      }
+    };
+
+    const unsubscribe = listenToShipments(
+      6,
+      (shipments) => {
+        if (cancelled) return;
+        setRecentShipments(shipments);
+        setIsLoading(false);
+        // The collection changed — refresh the aggregates.
+        void refreshMetrics();
+      },
+      (error) => {
+        console.error("Dashboard subscription error:", error);
+        if (cancelled) return;
+        setLoadError(
+          "Unable to reach the shipment database. Check the connection and try again."
+        );
+        setIsLoading(false);
+      }
+    );
+
+    void refreshMetrics();
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -58,8 +134,29 @@ export default function DashboardPage() {
     };
   });
 
+  // Each segment's length is its share of the month's shipments.
+  const gaugeSegments = GAUGE_SEGMENTS.map((segment) => {
+    const value = thisMonthBreakdown[segment.key];
+    const share =
+      thisMonthBreakdown.total > 0 ? value / thisMonthBreakdown.total : 0;
+    const length = share * segment.max;
+
+    return {
+      ...segment,
+      dashArray: `${length.toFixed(2)} ${GAUGE_CIRCUMFERENCE}`,
+      dashOffset: -segment.start,
+    };
+  });
+
   return (
     <div>
+      {/* Database Connection Error */}
+      {loadError && (
+        <div className="mb-6 px-5 py-4 rounded-2xl bg-[#BA1C20]/10 text-[#BA1C20] text-sm font-semibold">
+          {loadError}
+        </div>
+      )}
+
       {/* 4-Component Bento Grid Architecture */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 items-stretch">
 
@@ -74,7 +171,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-3 gap-6">
               <div>
                 <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-black dark:text-white block">
-                  {kpis.totalShipments.toLocaleString()}
+                  {counts.total.toLocaleString()}
                 </span>
                 <span className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">
                   Total Created
@@ -82,7 +179,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#BA1C20] block">
-                  {kpis.onHold}
+                  {counts.onHold}
                 </span>
                 <span className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">
                   On Hold
@@ -90,7 +187,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F313A] dark:text-teal-400 block">
-                  {kpis.inTransit}
+                  {counts.inTransit}
                 </span>
                 <span className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">
                   In Transit
@@ -111,7 +208,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <span className="text-5xl sm:text-6xl font-black text-black dark:text-white block font-mono my-2">
-                  {kpis.totalUsers.toLocaleString()}
+                  {userCount.toLocaleString()}
                 </span>
                 <span className="text-xs text-slate-400 mt-1 block font-medium">
                   Registered customer & consignee accounts
@@ -164,50 +261,22 @@ export default function DashboardPage() {
                   />
                 ))}
 
-                {/* Segment 1: Cyan Arc (Ocean) - Left Sweep (~200 deg) */}
-                {/* Circumference = 414.7. Stroke length = 212, offset = -96 */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="66"
-                  fill="none"
-                  stroke="#38BDF8"
-                  strokeWidth="14"
-                  strokeLinecap="butt"
-                  strokeDasharray="212 414.7"
-                  strokeDashoffset="-96"
-                  className="transition-all duration-700"
-                />
-
-                {/* Segment 2: Purple Arc (Air) - Top Right Sweep (~100 deg) */}
-                {/* Stroke length = 112, offset = 22 */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="66"
-                  fill="none"
-                  stroke="#A78BFA"
-                  strokeWidth="14"
-                  strokeLinecap="butt"
-                  strokeDasharray="112 414.7"
-                  strokeDashoffset="22"
-                  className="transition-all duration-700"
-                />
-
-                {/* Segment 3: Lime Green Arc (Ground) - Bottom Right Sweep (~50 deg) */}
-                {/* Stroke length = 66, offset = -315 */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="66"
-                  fill="none"
-                  stroke="#A3E635"
-                  strokeWidth="14"
-                  strokeLinecap="butt"
-                  strokeDasharray="66 414.7"
-                  strokeDashoffset="-315"
-                  className="transition-all duration-700"
-                />
+                {/* Segmented arcs — one per mode, length scaled by live share */}
+                {gaugeSegments.map((segment) => (
+                  <circle
+                    key={segment.key}
+                    cx="100"
+                    cy="100"
+                    r="66"
+                    fill="none"
+                    stroke={segment.color}
+                    strokeWidth="14"
+                    strokeLinecap="butt"
+                    strokeDasharray={segment.dashArray}
+                    strokeDashoffset={segment.dashOffset}
+                    className="transition-all duration-700"
+                  />
+                ))}
               </svg>
 
               {/* Center Donut Metrics */}
@@ -221,7 +290,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Exact Callouts Positioned Around the Gauge (Shifted left to prevent curve interception) */}
-              {/* Left: Ocean (20) */}
+              {/* Left: Ocean */}
               <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-left">
                 <span className="text-lg font-bold text-white block leading-tight font-mono">
                   {thisMonthBreakdown.ocean}
@@ -231,7 +300,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              {/* Top Right: Air (11) */}
+              {/* Top Right: Air */}
               <div className="absolute right-1 top-4 text-right pr-1">
                 <span className="text-lg font-bold text-white block leading-tight font-mono">
                   {thisMonthBreakdown.air}
@@ -241,7 +310,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              {/* Bottom Right: Ground (7) */}
+              {/* Bottom Right: Ground */}
               <div className="absolute right-1 bottom-6 text-right pr-1">
                 <span className="text-lg font-bold text-white block leading-tight font-mono">
                   {thisMonthBreakdown.ground}
@@ -273,6 +342,12 @@ export default function DashboardPage() {
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
+
+          {!isLoading && recentShipments.length === 0 && (
+            <p className="py-10 text-center text-sm text-slate-400">
+              No dispatches logged yet. Create the first shipment to populate the console.
+            </p>
+          )}
 
           {/* Mobile Cards (< sm) */}
           <div className="sm:hidden space-y-3">

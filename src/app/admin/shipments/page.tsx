@@ -3,13 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
-import { DEMO_SHIPMENTS } from "@/shared/lib/demoData";
 import {
-  shipmentsCollection,
+  listenToShipments,
   updateShipmentRecord,
   listShipments,
 } from "@/shared/lib/firebase";
-import { onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import type { TransportMode, ShipmentStatus, Shipment } from "@/shared/types";
 import {
   releaseShipmentGate,
@@ -38,12 +36,13 @@ type FilterMode = "all" | TransportMode;
 type TabStatus = "all" | "in_transit" | "paused_hold" | "delivered" | "exceptions";
 
 export default function ShipmentsPage() {
-  const [shipments, setShipments] = React.useState<Shipment[]>(DEMO_SHIPMENTS);
+  const [shipments, setShipments] = React.useState<Shipment[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [modeFilter, setModeFilter] = React.useState<FilterMode>("all");
   const [activeTab, setActiveTab] = React.useState<TabStatus>("all");
   const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   // Filter Dropdown State
   const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
@@ -71,46 +70,33 @@ export default function ShipmentsPage() {
 
   // 1. Subscribe to Firestore shipments collection in real time
   React.useEffect(() => {
-    setIsLoading(true);
+    const unsubscribe = listenToShipments(
+      100,
+      (liveList) => {
+        setShipments(liveList);
+        setLoadError(null);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        // The live listener failed — fall back to a one-shot read.
+        listShipments(100)
+          .then((list) => {
+            setShipments(list);
+            setLoadError(null);
+          })
+          .catch((fallbackError) => {
+            console.error("Firestore fallback read failed:", fallbackError);
+            setShipments([]);
+            setLoadError(
+              "Unable to reach the shipment database. Check the connection and try again."
+            );
+          })
+          .finally(() => setIsLoading(false));
+      }
+    );
 
-    try {
-      const q = query(shipmentsCollection, orderBy("createdAt", "desc"), limit(100));
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          if (!snapshot.empty) {
-            const liveList = snapshot.docs.map((docSnap) => docSnap.data() as Shipment);
-            // Merge with demo data so mock records remain available for test suites
-            const liveIds = new Set(liveList.map((s) => s.id));
-            const merged = [...liveList, ...DEMO_SHIPMENTS.filter((d) => !liveIds.has(d.id))];
-            setShipments(merged);
-          } else {
-            setShipments(DEMO_SHIPMENTS);
-          }
-          setIsLoading(false);
-        },
-        (error) => {
-          console.warn("Firestore onSnapshot error, falling back to initial data:", error);
-          listShipments(100)
-            .then((list) => {
-              if (list.length > 0) {
-                const liveIds = new Set(list.map((s) => s.id));
-                setShipments([...list, ...DEMO_SHIPMENTS.filter((d) => !liveIds.has(d.id))]);
-              } else {
-                setShipments(DEMO_SHIPMENTS);
-              }
-            })
-            .catch(() => setShipments(DEMO_SHIPMENTS))
-            .finally(() => setIsLoading(false));
-        }
-      );
-
-      return () => unsubscribe();
-    } catch (err) {
-      console.warn("Error establishing live Firestore subscription:", err);
-      setShipments(DEMO_SHIPMENTS);
-      setIsLoading(false);
-    }
+    return () => unsubscribe();
   }, []);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
@@ -305,6 +291,13 @@ export default function ShipmentsPage() {
           <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-80">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Database Connection Error */}
+      {loadError && (
+        <div className="px-5 py-4 rounded-2xl bg-[#BA1C20]/10 text-[#BA1C20] text-sm font-semibold">
+          {loadError}
         </div>
       )}
 
@@ -571,7 +564,9 @@ export default function ShipmentsPage() {
 
         {filteredShipments.length === 0 && (
           <div className="py-12 text-center text-sm text-slate-400 bg-white dark:bg-slate-900 rounded-2xl">
-            No shipments found matching current query and filters.
+            {shipments.length === 0
+              ? "No shipments yet. Create the first shipment to populate the console."
+              : "No shipments found matching current query and filters."}
           </div>
         )}
       </div>
@@ -720,7 +715,9 @@ export default function ShipmentsPage() {
             {filteredShipments.length === 0 && (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-sm text-slate-400">
-                  No shipments found matching current query and filters.
+                  {shipments.length === 0
+                    ? "No shipments yet. Create the first shipment to populate the console."
+                    : "No shipments found matching current query and filters."}
                 </td>
               </tr>
             )}

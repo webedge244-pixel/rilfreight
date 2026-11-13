@@ -1,4 +1,5 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import type { FirebaseApp } from "firebase/app";
 import {
   getFirestore,
   collection,
@@ -12,22 +13,48 @@ import {
   where,
   limit,
   orderBy,
+  runTransaction,
+  getCountFromServer,
+} from "firebase/firestore";
+import type {
   Firestore,
   CollectionReference,
   DocumentData,
   Unsubscribe,
 } from "firebase/firestore";
 import type { Shipment } from "@/shared/types";
+import { generatePublicTrackingCode } from "@/server/routing/identifiers";
+
+/**
+ * Normalises a tracking code for use as a document id.
+ */
+function normaliseTrackingCode(code: string): string {
+  return code.trim().toUpperCase();
+}
 
 // Firebase configuration for RILFREIGHT (project: webedge-96a41)
+// Values come from the environment so the project can be pointed elsewhere
+// without touching source. The literals are the fallback for the default
+// project, which keeps the app bootable without a populated .env.local.
 const firebaseConfig = {
-  apiKey: "AIzaSyAdDYNMoUrTtBxhn_Box-rZNbUm55_ntZU",
-  authDomain: "webedge-96a41.firebaseapp.com",
-  projectId: "webedge-96a41",
-  storageBucket: "webedge-96a41.firebasestorage.app",
-  messagingSenderId: "972563936686",
-  appId: "1:972563936686:web:def67f16178f34864ac43f",
-  measurementId: "G-B7CSVWKR4V",
+  apiKey:
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
+    "AIzaSyAdDYNMoUrTtBxhn_Box-rZNbUm55_ntZU",
+  authDomain:
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+    "webedge-96a41.firebaseapp.com",
+  projectId:
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "webedge-96a41",
+  storageBucket:
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    "webedge-96a41.firebasestorage.app",
+  messagingSenderId:
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "972563936686",
+  appId:
+    process.env.NEXT_PUBLIC_FIREBASE_APP_ID ||
+    "1:972563936686:web:def67f16178f34864ac43f",
+  measurementId:
+    process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-B7CSVWKR4V",
 };
 
 // Initialize Firebase safely for Next.js SSR / HMR Fast Refresh
@@ -44,23 +71,137 @@ export const shipmentsCollection = collection(
 ) as CollectionReference<Shipment, DocumentData>;
 
 /**
- * Creates or overwrites a shipment record in Firestore.
- * If shipment.id is provided, it uses it as the document ID; otherwise generates an auto-id.
+ * Result of a successful shipment write.
  */
-export async function createShipmentRecord(shipment: Shipment): Promise<string> {
-  const docRef = shipment.id
-    ? doc(db, "shipments", shipment.id)
-    : doc(shipmentsCollection);
-  
-  const finalShipment: Shipment = {
-    ...shipment,
-    id: docRef.id,
-    createdAt: shipment.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+export interface CreatedShipment {
+  /** Firestore document id — identical to the tracking code. */
+  id: string;
+  /** The tracking code that was actually allocated. */
+  trackingCode: string;
+}
 
-  await setDoc(docRef, finalShipment);
-  return docRef.id;
+/**
+ * Firestore cannot store an array whose elements are themselves arrays.
+ *
+ * The route polyline is a list of coordinate pairs, so it is persisted as a
+ * flat list of numbers — [lon0, lat0, lon1, lat1, ...] — and expanded back
+ * into pairs when the record is read. The in-memory {@link Shipment} shape is
+ * unaffected; only the stored representation differs.
+ *
+ * Waypoints and milestones are arrays of maps, which Firestore accepts, so
+ * they are stored as they are.
+ */
+type StoredShipment = Omit<Shipment, "routeCoordinates"> & {
+  routeCoordinates: number[];
+};
+
+/**
+ * Converts a shipment into its stored representation.
+ */
+function encodeShipment(shipment: Shipment): StoredShipment {
+  return {
+    ...shipment,
+    routeCoordinates: (shipment.routeCoordinates || []).flat(),
+  };
+}
+
+/**
+ * Converts a stored document back into a shipment.
+ */
+function decodeShipment(data: DocumentData): Shipment {
+  const stored = (data.routeCoordinates || []) as number[];
+  const routeCoordinates: [number, number][] = [];
+
+  for (let i = 0; i + 1 < stored.length; i += 2) {
+    routeCoordinates.push([stored[i], stored[i + 1]]);
+  }
+
+  return { ...data, routeCoordinates } as Shipment;
+}
+
+/**
+ * How many candidate identifiers are tried before giving up.
+ */
+const SHIPMENT_ID_ATTEMPTS = 6;
+
+/**
+ * Raised internally when a candidate identifier is already taken.
+ */
+class ShipmentIdTakenError extends Error {
+  constructor(code: string) {
+    super(`Shipment identifier ${code} is already in use.`);
+    this.name = "ShipmentIdTakenError";
+  }
+}
+
+/**
+ * Extracts the country suffix from an existing tracking code so regenerated
+ * candidates keep the same shape.
+ */
+function countrySuffixFromCode(code: string): string {
+  const match = /-([A-Z]{2})$/.exec(code.trim().toUpperCase());
+  return match ? match[1] : "US";
+}
+
+/**
+ * Creates a shipment record in Firestore.
+ *
+ * The document id **is** the public tracking code, which is what lets the
+ * customer-facing tracking page read a single shipment with a point read
+ * instead of a collection query.
+ *
+ * Uniqueness is guaranteed by the database rather than by the randomness of
+ * the generator: the write runs inside a transaction that reads the target
+ * document first and refuses to overwrite it. If the identifier is already
+ * taken the next candidate is tried, so two shipments can never share an id.
+ */
+export async function createShipmentRecord(
+  shipment: Shipment
+): Promise<CreatedShipment> {
+  const requestedCode = normaliseTrackingCode(shipment.trackingCode);
+  const countrySuffix = countrySuffixFromCode(requestedCode);
+
+  const candidates = [
+    requestedCode,
+    ...Array.from({ length: SHIPMENT_ID_ATTEMPTS - 1 }, () =>
+      generatePublicTrackingCode(countrySuffix)
+    ),
+  ];
+
+  for (const candidate of candidates) {
+    const docRef = doc(db, "shipments", candidate);
+
+    const record: Shipment = {
+      ...shipment,
+      id: candidate,
+      trackingCode: candidate,
+      createdAt: shipment.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      // Atomic claim: read the target, refuse to overwrite, then write.
+      await runTransaction(db, async (tx) => {
+        const snapshot = await tx.get(docRef);
+        if (snapshot.exists()) {
+          throw new ShipmentIdTakenError(candidate);
+        }
+        tx.set(docRef, encodeShipment(record));
+      });
+
+      return { id: candidate, trackingCode: candidate };
+    } catch (error) {
+      if (error instanceof ShipmentIdTakenError) {
+        // Identifier already in use — try the next candidate.
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error(
+    "Unable to allocate a unique shipment identifier. Please try again."
+  );
 }
 
 /**
@@ -72,25 +213,24 @@ export async function getShipmentRecord(id: string): Promise<Shipment | null> {
   if (!snapshot.exists()) {
     return null;
   }
-  return snapshot.data() as Shipment;
+  return decodeShipment(snapshot.data());
 }
 
 /**
- * Fetches a single shipment record by its public tracking code (e.g. "RIL-8492-3019-US").
+ * Fetches a single shipment record by its public tracking code.
+ *
+ * The tracking code is the document id, so this is a point read — which the
+ * Security Rules grant to the public, unlike a collection query.
  */
 export async function getShipmentByTrackingCode(
   trackingCode: string
 ): Promise<Shipment | null> {
-  const q = query(
-    shipmentsCollection,
-    where("trackingCode", "==", trackingCode),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) {
+  const docRef = doc(db, "shipments", normaliseTrackingCode(trackingCode));
+  const snapshot = await getDoc(docRef);
+  if (!snapshot.exists()) {
     return null;
   }
-  return snapshot.docs[0].data() as Shipment;
+  return decodeShipment(snapshot.data());
 }
 
 /**
@@ -101,8 +241,32 @@ export async function updateShipmentRecord(
   updates: Partial<Shipment>
 ): Promise<void> {
   const docRef = doc(db, "shipments", id);
+
+  // The polyline is stored flat, so an update that touches it needs encoding.
+  const payload: Partial<StoredShipment> = updates.routeCoordinates
+    ? { ...updates, routeCoordinates: updates.routeCoordinates.flat() }
+    : (updates as Partial<StoredShipment>);
+
   await updateDoc(docRef, {
-    ...updates,
+    ...payload,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Replaces a shipment record with the supplied document.
+ *
+ * Used when the shape of the record changes rather than just its values —
+ * for example when a hold gate is released, where the pause fields have to
+ * disappear instead of being blanked out.
+ */
+export async function replaceShipmentRecord(
+  id: string,
+  shipment: Shipment
+): Promise<void> {
+  const docRef = doc(db, "shipments", id);
+  await setDoc(docRef, {
+    ...encodeShipment({ ...shipment, id }),
     updatedAt: new Date().toISOString(),
   });
 }
@@ -121,7 +285,7 @@ export function listenToShipmentRecord(
     docRef,
     (snapshot) => {
       if (snapshot.exists()) {
-        callback(snapshot.data() as Shipment);
+        callback(decodeShipment(snapshot.data()));
       } else {
         callback(null);
       }
@@ -143,5 +307,118 @@ export async function listShipments(limitCount: number = 50): Promise<Shipment[]
     limit(limitCount)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((docSnap) => docSnap.data() as Shipment);
+  return snapshot.docs.map((docSnap) => decodeShipment(docSnap.data()));
+}
+
+/**
+ * Real-time listener for the shipments collection, newest first.
+ * Returns an unsubscribe function to remove the listener.
+ */
+export function listenToShipments(
+  limitCount: number,
+  callback: (shipments: Shipment[]) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  const q = query(
+    shipmentsCollection,
+    orderBy("createdAt", "desc"),
+    limit(limitCount)
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      callback(snapshot.docs.map((docSnap) => decodeShipment(docSnap.data())));
+    },
+    (error) => {
+      console.error("Firestore subscription error on shipments:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/**
+ * Aggregate counters for the operations dashboard.
+ */
+export interface ShipmentCounts {
+  total: number;
+  inTransit: number;
+  onHold: number;
+  delivered: number;
+}
+
+/**
+ * Counts shipments across the statuses the dashboard reports on.
+ */
+export async function getShipmentCounts(): Promise<ShipmentCounts> {
+  const [total, inTransit, onHold, delivered] = await Promise.all([
+    getCountFromServer(shipmentsCollection),
+    getCountFromServer(
+      query(shipmentsCollection, where("status", "==", "in_transit"))
+    ),
+    getCountFromServer(
+      query(shipmentsCollection, where("isPaused", "==", true))
+    ),
+    getCountFromServer(
+      query(shipmentsCollection, where("status", "==", "delivered"))
+    ),
+  ]);
+
+  return {
+    total: total.data().count,
+    inTransit: inTransit.data().count,
+    onHold: onHold.data().count,
+    delivered: delivered.data().count,
+  };
+}
+
+/**
+ * Mode breakdown for shipments created inside the current calendar month.
+ */
+export interface MonthlyModeBreakdown {
+  ocean: number;
+  air: number;
+  ground: number; // road and rail
+  total: number;
+}
+
+/**
+ * Counts this month's shipments per mode.
+ */
+export async function getMonthlyModeBreakdown(): Promise<MonthlyModeBreakdown> {
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const q = query(
+    shipmentsCollection,
+    where("createdAt", ">=", monthStart.toISOString())
+  );
+  const snapshot = await getDocs(q);
+
+  const breakdown: MonthlyModeBreakdown = {
+    ocean: 0,
+    air: 0,
+    ground: 0,
+    total: 0,
+  };
+
+  for (const docSnap of snapshot.docs) {
+    const shipment = docSnap.data() as Shipment;
+    breakdown.total += 1;
+
+    if (shipment.mode === "ocean") breakdown.ocean += 1;
+    else if (shipment.mode === "air") breakdown.air += 1;
+    else breakdown.ground += 1; // road and rail
+  }
+
+  return breakdown;
+}
+
+/**
+ * Counts the registered platform accounts.
+ */
+export async function getPlatformUserCount(): Promise<number> {
+  const snapshot = await getCountFromServer(collection(db, "users"));
+  return snapshot.data().count;
 }

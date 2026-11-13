@@ -1,9 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AdminSidebar } from "@/features/admin/components/adminSidebar";
 import { AdminMobileNav } from "@/features/admin/components/adminMobileNav";
+import {
+  AdminAuthProvider,
+  useAdminAuth,
+} from "@/features/auth/AdminAuthProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +28,32 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
+  return (
+    <AdminAuthProvider>
+      <AdminGate>{children}</AdminGate>
+    </AdminAuthProvider>
+  );
+}
+
+/**
+ * Blocks the console until a permitted operator session is established.
+ *
+ * `src/proxy.ts` already redirects unauthenticated requests at the edge of the
+ * app. This gate covers the remaining case: the browser holds a live Firebase
+ * session but the server cookie has expired or was revoked, in which case the
+ * operator is returned to the sign-in page and the stale cookie is cleared.
+ */
+function AdminGate({ children }: { children: React.ReactNode }) {
+  const { status } = useAdminAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  React.useEffect(() => {
+    if (status === "unauthenticated" || status === "unauthorized") {
+      router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`);
+    }
+  }, [status, router, pathname]);
 
   return (
     <div className="h-dvh overflow-hidden bg-[#F0F2F5] dark:bg-[#07090A] p-2.5 sm:p-3 lg:p-4 flex flex-col gap-2.5 sm:gap-3 lg:gap-0">

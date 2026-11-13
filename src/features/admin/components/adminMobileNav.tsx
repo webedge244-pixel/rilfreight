@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Settings, X, LogOut } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { ADMIN_NAV_LINKS } from "@/shared/lib/demoData";
+import { useAdminAuth } from "@/features/auth/AdminAuthProvider";
 
 /**
  * Page title derived from the current pathname.
@@ -24,9 +25,18 @@ function getPageTitle(pathname: string): string {
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [slideOutOpen, setSlideOutOpen] = React.useState(false);
   const pageTitle = getPageTitle(pathname);
+  const { email, displayName, initial, signOutAdmin } = useAdminAuth();
+
+  const handleSignOut = React.useCallback(async () => {
+    setSlideOutOpen(false);
+    setMenuOpen(false);
+    await signOutAdmin();
+    router.replace("/admin/login");
+  }, [signOutAdmin, router]);
 
   // Close menu on route change
   const [prevPathname, setPrevPathname] = React.useState(pathname);
@@ -134,11 +144,14 @@ export function AdminMobileNav() {
             <div>
               {/* Profile Greeting */}
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-11 h-11 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-700 dark:text-slate-200 shrink-0">
-                  A
+                <div
+                  className="w-11 h-11 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-700 dark:text-slate-200 shrink-0"
+                  title={email ?? undefined}
+                >
+                  {initial}
                 </div>
                 <span className="text-base font-semibold text-black dark:text-white">
-                  Hello Admin
+                  {displayName ?? "Admin"}
                 </span>
               </div>
 
@@ -214,9 +227,7 @@ export function AdminMobileNav() {
                   <button
                     type="button"
                     onClick={() => {
-                      setSlideOutOpen(false);
-                      setMenuOpen(false);
-                      window.location.href = "/admin/login";
+                      void handleSignOut();
                     }}
                     className="flex items-center gap-2 w-full text-left py-2 px-2 rounded-lg text-lg font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
                   >

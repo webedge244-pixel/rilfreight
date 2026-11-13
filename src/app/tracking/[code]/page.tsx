@@ -6,10 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   getShipmentByTrackingCode,
-  getShipmentRecord,
   listenToShipmentRecord,
 } from "@/shared/lib/firebase";
-import { DEMO_SHIPMENTS } from "@/shared/lib/demoData";
 import type { Shipment, TransportMode } from "@/shared/types";
 import TrackingTimeline from "@/features/tracking/components/TrackingTimeline";
 import {
@@ -30,8 +28,7 @@ const LiveTrackingMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[520px] rounded-3xl bg-slate-900 animate-pulse flex flex-col items-center justify-center text-slate-400 gap-3">
-        <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-full h-[520px] rounded-3xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3">
         <p className="text-sm font-medium tracking-wide">Initializing Global Telemetry & Satellite Maps...</p>
       </div>
     ),
@@ -93,46 +90,18 @@ function TrackingDetailContent() {
 
     async function loadShipment() {
       try {
-        // 1. Try finding by tracking code (case-insensitive / uppercase)
-        let found = await getShipmentByTrackingCode(codeParam.toUpperCase());
-
-        // 2. Try raw tracking code
-        if (!found && codeParam !== codeParam.toUpperCase()) {
-          found = await getShipmentByTrackingCode(codeParam);
-        }
-
-        // 3. Try document ID
-        if (!found) {
-          found = await getShipmentRecord(codeParam);
-        }
-
-        // 4. Fallback to demo shipments
-        if (!found) {
-          const clean = codeParam.toLowerCase();
-          const demoMatch = DEMO_SHIPMENTS.find(
-            (s) =>
-              s.trackingCode.toLowerCase() === clean ||
-              s.id.toLowerCase() === clean ||
-              s.consignmentReference.toLowerCase() === clean
-          );
-          if (demoMatch) {
-            found = demoMatch;
-          }
-        }
+        // The tracking code is the shipment's document id, so this resolves
+        // with a single point read.
+        const found = await getShipmentByTrackingCode(codeParam);
 
         if (isMounted) {
           setShipment(found);
           setIsLoading(false);
         }
       } catch (err) {
-        console.warn("Firestore lookup failed, checking local demo datasets:", err);
-        const demoMatch = DEMO_SHIPMENTS.find(
-          (s) =>
-            s.trackingCode.toLowerCase() === codeParam.toLowerCase() ||
-            s.id.toLowerCase() === codeParam.toLowerCase()
-        );
+        console.warn("Firestore lookup failed:", err);
         if (isMounted) {
-          setShipment(demoMatch || null);
+          setShipment(null);
           setIsLoading(false);
         }
       }
@@ -211,23 +180,6 @@ function TrackingDetailContent() {
               Track
             </button>
           </form>
-
-          <div className="mt-8 pt-6 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Try a verified sample shipment:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {DEMO_SHIPMENTS.slice(0, 3).map((demo) => (
-                <Link
-                  key={demo.id}
-                  href={`/tracking/${demo.trackingCode}`}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-colors"
-                >
-                  {demo.trackingCode} ({demo.mode})
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -330,7 +282,11 @@ function TrackingDetailContent() {
               </div>
 
               {/* Interactive Leaflet Map */}
-              <LiveTrackingMap shipment={shipment} height="560px" />
+              <LiveTrackingMap
+                shipment={shipment}
+                height="560px"
+                className="border border-slate-200 dark:border-slate-800 shadow-inner"
+              />
             </div>
           </div>
 
