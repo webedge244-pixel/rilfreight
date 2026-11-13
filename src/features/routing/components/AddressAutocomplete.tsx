@@ -139,12 +139,12 @@ export default function AddressAutocomplete({
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+        className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
       />
 
       {/* Autocomplete Dropdown */}
       {isOpen && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full mt-1.5 max-h-60 overflow-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl z-50 py-1 divide-y divide-slate-100 dark:divide-slate-700/50">
+        <ul className="absolute left-0 right-0 top-full mt-1.5 max-h-60 overflow-auto rounded-xl bg-white dark:bg-slate-800 shadow-xl z-50 py-1 divide-y divide-slate-100 dark:divide-slate-700/50">
           {results.map((loc, idx) => (
             <li
               key={loc.code || `res-${idx}`}

@@ -79,7 +79,7 @@ function EmailComposerContent() {
                 onChange={(e) => {
                   if (e.target.value) setRecipient(e.target.value);
                 }}
-                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
               >
                 <option value="">— Or pick from registered users —</option>
                 {DEMO_USERS.map((u) => (
@@ -98,7 +98,7 @@ function EmailComposerContent() {
               <select
                 value={selectedTemplateId}
                 onChange={(e) => handleTemplateChange(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
               >
                 <option value="">— Select an operational template —</option>
                 {DEMO_EMAIL_TEMPLATES.map((tpl) => (
@@ -121,7 +121,7 @@ function EmailComposerContent() {
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="e.g. consignee@clientcorp.com"
-              className="w-full font-mono px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+              className="w-full font-mono px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
             />
           </div>
 
@@ -136,7 +136,7 @@ function EmailComposerContent() {
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g. Clearance Notification: Shipment RIL-8492-3019-CA"
-              className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+              className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-semibold text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
             />
           </div>
 
@@ -151,7 +151,7 @@ function EmailComposerContent() {
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="Compose operational message, carrier advisory, or milestone confirmation..."
-              className="w-full font-mono text-xs sm:text-sm px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 resize-none leading-relaxed"
+              className="w-full font-mono text-xs sm:text-sm px-4 py-3 rounded-xl bg-white dark:bg-slate-800 text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 resize-none leading-relaxed"
             />
           </div>
 

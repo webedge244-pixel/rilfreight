@@ -508,7 +508,7 @@ export default function NewShipmentPage() {
                   setMode(e.target.value as TransportMode);
                   invalidateRoute();
                 }}
-                className="h-14 border-white bg-[#0F313A] px-5 py-4 text-base font-semibold text-white focus:border-white focus:ring-white/30 dark:border-white dark:bg-[#0F313A] dark:text-white dark:focus:border-white dark:focus:ring-white/30"
+                className="h-14 border-0 bg-[#0F313A] px-5 py-4 text-base font-semibold text-white focus:ring-2 focus:ring-white/30 dark:border-0 dark:bg-[#0F313A] dark:text-white dark:focus:ring-white/30"
                 chevronClassName="text-white [&>svg]:h-5 [&>svg]:w-5"
               >
                 {modes.map((m) => (
@@ -576,7 +576,7 @@ export default function NewShipmentPage() {
                   type="datetime-local"
                   value={formState.departureDate}
                   onChange={(e) => handleChange("departureDate", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                 />
               </div>
               <div>
@@ -587,7 +587,7 @@ export default function NewShipmentPage() {
                   type="datetime-local"
                   value={formState.estimatedDeliveryDate}
                   onChange={(e) => handleChange("estimatedDeliveryDate", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                 />
               </div>
             </div>
@@ -635,7 +635,7 @@ export default function NewShipmentPage() {
                   onChange={(e) => handleChange("goodsDescription", e.target.value)}
                   placeholder="Describe cargo contents and packaging..."
                   rows={2}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 resize-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 resize-none"
                 />
               </div>
             </div>
@@ -824,7 +824,7 @@ function InputField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30",
+          "w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30",
           mono && "font-mono"
         )}
       />

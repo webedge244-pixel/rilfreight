@@ -25,7 +25,14 @@ import {
   ShieldAlert,
   X,
   ExternalLink,
+  Ship,
+  Plane,
+  Train,
+  Truck,
+  Plus,
+  ChevronDown,
 } from "lucide-react";
+import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 
 type FilterMode = "all" | TransportMode;
 type TabStatus = "all" | "in_transit" | "paused_hold" | "delivered" | "exceptions";
@@ -37,6 +44,23 @@ export default function ShipmentsPage() {
   const [modeFilter, setModeFilter] = React.useState<FilterMode>("all");
   const [activeTab, setActiveTab] = React.useState<TabStatus>("all");
   const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Filter Dropdown State
+  const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
+  const filterDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close filter dropdown on outside click
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const activeFilterCount = (modeFilter !== "all" ? 1 : 0) + (activeTab !== "all" ? 1 : 0);
 
   // Exception Modal State
   const [selectedShipmentForException, setSelectedShipmentForException] = React.useState<Shipment | null>(null);
@@ -230,8 +254,40 @@ export default function ShipmentsPage() {
     { label: "Road", value: "road" },
   ];
 
+  const statusOptions: { label: string; value: TabStatus }[] = [
+    { label: "All", value: "all" },
+    { label: "In Transit", value: "in_transit" },
+    { label: "Paused / Hold", value: "paused_hold" },
+    { label: "Delivered", value: "delivered" },
+    { label: "Exceptions", value: "exceptions" },
+  ];
+
   const formatStatus = (status: string) =>
     status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const modeIcon = (mode: string) => {
+    switch (mode) {
+      case "ocean": return <Ship className="w-3.5 h-3.5" />;
+      case "air": return <Plane className="w-3.5 h-3.5" />;
+      case "rail": return <Train className="w-3.5 h-3.5" />;
+      case "road": return <Truck className="w-3.5 h-3.5" />;
+      default: return null;
+    }
+  };
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "in_transit":
+        return "text-[#0F313A] bg-[#0F313A]/10";
+      case "delivered":
+        return "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30";
+      case "customs_hold":
+      case "weather_delay":
+        return "text-[#BA1C20] bg-[#BA1C20]/10";
+      default:
+        return "text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800";
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -252,118 +308,8 @@ export default function ShipmentsPage() {
         </div>
       )}
 
-      {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
-            Admin Management Matrix
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Real-time multi-corridor transit registry, pause gate resolution & exception dispatch
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/tracking"
-            target="_blank"
-            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider transition-colors"
-          >
-            Customer Portal <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
-          <Link
-            href="/admin/shipments/new"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors active:scale-[0.98] shadow-md shadow-red-600/20"
-          >
-            + Create New Shipment
-          </Link>
-        </div>
-      </div>
-
-      {/* Status Filter Tabs with Live Counters */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={() => setActiveTab("all")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-            activeTab === "all"
-              ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
-              : "text-slate-500 hover:text-black dark:hover:text-white"
-          )}
-        >
-          All
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200/50 dark:bg-slate-700/50 font-mono">
-            {tabCounts.all}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("in_transit")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-            activeTab === "in_transit"
-              ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
-              : "text-slate-500 hover:text-black dark:hover:text-white"
-          )}
-        >
-          In Transit
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200 font-mono">
-            {tabCounts.in_transit}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("paused_hold")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-            activeTab === "paused_hold"
-              ? "bg-amber-600 text-white"
-              : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-          )}
-        >
-          Paused / Customs Hold
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 font-mono">
-            {tabCounts.paused_hold}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("delivered")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-            activeTab === "delivered"
-              ? "bg-emerald-600 text-white"
-              : "text-slate-500 hover:text-black dark:hover:text-white"
-          )}
-        >
-          Delivered
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 font-mono">
-            {tabCounts.delivered}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("exceptions")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-            activeTab === "exceptions"
-              ? "bg-[#BA1C20] text-white"
-              : "text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-          )}
-        >
-          Exceptions
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-200 font-mono">
-            {tabCounts.exceptions}
-          </span>
-        </button>
-      </div>
-
-      {/* Search & Mode Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Search & Unified Filter Pill */}
+      <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -371,32 +317,118 @@ export default function ShipmentsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tracking code, reference, vessel, route..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
           />
         </div>
 
-        {/* Mode Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          {modes.map((m) => (
-            <button
-              key={m.value}
-              type="button"
-              onClick={() => setModeFilter(m.value)}
-              className={cn(
-                "px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-                modeFilter === m.value
-                  ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+        {/* Filter Pill with Interactive Dropdown */}
+        <div className="relative" ref={filterDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0",
+              isFilterOpen || activeFilterCount > 0
+                ? "bg-[#0F313A] text-white dark:bg-white dark:text-black shadow-sm"
+                : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            )}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span>Filter</span>
+            {activeFilterCount > 0 && (
+              <span
+                className={cn(
+                  "px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold leading-none",
+                  isFilterOpen || activeFilterCount > 0
+                    ? "bg-[#BA1C20] text-white"
+                    : "bg-slate-200 dark:bg-slate-700 text-black dark:text-white"
+                )}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+            <ChevronDown
+              className={cn("w-3.5 h-3.5 transition-transform duration-150", isFilterOpen && "rotate-180")}
+            />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isFilterOpen && (
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-2xl z-30 space-y-4 animate-in fade-in zoom-in-95 duration-100">
+              {/* Status Section */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Status
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {statusOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setActiveTab(opt.value)}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
+                        activeTab === opt.value
+                          ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      )}
+                    >
+                      <span>{opt.label}</span>
+                      <span className="text-[10px] font-mono opacity-70">
+                        {tabCounts[opt.value]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Transport Mode Section */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Transport Mode
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {modes.map((m) => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setModeFilter(m.value)}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
+                        modeFilter === m.value
+                          ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      )}
+                    >
+                      {m.value !== "all" && modeIcon(m.value)}
+                      <span>{m.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reset Action */}
+              {activeFilterCount > 0 && (
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("all");
+                      setModeFilter("all");
+                    }}
+                    className="text-xs font-bold uppercase tracking-wider text-[#BA1C20] hover:underline"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
               )}
-            >
-              {m.label}
-            </button>
-          ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Matrix Table */}
-      <div className="bg-white dark:bg-slate-900/60 rounded-3xl p-5 lg:p-6 border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
+      {/* Shipments Table matching Dashboard styling */}
+      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -404,7 +436,7 @@ export default function ShipmentsPage() {
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Mode</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden md:table-cell">Conveyance</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden sm:table-cell">Route</th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Status & Gates</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Status</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden lg:table-cell">Weight</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">ETA</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Quick Actions</th>
@@ -418,44 +450,47 @@ export default function ShipmentsPage() {
               return (
                 <tr
                   key={s.id}
-                  className="border-b border-slate-100 dark:border-slate-800 last:border-b-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                  className="border-b border-slate-100 dark:border-slate-800 last:border-b-0 hover:bg-slate-100/40 dark:hover:bg-slate-800/30 transition-colors"
                 >
                   {/* Tracking Code */}
-                  <td className="py-4 pr-4">
+                  <td className="py-3.5 pr-4">
                     <Link
-                      href={`/tracking/${s.trackingCode}`}
-                      className="font-mono font-bold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors inline-flex items-center gap-1.5"
+                      href={`/admin/shipments/${s.id}`}
+                      className="font-mono font-semibold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
                     >
                       {s.trackingCode}
                     </Link>
-                    <p className="text-[11px] font-mono text-slate-400 truncate max-w-[140px]">
-                      {s.consignmentReference}
-                    </p>
+                    {s.consignmentReference && (
+                      <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[140px]">
+                        {s.consignmentReference}
+                      </span>
+                    )}
                   </td>
 
                   {/* Mode */}
-                  <td className="py-4 pr-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                      {s.mode}
-                    </span>
+                  <td className="py-3.5 pr-4">
+                    <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 capitalize">
+                      {modeIcon(s.mode)}
+                      <span>{s.mode}</span>
+                    </div>
                   </td>
 
                   {/* Conveyance */}
-                  <td className="py-4 pr-4 hidden md:table-cell">
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {s.conveyanceName}
+                  <td className="py-3.5 pr-4 hidden md:table-cell">
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                      {s.conveyanceName || "—"}
                     </span>
                   </td>
 
                   {/* Route */}
-                  <td className="py-4 pr-4 hidden sm:table-cell">
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <td className="py-3.5 pr-4 hidden sm:table-cell">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
                       {s.originCode} → {s.destinationCode}
                     </span>
                   </td>
 
                   {/* Status & Pause Gate Indicator */}
-                  <td className="py-4 pr-4">
+                  <td className="py-3.5 pr-4">
                     {s.isPaused ? (
                       <div className="space-y-1">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
@@ -472,11 +507,7 @@ export default function ShipmentsPage() {
                       <span
                         className={cn(
                           "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-                          s.status === "delivered"
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : s.status === "weather_delay"
-                            ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300"
-                            : "bg-[#0F313A]/10 text-[#0F313A] dark:bg-sky-950/60 dark:text-sky-300"
+                          statusColor(s.status)
                         )}
                       >
                         {formatStatus(s.status)}
@@ -485,15 +516,15 @@ export default function ShipmentsPage() {
                   </td>
 
                   {/* Weight */}
-                  <td className="py-4 pr-4 hidden lg:table-cell">
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                  <td className="py-3.5 pr-4 hidden lg:table-cell">
+                    <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">
                       {s.grossWeightKg.toLocaleString()} kg
                     </span>
                   </td>
 
                   {/* ETA */}
-                  <td className="py-4 pr-4">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                  <td className="py-3.5 pr-4">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
                       {new Date(s.actualDeliveryDate || s.estimatedDeliveryDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -502,7 +533,7 @@ export default function ShipmentsPage() {
                   </td>
 
                   {/* Quick Actions */}
-                  <td className="py-4 text-right">
+                  <td className="py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       {/* Quick Action 1: Release Gate */}
                       {hasHoldGate ? (

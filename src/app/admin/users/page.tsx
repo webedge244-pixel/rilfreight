@@ -24,39 +24,8 @@ export default function UsersPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const activeCount = DEMO_USERS.filter((u) => u.status === "active").length;
-  const totalShipmentsLinked = DEMO_USERS.reduce((acc, u) => acc + u.linkedShipmentIds.length, 0);
-
   return (
     <div>
-      {/* Top Stats Bar */}
-      <div className="flex items-center justify-end gap-8 mb-6">
-        <div className="text-right">
-          <span className="text-2xl sm:text-3xl font-black text-black dark:text-white">
-            {DEMO_USERS.length}
-          </span>
-          <span className="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">
-            Total Clients
-          </span>
-        </div>
-        <div className="text-right">
-          <span className="text-2xl sm:text-3xl font-black text-[#0F313A] dark:text-teal-400">
-            {activeCount}
-          </span>
-          <span className="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">
-            Active Now
-          </span>
-        </div>
-        <div className="text-right hidden md:block">
-          <span className="text-2xl sm:text-3xl font-black text-black dark:text-white">
-            {totalShipmentsLinked}
-          </span>
-          <span className="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">
-            Active Dispatches
-          </span>
-        </div>
-      </div>
-
       {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
@@ -64,7 +33,7 @@ export default function UsersPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search client by name, company, email, or country..."
-          className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
         />
 
         {/* Status Filter Buttons */}

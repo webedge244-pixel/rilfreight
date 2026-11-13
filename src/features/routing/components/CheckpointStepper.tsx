@@ -27,7 +27,7 @@ export interface CheckpointStepperProps {
 }
 
 const FIELD =
-  "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A]/30 dark:focus:ring-white/30";
+  "w-full rounded-lg bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A]/30 dark:focus:ring-white/30";
 const FIELD_LABEL =
   "block text-[9px] font-semibold uppercase tracking-wider text-slate-400 mb-1";
 const ICON_BTN =
