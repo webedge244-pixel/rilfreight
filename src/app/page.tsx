@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  ArrowRight,
   ChevronRight,
   ChevronLeft,
   Search,
@@ -154,7 +153,7 @@ const MOCK_TRACKING_DATABASE: Record<string, TrackingRecord> = {
         completed: true,
       },
       {
-        title: "Trans-Polar Great Circle Transit",
+        title: "Trans Polar Great Circle Transit",
         time: "Nov 08, 09:20",
         completed: true,
       },
@@ -1675,138 +1674,126 @@ export default function HomePage() {
         </section>
 
         {/* ====================================================
-            12. / blog / SECTION WITH 3 LOGISTICS ARTICLES
+            12. / blog / SECTION WITH 3 LOGISTICS ARTICLES (Text-Only, Full Content)
             ==================================================== */}
         <section
           id="blog"
           className="px-4 sm:px-6 lg:px-8 py-10 max-w-[1760px] mx-auto scroll-mt-24"
           aria-label="Industry Articles and News"
         >
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight max-w-2xl leading-[1.1]">
-                SEE LATEST ARTICLES FROM OUR COMPANY
-              </h2>
-            </div>
-
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 text-sm font-bold uppercase text-[#0F313A] hover:text-[#BA1C20] transition-colors"
-            >
-              <span>View All Publications</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          <div className="mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight max-w-2xl leading-[1.1]">
+              SEE LATEST ARTICLES FROM OUR COMPANY
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
             {/* Article 1 */}
-            <article className="flex flex-col justify-between group">
-              <div>
-                {/* Date & Divider at the top */}
-                <span className="text-xs font-medium text-slate-400">
-                  Jul. 05/2026
-                </span>
-                <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
+            <article className="flex flex-col bg-white/50 rounded-[28px] p-6 sm:p-8 bg-opacity-50 backdrop-blur-sm">
+              {/* Date & Divider at the top */}
+              <span className="text-xs font-medium text-slate-400 block mb-2">
+                Jul 5, 2026
+              </span>
+              <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
 
-                {/* Content UP */}
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 group-hover:text-[#BA1C20] transition-colors leading-snug">
-                  Digital communications in people&apos;s daily lives
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
+              {/* Category Tag */}
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#BA1C20] mb-4">
+                Logistics
+              </span>
+
+              {/* Content */}
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug mb-4">
+                Digital communications in people&apos;s daily lives
+              </h3>
+              <div className="text-sm text-slate-600 leading-relaxed space-y-4">
+                <p>
                   How low-Earth satellite constellations enable continuous
-                  telemetry across ocean passages and mountain rail corridors.
+                  telemetry across ocean passages and mountain rail corridors,
+                  transforming how logistics operators maintain visibility over
+                  cargo in transit.
                 </p>
-              </div>
-
-              {/* Image DOWN */}
-              <div className="relative aspect-[4/4.5] rounded-[28px] overflow-hidden">
-                <Image
-                  src="/images/hero-ocean-megaship.jpg"
-                  alt="Digital communications in people's daily lives"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-4 left-4 bg-[#F0F2F5] text-[#BA1C20] text-xs font-semibold px-4 py-1.5 rounded-full">
-                  Logistics
-                </span>
+                <p>
+                  The integration of Starlink Maritime and OneWeb connectivity
+                  into container vessels and rail locomotives means real-time
+                  position updates, temperature monitoring, and security alerts
+                  are now available even in the most remote corridors from
+                  mid-Pacific crossings to Siberian rail routes.
+                </p>
               </div>
             </article>
 
             {/* Article 2 */}
-            <article className="flex flex-col justify-between group">
-              <div>
-                {/* Date & Divider at the top */}
-                <span className="text-xs font-medium text-slate-400">
-                  Jul. 05/2026
-                </span>
-                <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
+            <article className="flex flex-col bg-white/50 rounded-[28px] p-6 sm:p-8 bg-opacity-50 backdrop-blur-sm">
+              {/* Date & Divider at the top */}
+              <span className="text-xs font-medium text-slate-400 block mb-2">
+                Sep 12, 2026
+              </span>
+              <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
 
-                {/* Content UP */}
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 group-hover:text-[#BA1C20] transition-colors leading-snug">
-                  Creating new working conditions in the logistic
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
+              {/* Category Tag */}
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#BA1C20] mb-4">
+                Transport
+              </span>
+
+              {/* Content */}
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug mb-4">
+                Creating new working conditions in logistics
+              </h3>
+              <div className="text-sm text-slate-600 leading-relaxed space-y-4">
+                <p>
                   Examining how automated robotic AGVs and paperless
-                  cryptographic ePODs are slashing facility dwell times.
+                  cryptographic ePODs are slashing facility dwell times while
+                  improving worker safety and job quality across distribution
+                  hubs worldwide.
                 </p>
-              </div>
-
-              {/* Image DOWN */}
-              <div className="relative aspect-[4/4.5] rounded-[28px] overflow-hidden">
-                <Image
-                  src="/images/road-service-hero.jpg"
-                  alt="Creating new working conditions in the logistic"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-4 left-4 bg-[#F0F2F5] text-[#BA1C20] text-xs font-semibold px-4 py-1.5 rounded-full">
-                  Transport
-                </span>
+                <p>
+                  Modern fulfillment centers are deploying autonomous guided
+                  vehicles that navigate via LiDAR and visual SLAM, eliminating
+                  the need for magnetic tape or QR-code floors. These AGVs
+                  operate 24/7 alongside human operators, handling repetitive
+                  pallet transport while staff focus on tasks with value like
+                  quality inspection and exception resolution.
+                </p>
               </div>
             </article>
 
             {/* Article 3 */}
-            <article className="flex flex-col justify-between group">
-              <div>
-                {/* Date & Divider at the top */}
-                <span className="text-xs font-medium text-slate-400">
-                  Jul. 05/2026
-                </span>
-                <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
+            <article className="flex flex-col bg-white/50 rounded-[28px] p-6 sm:p-8 bg-opacity-50 backdrop-blur-sm">
+              {/* Date & Divider at the top */}
+              <span className="text-xs font-medium text-slate-400 block mb-2">
+                Sep 28, 2026
+              </span>
+              <div className="w-full h-px bg-slate-300/80 mt-2 mb-5" />
 
-                {/* Content UP */}
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 group-hover:text-[#BA1C20] transition-colors leading-snug">
-                  Transportation services in Los Angeles region
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
+              {/* Category Tag */}
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#BA1C20] mb-4">
+                Shipping
+              </span>
+
+              {/* Content */}
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug mb-4">
+                Transportation services in the Los Angeles region
+              </h3>
+              <div className="text-sm text-slate-600 leading-relaxed space-y-4">
+                <p>
                   Synchronizing deepwater gantry discharge with transcontinental
-                  double-stack rail loops to decongest urban ports.
+                  double stack rail loops to decongest urban ports and
+                  accelerate cargo velocity from vessel to inland destination.
                 </p>
-              </div>
-
-              {/* Image DOWN */}
-              <div className="relative aspect-[4/4.5] rounded-[28px] overflow-hidden">
-                <Image
-                  src="/images/hero-air-freighter-runway.jpg"
-                  alt="Transportation services in Los Angeles region"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-4 left-4 bg-[#F0F2F5] text-[#BA1C20] text-xs font-semibold px-4 py-1.5 rounded-full">
-                  Shipping
-                </span>
+                <p>
+                  The Port of Los Angeles and Long Beach complex now leverages
+                  predictive berth scheduling powered by AIS data and terminal
+                  operating system integration. Containers are assigned to
+                  specific gantry cranes before vessel arrival, while rail ramp
+                  slots are reserved in parallel enabling direct dock-to-train
+                  moves for up to 60% of import volume.
+                </p>
               </div>
             </article>
           </div>
         </section>
 
-        {/* ====================================================
-            UNIFIED MASTER DARK COMPONENT:
-            1) Special Services for Our Customers
-            2) "Have Any Questions? / Delivered on Time with No Hassle"
-            3) Global Footer
-            ==================================================== */}
-        <div className="bg-[#0F313A] text-white rounded-t-[36px] md:rounded-t-[48px] mt-28 sm:mt-36 lg:mt-44 relative">
+        <div className="bg-primary text-white rounded-t-[36px] md:rounded-t-[48px] mt-28 sm:mt-36 lg:mt-44 relative">
           {/* Part 1: Special Services - Flush with top edge, translated 15% outside on all screens */}
           <section
             id="special-services"
@@ -1823,7 +1810,7 @@ export default function HomePage() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0F313A] via-[#0F313A]/70 to-[#0F313A]/30" />
+                <div className="absolute inset-0 bg-linear-to-t from-[#0F313A] via-[#0F313A]/70 to-[#0F313A]/30" />
                 <div className="relative z-10 max-w-xs sm:max-w-sm">
                   <div className="w-16 h-0.5 bg-[#BA1C20] mb-6" />
                   <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-4">
