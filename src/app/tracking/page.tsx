@@ -265,13 +265,13 @@ export default function TrackingSearchPage() {
                   id="track-trace-heading"
                   className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight leading-[1.08] max-w-3xl"
                 >
-                  Enter your tracking number to locate your shipment
+                  Track your shipment
                 </h2>
                 <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl mt-4">
-                  Monitor multimodal freight shipments in real time. No
-                  registration required — enter your bill of lading, air
-                  waybill, or booking reference to get instant status updates,
-                  GPS coordinates, and milestone timelines.
+                  Monitor multimodal freight shipments in real time.Enter your
+                  bill of lading, air waybill, or booking reference to get
+                  instant status updates, GPS coordinates, and milestone
+                  timelines.
                 </p>
               </div>
 
@@ -282,7 +282,7 @@ export default function TrackingSearchPage() {
                     <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
                     <input
                       type="text"
-                      placeholder="Enter your tracking number (e.g., RIL-8492-3019-CA)..."
+                      placeholder="Enter your tracking number"
                       value={trackingInput}
                       onChange={(e) => setTrackingInput(e.target.value)}
                       className="w-full bg-transparent text-sm sm:text-base text-[#0F313A] placeholder:text-slate-400 focus:outline-none py-2.5 font-medium"
