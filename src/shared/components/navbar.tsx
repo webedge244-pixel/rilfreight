@@ -276,10 +276,10 @@ export function Navbar() {
           <User className="w-5 h-5" />
         </Link>
 
-        {/* Secondary Crimson Red (#BA1C20) CTA "Track Your Shipment" Button (Twice as big) */}
+        {/* Secondary Crimson Red (#BA1C20) CTA "Track Your Shipment" Button (Twice as big) - Desktop only (lg+) */}
         <Link
           href="/tracking"
-          className="hidden sm:inline-flex items-center justify-center px-9 sm:px-11 py-4 sm:py-4.5 rounded-full bg-[#BA1C20] hover:bg-[#9c171a] text-white text-base sm:text-lg font-bold transition-all shadow-sm hover:shadow active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BA1C20] focus-visible:ring-offset-2"
+          className="hidden lg:inline-flex items-center justify-center px-9 sm:px-11 py-4 sm:py-4.5 rounded-full bg-[#BA1C20] hover:bg-[#9c171a] text-white text-base sm:text-lg font-bold transition-all shadow-sm hover:shadow active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BA1C20] focus-visible:ring-offset-2"
         >
           Track Your Shipment
         </Link>
@@ -406,7 +406,7 @@ export function Navbar() {
         className={cn(
           "w-full bg-white transition-colors",
           mobileMenuOpen
-            ? "fixed top-0 left-0 right-0 z-50 border-b border-slate-100 shadow-sm"
+            ? "fixed top-0 left-0 right-0 z-50 border-b border-slate-100"
             : "relative z-40"
         )}
       >
@@ -422,7 +422,7 @@ export function Navbar() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed top-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-md"
+            className="fixed top-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md"
           >
             {renderNavContent()}
           </motion.header>

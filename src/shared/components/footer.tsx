@@ -114,7 +114,6 @@ export function Footer({ embedded = false }: FooterProps) {
                 { label: "Expertise", href: "/#expertise" },
                 { label: "Sustainability", href: "/#services" },
                 { label: "News & Media", href: "/#blog" },
-                { label: "Case Studies", href: "/#special-services" },
                 { label: "Contacts", href: "/contact" },
               ].map((link) => (
                 <li key={link.label}>
@@ -139,7 +138,6 @@ export function Footer({ embedded = false }: FooterProps) {
                 { label: "Air Freight", href: "/#services" },
                 { label: "Sea Freight", href: "/#services" },
                 { label: "Land Transport", href: "/#services" },
-                { label: "Groupage", href: "/#services" },
                 { label: "Consultancy", href: "/contact" },
                 { label: "Value Added Services", href: "/#special-services" },
               ].map((service) => (
