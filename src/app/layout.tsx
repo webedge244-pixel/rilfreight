@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RILFREIGHT — Global Multimodal Logistics & Freight Management",
-  description: "Enterprise-grade multi-modal shipment tracking, air cargo, ocean freight, and intermodal logistics platform.",
+  title: "RILFREIGHT Global Multimodal Logistics & Freight Management",
+  description:
+    "Enterprise-grade multi-modal shipment tracking, air cargo, ocean freight, and intermodal logistics platform.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
