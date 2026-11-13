@@ -95,6 +95,29 @@ function TrackingDetailContent() {
         const found = await getShipmentByTrackingCode(codeParam);
 
         if (isMounted) {
+          if (found && typeof window !== "undefined") {
+            try {
+              const raw = localStorage.getItem("rilfreight_recently_tracked");
+              const existing = raw
+                ? (JSON.parse(raw) as Array<{ code: string; origin: string }>).filter(
+                    (item) => item.code !== found.trackingCode && item.origin !== "Unknown Origin"
+                  )
+                : [];
+              const newItem = {
+                code: found.trackingCode,
+                mode: found.mode,
+                origin: `${found.originName} (${found.originCode})`,
+                destination: `${found.destinationName} (${found.destinationCode})`,
+                timestamp: Date.now(),
+              };
+              localStorage.setItem(
+                "rilfreight_recently_tracked",
+                JSON.stringify([newItem, ...existing].slice(0, 5))
+              );
+            } catch {
+              // Ignore localStorage write failures
+            }
+          }
           setShipment(found);
           setIsLoading(false);
         }

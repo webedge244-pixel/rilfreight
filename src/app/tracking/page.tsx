@@ -90,7 +90,14 @@ function getRecentlyTracked(): RecentlyTrackedItem[] {
   try {
     const raw = localStorage.getItem("rilfreight_recently_tracked");
     if (!raw) return [];
-    return JSON.parse(raw) as RecentlyTrackedItem[];
+    const parsed = JSON.parse(raw) as RecentlyTrackedItem[];
+    const cleaned = parsed.filter(
+      (item) => item && item.code && item.origin !== "Unknown Origin" && item.destination !== "Unknown Destination"
+    );
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem("rilfreight_recently_tracked", JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
     return [];
   }
@@ -104,14 +111,35 @@ export default function TrackingSearchPage() {
   const router = useRouter();
   const [trackingInput, setTrackingInput] = React.useState("");
   const [isSearching, setIsSearching] = React.useState(false);
+  const [searchError, setSearchError] = React.useState<string | null>(null);
   const [recentItems, setRecentItems] = React.useState<RecentlyTrackedItem[]>(
     [],
   );
   const [openFaqIndex, setOpenFaqIndex] = React.useState<number | null>(null);
 
-  // Load recently tracked items from localStorage on mount
+  // Load recently tracked items and verify each against the real database
   React.useEffect(() => {
-    setRecentItems(getRecentlyTracked());
+    const cached = getRecentlyTracked();
+    setRecentItems(cached);
+
+    if (cached.length > 0) {
+      Promise.all(
+        cached.map(async (item) => {
+          try {
+            const shipment = await getShipmentByTrackingCode(item.code);
+            return shipment ? item : null;
+          } catch {
+            return null;
+          }
+        })
+      ).then((verified) => {
+        const valid = verified.filter(Boolean) as RecentlyTrackedItem[];
+        setRecentItems(valid);
+        try {
+          localStorage.setItem("rilfreight_recently_tracked", JSON.stringify(valid));
+        } catch {}
+      });
+    }
   }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -120,8 +148,8 @@ export default function TrackingSearchPage() {
     if (!clean) return;
 
     setIsSearching(true);
+    setSearchError(null);
 
-    // Resolve the shipment so the recently-tracked list carries real detail.
     let shipment: Shipment | null = null;
     try {
       shipment = await getShipmentByTrackingCode(clean);
@@ -129,18 +157,20 @@ export default function TrackingSearchPage() {
       console.warn("Shipment lookup failed:", err);
     }
 
-    // Save to recently tracked in localStorage
+    if (!shipment) {
+      setIsSearching(false);
+      setSearchError(`No active shipment found with tracking code "${clean}". Please verify your reference number.`);
+      return;
+    }
+
+    // Only cache real shipments from the database
     try {
       const existing = getRecentlyTracked();
       const newItem: RecentlyTrackedItem = {
-        code: clean,
-        mode: shipment?.mode || "ocean",
-        origin: shipment
-          ? `${shipment.originName} (${shipment.originCode})`
-          : "Unknown Origin",
-        destination: shipment
-          ? `${shipment.destinationName} (${shipment.destinationCode})`
-          : "Unknown Destination",
+        code: shipment.trackingCode || clean,
+        mode: shipment.mode,
+        origin: `${shipment.originName} (${shipment.originCode})`,
+        destination: `${shipment.destinationName} (${shipment.destinationCode})`,
         timestamp: Date.now(),
       };
       const filtered = existing.filter((r) => r.code !== clean);
@@ -154,7 +184,6 @@ export default function TrackingSearchPage() {
       // localStorage may be unavailable
     }
 
-    // Navigate to the detail page
     setIsSearching(false);
     router.push(`/tracking/${encodeURIComponent(clean)}`);
   };
@@ -268,6 +297,11 @@ export default function TrackingSearchPage() {
                       <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
                     </button>
                   </div>
+                  {searchError && (
+                    <p className="text-xs font-semibold text-[#BA1C20] pl-4">
+                      {searchError}
+                    </p>
+                  )}
                 </form>
               </div>
             </div>
