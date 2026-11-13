@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { Navbar } from "@/shared/components/navbar";
-import { Footer } from "@/shared/components/footer";
+import { PageFooter } from "@/shared/components/page-footer";
 import { cn } from "@/shared/lib/utils";
 
 interface FormValues {
@@ -48,7 +48,8 @@ export default function ContactPage() {
       switch (field) {
         case "fullName":
           if (!val.trim()) return "Full name is required.";
-          if (val.trim().length < 2) return "Name must be at least 2 characters.";
+          if (val.trim().length < 2)
+            return "Name must be at least 2 characters.";
           return undefined;
 
         case "email":
@@ -60,7 +61,8 @@ export default function ContactPage() {
 
         case "subject":
           if (!val.trim()) return "Subject is required.";
-          if (val.trim().length < 3) return "Subject must be at least 3 characters.";
+          if (val.trim().length < 3)
+            return "Subject must be at least 3 characters.";
           return undefined;
 
         case "message":
@@ -74,7 +76,7 @@ export default function ContactPage() {
           return undefined;
       }
     },
-    []
+    [],
   );
 
   const validateAll = React.useCallback(
@@ -86,7 +88,7 @@ export default function ContactPage() {
       });
       return newErrors;
     },
-    [validateField]
+    [validateField],
   );
 
   const handleChange = (field: keyof FormValues, val: string) => {
@@ -145,73 +147,73 @@ export default function ContactPage() {
 
       <main className="flex-1 w-full overflow-x-hidden">
         <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-16 md:space-y-24">
-        {/* 2. HERO BANNER: Clean rounded container with giant CONTACTS and breadcrumb */}
-        <section aria-labelledby="contact-header-title">
-          <div className="relative w-full min-h-[340px] md:min-h-[420px] rounded-[32px] md:rounded-[36px] overflow-hidden group">
-            {/* Background Logistics Photography */}
-            <Image
-              src="/images/home-multimodal-connectivity.jpg"
-              alt="RILFREIGHT Multimodal Logistics and Shipping Terminal"
-              fill
-              priority
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
+          {/* 2. HERO BANNER: Clean rounded container with giant CONTACTS and breadcrumb */}
+          <section aria-labelledby="contact-header-title">
+            <div className="relative w-full min-h-[340px] md:min-h-[420px] rounded-[32px] md:rounded-[36px] overflow-hidden group">
+              {/* Background Logistics Photography */}
+              <Image
+                src="/images/home-multimodal-connectivity.jpg"
+                alt="RILFREIGHT Multimodal Logistics and Shipping Terminal"
+                fill
+                priority
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
 
-            {/* Subtle Overlay for typography contrast */}
-            <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
+              {/* Subtle Overlay for typography contrast */}
+              <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
 
-            {/* Banner Content Container */}
-            <div className="relative z-10 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px] p-8 sm:p-12 md:p-16">
-              <div />
+              {/* Banner Content Container */}
+              <div className="relative z-10 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px] p-8 sm:p-12 md:p-16">
+                <div />
 
-              {/* Giant Typography matching reference */}
-              <div>
-                <h1
-                  id="contact-header-title"
-                  className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
-                >
-                  CONTACTS
-                </h1>
-              </div>
-
-              {/* Breadcrumb Pill at bottom-left */}
-              <div>
-                <nav
-                  aria-label="Breadcrumb"
-                  className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
-                >
-                  <Link
-                    href="/"
-                    className="hover:text-[#BA1C20] transition-colors"
+                {/* Giant Typography matching reference */}
+                <div>
+                  <h1
+                    id="contact-header-title"
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
                   >
-                    Home
-                  </Link>
-                  <span className="text-slate-400">/</span>
-                  <span className="text-slate-800">Contacts</span>
-                </nav>
+                    CONTACTS
+                  </h1>
+                </div>
+
+                {/* Breadcrumb Pill at bottom-left */}
+                <div>
+                  <nav
+                    aria-label="Breadcrumb"
+                    className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
+                  >
+                    <Link
+                      href="/"
+                      className="hover:text-[#BA1C20] transition-colors"
+                    >
+                      Home
+                    </Link>
+                    <span className="text-slate-400">/</span>
+                    <span className="text-slate-800">Contacts</span>
+                  </nav>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* 3. TWO-COLUMN CONTENT & FORM SECTION */}
-        <section
-          aria-labelledby="contact-heading"
-          className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start"
-        >
-          {/* LEFT COLUMN: Headings, Subtitle & 4 Contact Details */}
-          <div className="lg:col-span-6 space-y-6">
-            <h2
-              id="contact-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight leading-tight"
-            >
-              WE ARE ALWAYS READY TO HELP YOU AND ANSWER YOUR QUESTIONS
-            </h2>
+          {/* 3. TWO-COLUMN CONTENT & FORM SECTION */}
+          <section
+            aria-labelledby="contact-heading"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start"
+          >
+            {/* LEFT COLUMN: Headings, Subtitle & 4 Contact Details */}
+            <div className="lg:col-span-6 space-y-6">
+              <h2
+                id="contact-heading"
+                className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight leading-tight"
+              >
+                WE ARE ALWAYS READY TO HELP YOU AND ANSWER YOUR QUESTIONS
+              </h2>
 
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl">
-                Our global logistics coordinators, multimodal transport dispatchers,
-                and customs clearance specialists are available around the clock
-                to assist with your global freight needs.
+                Our global logistics coordinators, multimodal transport
+                dispatchers, and customs clearance specialists are available
+                around the clock to assist with your global freight needs.
               </p>
 
               {/* 4 Contact Information Blocks in a 2x2 Grid */}
@@ -345,256 +347,237 @@ export default function ContactPage() {
               </div>
             </div>
 
-          {/* RIGHT COLUMN: "Send a message" Form Card */}
-          <div className="lg:col-span-6">
-            <div className="border border-slate-200/90 rounded-[32px] p-8 sm:p-10 md:p-12 bg-white">
-              {isSubmitted ? (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="py-10 flex flex-col items-center text-center space-y-4 animate-in fade-in duration-300"
-                >
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-600">
-                    <CheckCircle2 className="w-8 h-8" />
+            {/* RIGHT COLUMN: "Send a message" Form Card */}
+            <div className="lg:col-span-6">
+              <div className="border border-slate-200/90 rounded-[32px] p-8 sm:p-10 md:p-12 bg-white">
+                {isSubmitted ? (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="py-10 flex flex-col items-center text-center space-y-4 animate-in fade-in duration-300"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-600">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-[#0F313A]">
+                      Message Sent Successfully
+                    </h3>
+                    <p className="text-slate-600 text-sm max-w-sm">
+                      Thank you, <strong>{values.fullName}</strong>. Our
+                      logistics dispatch team has received your message and will
+                      get back to you shortly.
+                    </p>
+                    <div className="pt-4">
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-[#0F313A] text-slate-800 font-bold text-xs transition-colors"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Send another message</span>
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-[#0F313A]">
-                    Message Sent Successfully
-                  </h3>
-                  <p className="text-slate-600 text-sm max-w-sm">
-                    Thank you, <strong>{values.fullName}</strong>. Our logistics
-                    dispatch team has received your message and will get back to
-                    you shortly.
-                  </p>
-                  <div className="pt-4">
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-300 hover:border-[#0F313A] text-slate-800 font-bold text-xs transition-colors"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Send another message</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleSubmit}
-                  noValidate
-                  className="space-y-4"
-                  aria-label="Send a message form"
-                >
-                  <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">
-                    Send a message
-                  </h3>
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    className="space-y-4"
+                    aria-label="Send a message form"
+                  >
+                    <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">
+                      Send a message
+                    </h3>
 
-                  {/* Field 1: Full name */}
-                  <div>
-                    <label htmlFor="fullName" className="sr-only">
-                      Full name
-                    </label>
-                    <input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      placeholder="Full name"
-                      value={values.fullName}
-                      onChange={(e) => handleChange("fullName", e.target.value)}
-                      onBlur={() => handleBlur("fullName")}
-                      className={cn(
-                        "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
-                        touched.fullName && errors.fullName && "border-[#BA1C20]"
+                    {/* Field 1: Full name */}
+                    <div>
+                      <label htmlFor="fullName" className="sr-only">
+                        Full name
+                      </label>
+                      <input
+                        id="fullName"
+                        name="fullName"
+                        type="text"
+                        placeholder="Full name"
+                        value={values.fullName}
+                        onChange={(e) =>
+                          handleChange("fullName", e.target.value)
+                        }
+                        onBlur={() => handleBlur("fullName")}
+                        className={cn(
+                          "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
+                          touched.fullName &&
+                            errors.fullName &&
+                            "border-[#BA1C20]",
+                        )}
+                      />
+                      {touched.fullName && errors.fullName && (
+                        <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
+                          {errors.fullName}
+                        </p>
                       )}
-                    />
-                    {touched.fullName && errors.fullName && (
-                      <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
-                        {errors.fullName}
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Field 2: Email */}
-                  <div>
-                    <label htmlFor="email" className="sr-only">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Email"
-                      value={values.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                      onBlur={() => handleBlur("email")}
-                      className={cn(
-                        "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
-                        touched.email && errors.email && "border-[#BA1C20]"
+                    {/* Field 2: Email */}
+                    <div>
+                      <label htmlFor="email" className="sr-only">
+                        Email
+                      </label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="Email"
+                        value={values.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        onBlur={() => handleBlur("email")}
+                        className={cn(
+                          "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
+                          touched.email && errors.email && "border-[#BA1C20]",
+                        )}
+                      />
+                      {touched.email && errors.email && (
+                        <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
+                          {errors.email}
+                        </p>
                       )}
-                    />
-                    {touched.email && errors.email && (
-                      <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Field 3: Subject */}
-                  <div>
-                    <label htmlFor="subject" className="sr-only">
-                      Subject
-                    </label>
-                    <input
-                      id="subject"
-                      name="subject"
-                      type="text"
-                      placeholder="Subject"
-                      value={values.subject}
-                      onChange={(e) => handleChange("subject", e.target.value)}
-                      onBlur={() => handleBlur("subject")}
-                      className={cn(
-                        "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
-                        touched.subject && errors.subject && "border-[#BA1C20]"
+                    {/* Field 3: Subject */}
+                    <div>
+                      <label htmlFor="subject" className="sr-only">
+                        Subject
+                      </label>
+                      <input
+                        id="subject"
+                        name="subject"
+                        type="text"
+                        placeholder="Subject"
+                        value={values.subject}
+                        onChange={(e) =>
+                          handleChange("subject", e.target.value)
+                        }
+                        onBlur={() => handleBlur("subject")}
+                        className={cn(
+                          "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all",
+                          touched.subject &&
+                            errors.subject &&
+                            "border-[#BA1C20]",
+                        )}
+                      />
+                      {touched.subject && errors.subject && (
+                        <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
+                          {errors.subject}
+                        </p>
                       )}
-                    />
-                    {touched.subject && errors.subject && (
-                      <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
-                        {errors.subject}
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Field 4: Message */}
-                  <div>
-                    <label htmlFor="message" className="sr-only">
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={5}
-                      placeholder="Message"
-                      value={values.message}
-                      onChange={(e) => handleChange("message", e.target.value)}
-                      onBlur={() => handleBlur("message")}
-                      className={cn(
-                        "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all resize-y",
-                        touched.message && errors.message && "border-[#BA1C20]"
+                    {/* Field 4: Message */}
+                    <div>
+                      <label htmlFor="message" className="sr-only">
+                        Message
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={5}
+                        placeholder="Message"
+                        value={values.message}
+                        onChange={(e) =>
+                          handleChange("message", e.target.value)
+                        }
+                        onBlur={() => handleBlur("message")}
+                        className={cn(
+                          "w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0F313A] focus:ring-1 focus:ring-[#0F313A] text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-all resize-y",
+                          touched.message &&
+                            errors.message &&
+                            "border-[#BA1C20]",
+                        )}
+                      />
+                      {touched.message && errors.message && (
+                        <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
+                          {errors.message}
+                        </p>
                       )}
-                    />
-                    {touched.message && errors.message && (
-                      <p className="text-xs text-[#BA1C20] mt-1.5 ml-1">
-                        {errors.message}
-                      </p>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Reference Style Action Button: Light pill with dark arrow square */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex items-center justify-between gap-4 rounded-full border border-slate-300 hover:border-[#0F313A] pl-6 pr-1.5 py-1.5 bg-white text-slate-900 font-bold transition-all group disabled:opacity-60"
-                    >
-                      <span className="text-sm">
-                        {isSubmitting ? "Sending..." : "Send a message"}
-                      </span>
-                      <span className="w-10 h-10 rounded-xl bg-[#0F313A] group-hover:bg-[#BA1C20] text-white flex items-center justify-center transition-colors">
-                        <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </span>
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* 4. INTERACTIVE GRAYSCALE MAP SECTION */}
-        <section
-          aria-label="Location Map"
-          className="relative w-full h-[460px] md:h-[520px] rounded-[32px] md:rounded-[36px] overflow-hidden border border-slate-200 group"
-        >
-          {/* Grayscale Map Embed */}
-          <iframe
-            src="https://maps.google.com/maps?q=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB,+UK&t=&z=14&ie=UTF8&iwloc=&output=embed"
-            className="w-full h-full border-0 filter grayscale contrast-95 opacity-90"
-            loading="lazy"
-            title="RILFREIGHT London Headquarters Map"
-          />
-
-          {/* Floating London Headquarters Card (matching frame_0030.jpg) */}
-          <div className="absolute top-5 sm:top-6 left-5 sm:left-6 z-10 max-w-[280px] sm:max-w-xs bg-white rounded-2xl p-5 border border-slate-200/90 font-sans">
-            <h4 className="text-base font-bold text-slate-900 leading-snug">
-              London Headquarters
-            </h4>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-              Riverside Building, County Hall, Westminster Bridge Rd, London SE1 7PB, UK
-            </p>
-
-            <div className="flex items-center gap-1.5 text-xs text-slate-700 mt-2 font-medium">
-              <span className="font-bold text-slate-900">4.9</span>
-              <span className="text-amber-500">★</span>
-              <span className="text-slate-400">(2,840 reviews)</span>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F313A] hover:bg-[#15434f] text-white text-xs font-semibold transition-colors"
-              >
-                <span>Open in Maps</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-
-              <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Directions to London Headquarters"
-                className="w-8 h-8 rounded-lg border border-slate-200 hover:border-[#0F313A] text-slate-700 flex items-center justify-center transition-colors"
-              >
-                <Navigation className="w-3.5 h-3.5 text-[#0F313A]" />
-              </a>
-            </div>
-          </div>
-        </section>
-        </div>
-
-        {/* 5. STANDARDIZED UNIFIED FOOTER (Exact Match with Homepage - 100% Full Width) */}
-        <div className="w-full bg-[#0F313A] text-white rounded-t-[36px] md:rounded-t-[48px] mt-24 sm:mt-28 lg:mt-32 relative">
-          {/* Customer Hotline Callout */}
-          <section
-            className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-16 pb-10"
-            aria-label="Customer Hotline Callout"
-          >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-12 border-b border-white/10">
-              <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-                  Have any questions?<br />
-                  <span className="text-[#BA1C20]">Call us +1 800 555-RILF</span>
-                </h2>
-                <p className="text-slate-400 text-xs sm:text-sm mt-2">
-                  Delivered on time with no hassle.
-                </p>
-              </div>
-              <div className="shrink-0">
-                <Link
-                  href="/contact"
-                  className="group inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/15 rounded-full pl-7 pr-2.5 py-2 text-white font-bold text-sm sm:text-base transition-all active:scale-95"
-                >
-                  <span>Contact us</span>
-                  <span className="w-10 h-10 rounded-full bg-[#BA1C20] text-white flex items-center justify-center group-hover:bg-[#9c171a] transition-all transform group-hover:rotate-45">
-                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-                  </span>
-                </Link>
+                    {/* Reference Style Action Button: Light pill with dark arrow square */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center justify-between gap-4 rounded-full border border-slate-300 hover:border-[#0F313A] pl-6 pr-1.5 py-1.5 bg-white text-slate-900 font-bold transition-all group disabled:opacity-60"
+                      >
+                        <span className="text-sm">
+                          {isSubmitting ? "Sending..." : "Send a message"}
+                        </span>
+                        <span className="w-10 h-10 rounded-xl bg-[#0F313A] group-hover:bg-[#BA1C20] text-white flex items-center justify-center transition-colors">
+                          <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </span>
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
           </section>
 
-          {/* Embedded Footer */}
-          <Footer embedded={true} />
+          {/* 4. INTERACTIVE GRAYSCALE MAP SECTION */}
+          <section
+            aria-label="Location Map"
+            className="relative w-full h-[460px] md:h-[520px] rounded-[32px] md:rounded-[36px] overflow-hidden border border-slate-200 group"
+          >
+            {/* Grayscale Map Embed */}
+            <iframe
+              src="https://maps.google.com/maps?q=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB,+UK&t=&z=14&ie=UTF8&iwloc=&output=embed"
+              className="w-full h-full border-0 filter grayscale contrast-95 opacity-90"
+              loading="lazy"
+              title="RILFREIGHT London Headquarters Map"
+            />
+
+            {/* Floating London Headquarters Card (matching frame_0030.jpg) */}
+            <div className="absolute top-5 sm:top-6 left-5 sm:left-6 z-10 max-w-[280px] sm:max-w-xs bg-white rounded-2xl p-5 border border-slate-200/90 font-sans">
+              <h4 className="text-base font-bold text-slate-900 leading-snug">
+                London Headquarters
+              </h4>
+              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                Riverside Building, County Hall, Westminster Bridge Rd, London
+                SE1 7PB, UK
+              </p>
+
+              <div className="flex items-center gap-1.5 text-xs text-slate-700 mt-2 font-medium">
+                <span className="font-bold text-slate-900">4.9</span>
+                <span className="text-amber-500">★</span>
+                <span className="text-slate-400">(2,840 reviews)</span>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F313A] hover:bg-[#15434f] text-white text-xs font-semibold transition-colors"
+                >
+                  <span>Open in Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Directions to London Headquarters"
+                  className="w-8 h-8 rounded-lg border border-slate-200 hover:border-[#0F313A] text-slate-700 flex items-center justify-center transition-colors"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-[#0F313A]" />
+                </a>
+              </div>
+            </div>
+          </section>
         </div>
+
+        {/* 5. STANDARDIZED UNIFIED FOOTER (Exact Match with Homepage - 100% Full Width) */}
+        <PageFooter />
       </main>
     </div>
   );

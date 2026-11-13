@@ -25,7 +25,9 @@ export function Footer({ embedded = false }: FooterProps) {
   return (
     <footer
       className={`w-full text-slate-300 relative overflow-hidden ${
-        embedded ? "bg-transparent border-t-0" : "bg-[#0F313A] border-t border-[#1a434e]"
+        embedded
+          ? "bg-transparent border-t-0"
+          : "bg-[#0F313A] border-t border-[#1a434e]"
       }`}
     >
       {/* Main 4-Column Footer Container matching reference */}
@@ -54,30 +56,13 @@ export function Footer({ embedded = false }: FooterProps) {
               {/* Social Media Links */}
               <div></div>
             </div>
-
-            {/* Stylized Outlined Text "since 2000" */}
-            <div className="select-none pt-4">
-              <span
-                className="text-4xl sm:text-5xl font-black uppercase tracking-wider block opacity-40 hover:opacity-60 transition-opacity"
-                style={{
-                  WebkitTextStroke: "1.5px #BA1C20",
-                  color: "transparent",
-                }}
-              >
-                since 2000
-              </span>
-            </div>
           </div>
 
           {/* Column 2: Contacts (lg:col-span-3) */}
           <div className="lg:col-span-3">
-            <h3 className="text-base font-bold text-white mb-4">
-              Contacts
-            </h3>
+            <h3 className="text-base font-bold text-white mb-4">Contacts</h3>
             <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
-              <p>
-                RILFREIGHT, USA, New York – 1060 Str. First Avenue 1
-              </p>
+              <p>RILFREIGHT, USA, New York – 1060 Str. First Avenue 1</p>
               <div className="space-y-1">
                 <a
                   href="tel:+13685678954"
@@ -105,9 +90,7 @@ export function Footer({ embedded = false }: FooterProps) {
 
           {/* Column 3: Company (lg:col-span-2) */}
           <div className="lg:col-span-2">
-            <h3 className="text-base font-bold text-white mb-4">
-              Company
-            </h3>
+            <h3 className="text-base font-bold text-white mb-4">Company</h3>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
               {[
                 { label: "About", href: "/about" },
@@ -130,9 +113,7 @@ export function Footer({ embedded = false }: FooterProps) {
 
           {/* Column 4: Services (lg:col-span-3) */}
           <div className="lg:col-span-3">
-            <h3 className="text-base font-bold text-white mb-4">
-              Services
-            </h3>
+            <h3 className="text-base font-bold text-white mb-4">Services</h3>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
               {[
                 { label: "Air Freight", href: "/#services" },
@@ -159,10 +140,7 @@ export function Footer({ embedded = false }: FooterProps) {
           <p>©RILFREIGHT 2026. All rights reserved.</p>
 
           <div className="flex items-center gap-6 text-slate-400">
-            <Link
-              href="/#terms"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/#terms" className="hover:text-white transition-colors">
               Terms of use
             </Link>
             <Link

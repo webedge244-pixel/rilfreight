@@ -103,11 +103,31 @@ const MOCK_TRACKING_DATABASE: Record<string, TrackingRecord> = {
     eta: "Nov 14, 2026 — 08:30 CET",
     temperature: "21.2°C (Dry Freight Standard)",
     milestones: [
-      { title: "Container Loaded at CNSHA Berth 4", time: "Oct 28, 04:15", completed: true },
-      { title: "Malacca Strait High-Speed Transit", time: "Nov 02, 11:40", completed: true },
-      { title: "Bab-el-Mandeb Secure Checkpoint", time: "Nov 06, 18:20", completed: true },
-      { title: "Suez Canal Priority Transit Queue", time: "In Progress", completed: false },
-      { title: "Rotterdam Maasvlakte Berth Arrival", time: "Nov 14, 08:30", completed: false },
+      {
+        title: "Container Loaded at CNSHA Berth 4",
+        time: "Oct 28, 04:15",
+        completed: true,
+      },
+      {
+        title: "Malacca Strait High-Speed Transit",
+        time: "Nov 02, 11:40",
+        completed: true,
+      },
+      {
+        title: "Bab-el-Mandeb Secure Checkpoint",
+        time: "Nov 06, 18:20",
+        completed: true,
+      },
+      {
+        title: "Suez Canal Priority Transit Queue",
+        time: "In Progress",
+        completed: false,
+      },
+      {
+        title: "Rotterdam Maasvlakte Berth Arrival",
+        time: "Nov 14, 08:30",
+        completed: false,
+      },
     ],
   },
   "AIR-309112": {
@@ -123,11 +143,31 @@ const MOCK_TRACKING_DATABASE: Record<string, TrackingRecord> = {
     eta: "Today — 16:45 CET",
     temperature: "4.8°C (PharmaSec GDP Validated)",
     milestones: [
-      { title: "Export Customs Release at Tokyo NRT", time: "Nov 08, 02:10", completed: true },
-      { title: "Main-Deck Biocontainer Staging", time: "Nov 08, 03:45", completed: true },
-      { title: "Trans-Polar Great Circle Transit", time: "Nov 08, 09:20", completed: true },
-      { title: "Frankfurt Air Traffic Control Contact", time: "Nov 08, 16:15", completed: true },
-      { title: "Direct Ramp Cross-Dock Transfer", time: "Estimated 17:15", completed: false },
+      {
+        title: "Export Customs Release at Tokyo NRT",
+        time: "Nov 08, 02:10",
+        completed: true,
+      },
+      {
+        title: "Main-Deck Biocontainer Staging",
+        time: "Nov 08, 03:45",
+        completed: true,
+      },
+      {
+        title: "Trans-Polar Great Circle Transit",
+        time: "Nov 08, 09:20",
+        completed: true,
+      },
+      {
+        title: "Frankfurt Air Traffic Control Contact",
+        time: "Nov 08, 16:15",
+        completed: true,
+      },
+      {
+        title: "Direct Ramp Cross-Dock Transfer",
+        time: "Estimated 17:15",
+        completed: false,
+      },
     ],
   },
   "RAI-552904": {
@@ -143,11 +183,31 @@ const MOCK_TRACKING_DATABASE: Record<string, TrackingRecord> = {
     eta: "Nov 11, 2026 — 22:00 CST",
     temperature: "Ambient Sensor Active (-2°C)",
     milestones: [
-      { title: "Double-Stack Well Cars Loaded", time: "Nov 05, 14:00", completed: true },
-      { title: "Departed Fraser Valley Corridor", time: "Nov 06, 08:30", completed: true },
-      { title: "Kicking Horse Pass Mountain Curve", time: "Current Sector", completed: true },
-      { title: "Calgary Classification Sorting", time: "Nov 09, 06:00", completed: false },
-      { title: "Chicago Logistics Park Handover", time: "Nov 11, 22:00", completed: false },
+      {
+        title: "Double-Stack Well Cars Loaded",
+        time: "Nov 05, 14:00",
+        completed: true,
+      },
+      {
+        title: "Departed Fraser Valley Corridor",
+        time: "Nov 06, 08:30",
+        completed: true,
+      },
+      {
+        title: "Kicking Horse Pass Mountain Curve",
+        time: "Current Sector",
+        completed: true,
+      },
+      {
+        title: "Calgary Classification Sorting",
+        time: "Nov 09, 06:00",
+        completed: false,
+      },
+      {
+        title: "Chicago Logistics Park Handover",
+        time: "Nov 11, 22:00",
+        completed: false,
+      },
     ],
   },
 };
@@ -182,7 +242,8 @@ export default function HomePage() {
   // Live Tracking Search State
   // ----------------------------------------------------
   const [trackingCodeInput, setTrackingCodeInput] = React.useState("");
-  const [activeTrackingResult, setActiveTrackingResult] = React.useState<TrackingRecord | null>(null);
+  const [activeTrackingResult, setActiveTrackingResult] =
+    React.useState<TrackingRecord | null>(null);
   const [trackingError, setTrackingError] = React.useState<string | null>(null);
   const [isSearchingTracking, setIsSearchingTracking] = React.useState(false);
 
@@ -191,7 +252,9 @@ export default function HomePage() {
     const clean = raw.trim().toUpperCase();
 
     if (!clean) {
-      setTrackingError("Please enter a valid tracking number (e.g., RIL-849201).");
+      setTrackingError(
+        "Please enter a valid tracking number (e.g., RIL-849201).",
+      );
       return;
     }
 
@@ -206,7 +269,11 @@ export default function HomePage() {
         // Fallback dynamic tracking record for any valid alphanumeric format
         setActiveTrackingResult({
           code: clean,
-          mode: clean.startsWith("AIR") ? "air" : clean.startsWith("RAI") ? "rail" : "ocean",
+          mode: clean.startsWith("AIR")
+            ? "air"
+            : clean.startsWith("RAI")
+              ? "rail"
+              : "ocean",
           vesselOrFlight: `RILFREIGHT Carrier #${clean.slice(-4)}`,
           carrier: "RILFREIGHT Integrated Logistics",
           origin: "Shenzhen Yantian Terminal (CNSZX)",
@@ -217,11 +284,31 @@ export default function HomePage() {
           eta: "Nov 16, 2026 — 14:00 PST",
           temperature: "19.5°C Verified",
           milestones: [
-            { title: "Consignment Handover & Scanned", time: "Nov 02, 10:00", completed: true },
-            { title: "Export Clearance & Terminal Loading", time: "Nov 03, 16:30", completed: true },
-            { title: "Mid-Pacific Transit Corridor", time: "Current Sector", completed: true },
-            { title: "Port Pilot Boarding & Berthing", time: "Nov 15, 20:00", completed: false },
-            { title: "Final Drayage Hub Delivery", time: "Nov 16, 14:00", completed: false },
+            {
+              title: "Consignment Handover & Scanned",
+              time: "Nov 02, 10:00",
+              completed: true,
+            },
+            {
+              title: "Export Clearance & Terminal Loading",
+              time: "Nov 03, 16:30",
+              completed: true,
+            },
+            {
+              title: "Mid-Pacific Transit Corridor",
+              time: "Current Sector",
+              completed: true,
+            },
+            {
+              title: "Port Pilot Boarding & Berthing",
+              time: "Nov 15, 20:00",
+              completed: false,
+            },
+            {
+              title: "Final Drayage Hub Delivery",
+              time: "Nov 16, 14:00",
+              completed: false,
+            },
           ],
         });
       }
@@ -290,7 +377,9 @@ export default function HomePage() {
               <div
                 key={slide.id}
                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  idx === currentSlide ? "opacity-100 z-0" : "opacity-0 pointer-events-none -z-10"
+                  idx === currentSlide
+                    ? "opacity-100 z-0"
+                    : "opacity-0 pointer-events-none -z-10"
                 }`}
               >
                 <Image
@@ -356,23 +445,38 @@ export default function HomePage() {
               <div className="md:col-span-5 bg-[#0F313A]/95 backdrop-blur-md text-white rounded-3xl p-6 lg:p-8 flex flex-col justify-center h-full min-h-[190px] lg:min-h-[200px]">
                 <div className="grid grid-cols-2 gap-4 lg:gap-6">
                   <div>
-                    <h3 className="text-lg lg:text-xl font-bold text-white mb-1.5">Call Center</h3>
-                    <p className="text-slate-300 text-xs lg:text-sm mb-1">24/7 Support</p>
-                    <p className="text-white text-sm lg:text-base font-semibold">+1 800 555-LOGI</p>
+                    <h3 className="text-lg lg:text-xl font-bold text-white mb-1.5">
+                      Call Center
+                    </h3>
+                    <p className="text-slate-300 text-xs lg:text-sm mb-1">
+                      24/7 Support
+                    </p>
+                    <p className="text-white text-sm lg:text-base font-semibold">
+                      +1 800 555-LOGI
+                    </p>
                   </div>
                   <div>
-                    <h3 className="text-lg lg:text-xl font-bold text-white mb-1.5">Our Location</h3>
-                    <p className="text-slate-300 text-xs lg:text-sm mb-1">USA, New York – 1060</p>
-                    <p className="text-white text-sm lg:text-base font-semibold">Str. First Avenue 1</p>
+                    <h3 className="text-lg lg:text-xl font-bold text-white mb-1.5">
+                      Our Location
+                    </h3>
+                    <p className="text-slate-300 text-xs lg:text-sm mb-1">
+                      USA, New York – 1060
+                    </p>
+                    <p className="text-white text-sm lg:text-base font-semibold">
+                      Str. First Avenue 1
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Middle: Track Your Shipment Card (5 cols) */}
               <div className="md:col-span-5 bg-[#F0F2F5] text-[#0F313A] rounded-3xl p-6 lg:p-8 flex flex-col justify-center h-full min-h-[190px] lg:min-h-[200px]">
-                <h3 className="text-lg lg:text-xl font-bold text-[#0F313A] mb-1">Track your shipment</h3>
+                <h3 className="text-lg lg:text-xl font-bold text-[#0F313A] mb-1">
+                  Track your shipment
+                </h3>
                 <p className="text-slate-600 text-xs mb-3 line-clamp-1">
-                  Enter your container bill of lading, air waybill, or multimodal booking reference.
+                  Enter your container bill of lading, air waybill, or
+                  multimodal booking reference.
                 </p>
                 <form
                   onSubmit={(e) => {
@@ -399,7 +503,9 @@ export default function HomePage() {
                   </button>
                 </form>
                 {trackingError && (
-                  <p className="text-xs text-[#BA1C20] font-semibold mt-1.5">{trackingError}</p>
+                  <p className="text-xs text-[#BA1C20] font-semibold mt-1.5">
+                    {trackingError}
+                  </p>
                 )}
               </div>
 
@@ -438,9 +544,12 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {/* 1st: Track Your Shipment Card */}
             <div className="bg-[#F0F2F5] text-[#0F313A] rounded-3xl p-6 sm:p-8 flex flex-col justify-center">
-              <h3 className="text-xl font-bold text-[#0F313A] mb-2">Track your shipment</h3>
+              <h3 className="text-xl font-bold text-[#0F313A] mb-2">
+                Track your shipment
+              </h3>
               <p className="text-slate-600 text-xs sm:text-sm mb-4">
-                Enter your container bill of lading, air waybill, or multimodal booking reference.
+                Enter your container bill of lading, air waybill, or multimodal
+                booking reference.
               </p>
               <form
                 onSubmit={(e) => {
@@ -467,7 +576,9 @@ export default function HomePage() {
                 </button>
               </form>
               {trackingError && (
-                <p className="text-xs text-[#BA1C20] font-semibold mt-2">{trackingError}</p>
+                <p className="text-xs text-[#BA1C20] font-semibold mt-2">
+                  {trackingError}
+                </p>
               )}
             </div>
 
@@ -475,14 +586,26 @@ export default function HomePage() {
             <div className="bg-[#0F313A] text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-center">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-1.5">Call Center</h3>
-                  <p className="text-slate-300 text-xs sm:text-sm mb-1">24/7 Support</p>
-                  <p className="text-white text-base font-semibold">+1 800 555-LOGI</p>
+                  <h3 className="text-xl font-bold text-white mb-1.5">
+                    Call Center
+                  </h3>
+                  <p className="text-slate-300 text-xs sm:text-sm mb-1">
+                    24/7 Support
+                  </p>
+                  <p className="text-white text-base font-semibold">
+                    +1 800 555-LOGI
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-1.5">Our Location</h3>
-                  <p className="text-slate-300 text-xs sm:text-sm mb-1">USA, New York – 1060</p>
-                  <p className="text-white text-base font-semibold">Str. First Avenue 1</p>
+                  <h3 className="text-xl font-bold text-white mb-1.5">
+                    Our Location
+                  </h3>
+                  <p className="text-slate-300 text-xs sm:text-sm mb-1">
+                    USA, New York – 1060
+                  </p>
+                  <p className="text-white text-base font-semibold">
+                    Str. First Avenue 1
+                  </p>
                 </div>
               </div>
             </div>
@@ -494,10 +617,18 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#0F313A] text-white flex items-center justify-center">
-                    {activeTrackingResult.mode === "ocean" && <Ship className="w-5 h-5 text-[#BA1C20]" />}
-                    {activeTrackingResult.mode === "air" && <Plane className="w-5 h-5 text-[#BA1C20]" />}
-                    {activeTrackingResult.mode === "rail" && <Train className="w-5 h-5 text-[#BA1C20]" />}
-                    {activeTrackingResult.mode === "road" && <Truck className="w-5 h-5 text-[#BA1C20]" />}
+                    {activeTrackingResult.mode === "ocean" && (
+                      <Ship className="w-5 h-5 text-[#BA1C20]" />
+                    )}
+                    {activeTrackingResult.mode === "air" && (
+                      <Plane className="w-5 h-5 text-[#BA1C20]" />
+                    )}
+                    {activeTrackingResult.mode === "rail" && (
+                      <Train className="w-5 h-5 text-[#BA1C20]" />
+                    )}
+                    {activeTrackingResult.mode === "road" && (
+                      <Truck className="w-5 h-5 text-[#BA1C20]" />
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -509,15 +640,20 @@ export default function HomePage() {
                       </Badge>
                     </div>
                     <p className="text-xs text-slate-500">
-                      {activeTrackingResult.carrier} • {activeTrackingResult.vesselOrFlight}
+                      {activeTrackingResult.carrier} •{" "}
+                      {activeTrackingResult.vesselOrFlight}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 block font-semibold uppercase">Estimated Arrival</span>
-                    <span className="text-sm font-bold text-[#0F313A]">{activeTrackingResult.eta}</span>
+                    <span className="text-xs text-slate-400 block font-semibold uppercase">
+                      Estimated Arrival
+                    </span>
+                    <span className="text-sm font-bold text-[#0F313A]">
+                      {activeTrackingResult.eta}
+                    </span>
                   </div>
                   <button
                     onClick={() => setActiveTrackingResult(null)}
@@ -531,19 +667,35 @@ export default function HomePage() {
               {/* Waypoints & Progress */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Origin Hub</span>
-                  <p className="text-sm font-bold text-[#0F313A]">{activeTrackingResult.origin}</p>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
+                    Origin Hub
+                  </span>
+                  <p className="text-sm font-bold text-[#0F313A]">
+                    {activeTrackingResult.origin}
+                  </p>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Current Coordinates</span>
-                  <p className="text-sm font-bold text-[#BA1C20]">{activeTrackingResult.currentLocation}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{activeTrackingResult.currentStatus}</p>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
+                    Current Coordinates
+                  </span>
+                  <p className="text-sm font-bold text-[#BA1C20]">
+                    {activeTrackingResult.currentLocation}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {activeTrackingResult.currentStatus}
+                  </p>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Destination Gateway</span>
-                  <p className="text-sm font-bold text-[#0F313A]">{activeTrackingResult.destination}</p>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
+                    Destination Gateway
+                  </span>
+                  <p className="text-sm font-bold text-[#0F313A]">
+                    {activeTrackingResult.destination}
+                  </p>
                   {activeTrackingResult.temperature && (
-                    <p className="text-xs text-slate-500 mt-0.5">Sensor: {activeTrackingResult.temperature}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Sensor: {activeTrackingResult.temperature}
+                    </p>
                   )}
                 </div>
               </div>
@@ -552,12 +704,16 @@ export default function HomePage() {
               <div className="mb-6">
                 <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
                   <span>Transit Progress</span>
-                  <span className="text-[#0F313A] font-mono">{activeTrackingResult.progressPercent}% Complete</span>
+                  <span className="text-[#0F313A] font-mono">
+                    {activeTrackingResult.progressPercent}% Complete
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
                   <div
                     className="bg-[#0F313A] h-full rounded-full transition-all duration-500 flex justify-end items-center pr-1"
-                    style={{ width: `${activeTrackingResult.progressPercent}%` }}
+                    style={{
+                      width: `${activeTrackingResult.progressPercent}%`,
+                    }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#BA1C20]" />
                   </div>
@@ -587,7 +743,9 @@ export default function HomePage() {
                         )}
                         <span className="truncate">{m.title}</span>
                       </div>
-                      <span className="font-mono text-[10px] block opacity-80">{m.time}</span>
+                      <span className="font-mono text-[10px] block opacity-80">
+                        {m.time}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -668,7 +826,8 @@ export default function HomePage() {
                   Expedited Air Cargo
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  Priority transcontinental air freight with guaranteed delivery windows and airport bypass.
+                  Priority transcontinental air freight with guaranteed delivery
+                  windows and airport bypass.
                 </p>
               </div>
             </div>
@@ -688,7 +847,8 @@ export default function HomePage() {
                   Transoceanic Maritime
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  FCL &amp; LCL container bookings across global deepwater lanes with automated customs clearance.
+                  FCL &amp; LCL container bookings across global deepwater lanes
+                  with automated customs clearance.
                 </p>
               </div>
             </div>
@@ -708,7 +868,8 @@ export default function HomePage() {
                   Overland Truckload
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  Dedicated long-haul and regional class-8 fleets equipped with real-time GPS telemetry.
+                  Dedicated long-haul and regional class-8 fleets equipped with
+                  real-time GPS telemetry.
                 </p>
               </div>
             </div>
@@ -728,7 +889,8 @@ export default function HomePage() {
                   Intermodal Rail Pass
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  Electrified transcontinental heavy rail corridors linking seaports directly to inland logistics hubs.
+                  Electrified transcontinental heavy rail corridors linking
+                  seaports directly to inland logistics hubs.
                 </p>
               </div>
             </div>
@@ -737,7 +899,10 @@ export default function HomePage() {
           {/* Bottom Row: Explanation Text & [ All services [↗] ] Button */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Comprehensive multimodal freight corridors combining consolidated LTL routing, dedicated full container truckloads, guaranteed final-mile distribution, and licensed customs brokerage across international gateways.
+              Comprehensive multimodal freight corridors combining consolidated
+              LTL routing, dedicated full container truckloads, guaranteed
+              final-mile distribution, and licensed customs brokerage across
+              international gateways.
             </p>
             <Link
               href="/contact"
@@ -784,7 +949,9 @@ export default function HomePage() {
                   Delivered tons of products
                 </span>
                 <p className="text-xs leading-relaxed text-slate-300">
-                  Surgically coordinated across maritime sea routes, air corridors, and rail classification yards with zero unverified loss.
+                  Surgically coordinated across maritime sea routes, air
+                  corridors, and rail classification yards with zero unverified
+                  loss.
                 </p>
               </div>
             </div>
@@ -794,17 +961,25 @@ export default function HomePage() {
               {/* Left Column (Big Text) */}
               <div className="lg:col-span-6">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase leading-[1.08] tracking-tight text-white">
-                  RILFREIGHT IS THE BEST TRANSPORTATION COMPANY IN OUR STATE &amp; BEYOND
+                  RILFREIGHT IS THE BEST TRANSPORTATION COMPANY IN OUR STATE
+                  &amp; BEYOND
                 </h2>
               </div>
 
               {/* Right Column (Detailed Sub-texts & Highlights) */}
               <div className="lg:col-span-6 space-y-4 sm:space-y-6">
                 <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                  For more than two decades, RILFREIGHT has engineered an uncompromising transcontinental logistics framework. By bridging automated high-bay distribution hubs with real-time IoT sensors and dedicated customs brokerage, we eliminate friction across every link of your supply chain.
+                  For more than two decades, RILFREIGHT has engineered an
+                  uncompromising transcontinental logistics framework. By
+                  bridging automated high-bay distribution hubs with real-time
+                  IoT sensors and dedicated customs brokerage, we eliminate
+                  friction across every link of your supply chain.
                 </p>
                 <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-                  From temperature-controlled biopharma reefers to heavy-lift multimodal flatcars, our certified dispatch engineers and automated lane clearance ensure guaranteed delivery velocity across North America and global corridors.
+                  From temperature-controlled biopharma reefers to heavy-lift
+                  multimodal flatcars, our certified dispatch engineers and
+                  automated lane clearance ensure guaranteed delivery velocity
+                  across North America and global corridors.
                 </p>
                 <div className="pt-2">
                   <Link
@@ -834,7 +1009,8 @@ export default function HomePage() {
               {/* Enlarge Overlay Headline with Full Responsive Formatting */}
               <div className="relative z-10 max-w-2xl text-left md:text-right">
                 <h3 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase text-white tracking-tight leading-[1.1] drop-shadow-lg">
-                  DRIVING YOUR JOURNEY FORWARD WITH RELIABLE, EFFICIENT, AND SEAMLESS TRANSPORTATION SOLUTIONS
+                  DRIVING YOUR JOURNEY FORWARD WITH RELIABLE, EFFICIENT, AND
+                  SEAMLESS TRANSPORTATION SOLUTIONS
                 </h3>
               </div>
             </div>
@@ -850,7 +1026,8 @@ export default function HomePage() {
         >
           <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
             <p className="text-left text-[11px] font-extrabold uppercase tracking-widest text-[#BA1C20] mb-4">
-              Trusted by Multinational Energy, Automotive &amp; Industrial Consortia
+              Trusted by Multinational Energy, Automotive &amp; Industrial
+              Consortia
             </p>
             {/* Partner Logo Marquee - Scrolling Left to Right with Enlarged Typography */}
             <div className="w-full overflow-hidden whitespace-nowrap py-2">
@@ -867,7 +1044,10 @@ export default function HomePage() {
                     METRIKS
                   </span>
                   <span className="font-black text-2xl sm:text-3xl tracking-normal text-slate-700 hover:text-[#0F313A] transition-colors cursor-default">
-                    QUO<span className="text-sm font-semibold text-slate-500 ml-1">LEGAL</span>
+                    QUO
+                    <span className="text-sm font-semibold text-slate-500 ml-1">
+                      LEGAL
+                    </span>
                   </span>
                   <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-slate-700 hover:text-[#0F313A] transition-colors cursor-default">
                     AGRIMAX
@@ -877,7 +1057,10 @@ export default function HomePage() {
                   </span>
                 </div>
                 {/* Track 2 (Duplicate for seamless infinite loop) */}
-                <div className="flex items-center space-x-12 sm:space-x-16 lg:space-x-20 pr-12 sm:pr-16 lg:pr-20 opacity-80" aria-hidden="true">
+                <div
+                  className="flex items-center space-x-12 sm:space-x-16 lg:space-x-20 pr-12 sm:pr-16 lg:pr-20 opacity-80"
+                  aria-hidden="true"
+                >
                   <span className="font-black text-2xl sm:text-3xl tracking-tighter text-slate-700 hover:text-[#0F313A] transition-colors cursor-default">
                     MINIMIZE<span className="text-[#BA1C20]">.</span>
                   </span>
@@ -888,7 +1071,10 @@ export default function HomePage() {
                     METRIKS
                   </span>
                   <span className="font-black text-2xl sm:text-3xl tracking-normal text-slate-700 hover:text-[#0F313A] transition-colors cursor-default">
-                    QUO<span className="text-sm font-semibold text-slate-500 ml-1">LEGAL</span>
+                    QUO
+                    <span className="text-sm font-semibold text-slate-500 ml-1">
+                      LEGAL
+                    </span>
                   </span>
                   <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-slate-700 hover:text-[#0F313A] transition-colors cursor-default">
                     AGRIMAX
@@ -907,55 +1093,69 @@ export default function HomePage() {
               {/* Track 1 */}
               <div className="flex items-center">
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  THE BEST TRANSPORTATION CORPS <span className="text-[#BA1C20] ml-2">✦</span>
+                  THE BEST TRANSPORTATION CORPS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
                   FAST FREIGHT <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  RELIABLE LOGISTICS <span className="text-[#BA1C20] ml-2">✦</span>
+                  RELIABLE LOGISTICS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  REAL-TIME IOT TELEMATICS <span className="text-[#BA1C20] ml-2">✦</span>
+                  REAL-TIME IOT TELEMATICS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  ZERO-EMISSION HUBS <span className="text-[#BA1C20] ml-2">✦</span>
+                  ZERO-EMISSION HUBS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  TRANSCONTINENTAL RAIL CORRIDORS <span className="text-[#BA1C20] ml-2">✦</span>
+                  TRANSCONTINENTAL RAIL CORRIDORS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  24/7 DISPATCH DESK <span className="text-[#BA1C20] ml-2">✦</span>
+                  24/7 DISPATCH DESK{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  PHARMACEUTICAL COLD-CHAIN <span className="text-[#BA1C20] ml-2">✦</span>
+                  PHARMACEUTICAL COLD-CHAIN{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
               </div>
               {/* Track 2 (Duplicate for seamless infinite loop) */}
               <div className="flex items-center" aria-hidden="true">
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  THE BEST TRANSPORTATION CORPS <span className="text-[#BA1C20] ml-2">✦</span>
+                  THE BEST TRANSPORTATION CORPS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
                   FAST FREIGHT <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  RELIABLE LOGISTICS <span className="text-[#BA1C20] ml-2">✦</span>
+                  RELIABLE LOGISTICS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  REAL-TIME IOT TELEMATICS <span className="text-[#BA1C20] ml-2">✦</span>
+                  REAL-TIME IOT TELEMATICS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  ZERO-EMISSION HUBS <span className="text-[#BA1C20] ml-2">✦</span>
+                  ZERO-EMISSION HUBS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  TRANSCONTINENTAL RAIL CORRIDORS <span className="text-[#BA1C20] ml-2">✦</span>
+                  TRANSCONTINENTAL RAIL CORRIDORS{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  24/7 DISPATCH DESK <span className="text-[#BA1C20] ml-2">✦</span>
+                  24/7 DISPATCH DESK{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase mx-6 sm:mx-8">
-                  PHARMACEUTICAL COLD-CHAIN <span className="text-[#BA1C20] ml-2">✦</span>
+                  PHARMACEUTICAL COLD-CHAIN{" "}
+                  <span className="text-[#BA1C20] ml-2">✦</span>
                 </span>
               </div>
             </div>
@@ -976,7 +1176,9 @@ export default function HomePage() {
               / expertise /
             </p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase text-[#0F313A] tracking-tight leading-[1.08] max-w-4xl">
-              EXPERTISE IN OUR<br />TRANSPORTATION SERVICES
+              EXPERTISE IN OUR
+              <br />
+              TRANSPORTATION SERVICES
             </h2>
           </div>
 
@@ -991,7 +1193,9 @@ export default function HomePage() {
                 Introduction of modern technologies
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                Automated high-bay sorting algorithms, AI-powered storm avoidance rerouting, and biometric container telematics deployed across global corridors.
+                Automated high-bay sorting algorithms, AI-powered storm
+                avoidance rerouting, and biometric container telematics deployed
+                across global corridors.
               </p>
               <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 mt-auto pt-4 border-t border-slate-100">
                 <li className="flex items-center gap-2">
@@ -1018,7 +1222,9 @@ export default function HomePage() {
                 Timely delivery to the destination
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                Precision dispatch scheduling with pre-arrival electronic customs filing and guaranteed priority berth clearance across marine and rail terminals.
+                Precision dispatch scheduling with pre-arrival electronic
+                customs filing and guaranteed priority berth clearance across
+                marine and rail terminals.
               </p>
               <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 mt-auto pt-4 border-t border-slate-100">
                 <li className="flex items-center gap-2">
@@ -1045,7 +1251,9 @@ export default function HomePage() {
                 Cargo insurance and security
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                Comprehensive all-risk cargo underwriting, tamper-evident cryptographic ePOD seals, and continuous 24/7 centralized dispatch surveillance.
+                Comprehensive all-risk cargo underwriting, tamper-evident
+                cryptographic ePOD seals, and continuous 24/7 centralized
+                dispatch surveillance.
               </p>
               <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 mt-auto pt-4 border-t border-slate-100">
                 <li className="flex items-center gap-2">
@@ -1095,9 +1303,12 @@ export default function HomePage() {
                 {quoteSubmitted ? (
                   <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-center animate-in fade-in duration-300">
                     <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
-                    <h3 className="text-base font-bold mb-1">Quote Request Sent!</h3>
+                    <h3 className="text-base font-bold mb-1">
+                      Quote Request Sent!
+                    </h3>
                     <p className="text-xs text-emerald-700">
-                      Our dispatch engineers will prepare your customized rate and reply within 30 minutes.
+                      Our dispatch engineers will prepare your customized rate
+                      and reply within 30 minutes.
                     </p>
                   </div>
                 ) : (
@@ -1110,7 +1321,10 @@ export default function HomePage() {
                         required
                         value={quoteFormData.fullName}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, fullName: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            fullName: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1120,7 +1334,10 @@ export default function HomePage() {
                         required
                         value={quoteFormData.email}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, email: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            email: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1133,7 +1350,10 @@ export default function HomePage() {
                         placeholder="Phone"
                         value={quoteFormData.phone}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, phone: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            phone: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1142,7 +1362,10 @@ export default function HomePage() {
                         placeholder="Subject"
                         value={quoteFormData.subject}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, subject: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            subject: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1155,7 +1378,10 @@ export default function HomePage() {
                         placeholder="Deliver City"
                         value={quoteFormData.deliverCity}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, deliverCity: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            deliverCity: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1164,7 +1390,10 @@ export default function HomePage() {
                         placeholder="City of departure"
                         value={quoteFormData.departureCity}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, departureCity: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            departureCity: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1179,7 +1408,10 @@ export default function HomePage() {
                         <select
                           value={quoteFormData.freightType}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, freightType: e.target.value })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              freightType: e.target.value,
+                            })
                           }
                           className="w-full bg-transparent text-sm text-slate-800 focus:outline-none py-1.5 cursor-pointer"
                         >
@@ -1196,7 +1428,10 @@ export default function HomePage() {
                         <select
                           value={quoteFormData.incoterms}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, incoterms: e.target.value })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              incoterms: e.target.value,
+                            })
                           }
                           className="w-full bg-transparent text-sm text-slate-800 focus:outline-none py-1.5 cursor-pointer"
                         >
@@ -1216,7 +1451,10 @@ export default function HomePage() {
                         placeholder="Weight"
                         value={quoteFormData.weight}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, weight: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            weight: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1225,7 +1463,10 @@ export default function HomePage() {
                         placeholder="Height"
                         value={quoteFormData.height}
                         onChange={(e) =>
-                          setQuoteFormData({ ...quoteFormData, height: e.target.value })
+                          setQuoteFormData({
+                            ...quoteFormData,
+                            height: e.target.value,
+                          })
                         }
                         className="w-full bg-white rounded-2xl px-4 py-3 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0F313A] transition-colors"
                       />
@@ -1238,7 +1479,10 @@ export default function HomePage() {
                           type="checkbox"
                           checked={quoteFormData.fragile}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, fragile: e.target.checked })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              fragile: e.target.checked,
+                            })
                           }
                           className="w-4 h-4 rounded border-slate-300 text-[#BA1C20] focus:ring-0"
                         />
@@ -1249,7 +1493,10 @@ export default function HomePage() {
                           type="checkbox"
                           checked={quoteFormData.express}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, express: e.target.checked })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              express: e.target.checked,
+                            })
                           }
                           className="w-4 h-4 rounded border-slate-300 text-[#BA1C20] focus:ring-0"
                         />
@@ -1260,7 +1507,10 @@ export default function HomePage() {
                           type="checkbox"
                           checked={quoteFormData.insurance}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, insurance: e.target.checked })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              insurance: e.target.checked,
+                            })
                           }
                           className="w-4 h-4 rounded border-slate-300 text-[#BA1C20] focus:ring-0"
                         />
@@ -1271,7 +1521,10 @@ export default function HomePage() {
                           type="checkbox"
                           checked={quoteFormData.packaging}
                           onChange={(e) =>
-                            setQuoteFormData({ ...quoteFormData, packaging: e.target.checked })
+                            setQuoteFormData({
+                              ...quoteFormData,
+                              packaging: e.target.checked,
+                            })
                           }
                           className="w-4 h-4 rounded border-slate-300 text-[#BA1C20] focus:ring-0"
                         />
@@ -1302,7 +1555,9 @@ export default function HomePage() {
                     Tracking your cargo
                   </h3>
                   <p className="text-slate-200 text-sm sm:text-base leading-relaxed mt-4 max-w-md drop-shadow">
-                    Real-time satellite AIS telemetry, automated port customs clearance, and continuous milestone tracking across global corridors.
+                    Real-time satellite AIS telemetry, automated port customs
+                    clearance, and continuous milestone tracking across global
+                    corridors.
                   </p>
                 </div>
 
@@ -1458,7 +1713,8 @@ export default function HomePage() {
                   Digital communications in people&apos;s daily lives
                 </h3>
                 <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
-                  How low-Earth satellite constellations enable continuous telemetry across ocean passages and mountain rail corridors.
+                  How low-Earth satellite constellations enable continuous
+                  telemetry across ocean passages and mountain rail corridors.
                 </p>
               </div>
 
@@ -1490,7 +1746,8 @@ export default function HomePage() {
                   Creating new working conditions in the logistic
                 </h3>
                 <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
-                  Examining how automated robotic AGVs and paperless cryptographic ePODs are slashing facility dwell times.
+                  Examining how automated robotic AGVs and paperless
+                  cryptographic ePODs are slashing facility dwell times.
                 </p>
               </div>
 
@@ -1522,7 +1779,8 @@ export default function HomePage() {
                   Transportation services in Los Angeles region
                 </h3>
                 <p className="text-sm text-slate-500 leading-relaxed mt-3 mb-6 line-clamp-2">
-                  Synchronizing deepwater gantry discharge with transcontinental double-stack rail loops to decongest urban ports.
+                  Synchronizing deepwater gantry discharge with transcontinental
+                  double-stack rail loops to decongest urban ports.
                 </p>
               </div>
 
@@ -1572,7 +1830,8 @@ export default function HomePage() {
                     Special service for our customers
                   </h3>
                   <p className="text-white/90 text-xs sm:text-sm leading-relaxed">
-                    Customized multimodal corridors, bonded warehousing, and high-consequence temperature-controlled solutions.
+                    Customized multimodal corridors, bonded warehousing, and
+                    high-consequence temperature-controlled solutions.
                   </p>
                 </div>
                 <div className="relative z-10 pt-6">
@@ -1620,12 +1879,12 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-12 border-b border-white/10">
               <div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-                  Have any questions?<br />
-                  <span className="text-[#BA1C20]">Call us +1 800 555-RILF</span>
+                  Have any questions?
+                  <br />
+                  <span className="text-[#BA1C20]">
+                    Call us +1 800 555-RILF
+                  </span>
                 </h2>
-                <p className="text-slate-400 text-xs sm:text-sm mt-2">
-                  Delivered on time with no hassle.
-                </p>
               </div>
               <div className="shrink-0">
                 <Link
