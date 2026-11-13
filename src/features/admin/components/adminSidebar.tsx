@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { Settings, X } from "lucide-react";
+import { Settings, X, LogOut } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { ADMIN_NAV_LINKS } from "@/shared/lib/demoData";
 
@@ -165,62 +165,75 @@ export function AdminSidebar() {
       </div>
 
       {/* Bottom-Right Corner Cutout Tab -> Full-Width Expansion */}
-      <motion.div
-        layout
-        initial={false}
-        animate={{
-          width: slideOutOpen ? "100%" : (isCollapsed ? "52px" : "58px"),
-          height: slideOutOpen ? "auto" : (isCollapsed ? "52px" : "58px"),
-          borderRadius: slideOutOpen ? "12px 12px 0px 0px" : "32px 0px 0px 0px",
-        }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={cn(
-          "absolute bottom-0 right-0 z-30 overflow-hidden bg-[#BA1C20] text-white shadow-lg",
-          slideOutOpen ? "w-full p-4 left-0" : "flex items-center justify-center cursor-pointer hover:bg-[#9c171a]"
-        )}
-        onClick={!slideOutOpen ? () => setSlideOutOpen(true) : undefined}
-      >
-        {!slideOutOpen ? (
+      {isCollapsed ? (
+        <div className="absolute bottom-0 right-0 z-30 w-[52px] h-[52px] rounded-tl-[32px] overflow-hidden bg-[#BA1C20] text-white shadow-lg flex items-center justify-center">
           <button
             type="button"
-            title="Account & Settings"
-            aria-label="Open settings and account menu"
-            className="w-full h-full flex items-center justify-center pt-1.5 pl-1.5"
+            onClick={() => {
+              window.location.href = "/admin/login";
+            }}
+            title="Log Out"
+            aria-label="Log Out"
+            className="w-full h-full flex items-center justify-center pt-1.5 pl-1.5 hover:bg-[#9c171a] transition-colors cursor-pointer"
           >
-            <Settings className="w-5 h-5 text-white" />
+            <LogOut className="w-5 h-5 text-white" />
           </button>
-        ) : (
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex justify-end pb-1">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSlideOutOpen(false);
-                }}
-                aria-label="Close settings menu"
-                className="w-6 h-6 flex items-center justify-center text-white/80 hover:text-white rounded transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <Link
-              href="/admin/settings"
-              onClick={() => setSlideOutOpen(false)}
-              className="block py-2 px-2 rounded-lg text-lg xl:text-xl font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
-            >
-              Settings
-            </Link>
+        </div>
+      ) : (
+        <motion.div
+          layout
+          initial={false}
+          animate={{
+            width: slideOutOpen ? "100%" : "58px",
+            height: slideOutOpen ? "auto" : "58px",
+            borderRadius: slideOutOpen ? "12px 12px 0px 0px" : "32px 0px 0px 0px",
+          }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          className={cn(
+            "absolute bottom-0 right-0 z-30 overflow-hidden bg-[#BA1C20] text-white shadow-lg",
+            slideOutOpen ? "w-full p-4 left-0" : "flex items-center justify-center cursor-pointer hover:bg-[#9c171a]"
+          )}
+          onClick={!slideOutOpen ? () => setSlideOutOpen(true) : undefined}
+        >
+          {!slideOutOpen ? (
             <button
               type="button"
-              onClick={() => setSlideOutOpen(false)}
-              className="block w-full text-left py-2 px-2 rounded-lg text-lg xl:text-xl font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
+              title="Account & Log Out"
+              aria-label="Open account menu"
+              className="w-full h-full flex items-center justify-center pt-1.5 pl-1.5"
             >
-              Log Out
+              <LogOut className="w-5 h-5 text-white" />
             </button>
-          </div>
-        )}
-      </motion.div>
+          ) : (
+            <div className="flex flex-col gap-1 w-full">
+              <div className="flex justify-end pb-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSlideOutOpen(false);
+                  }}
+                  aria-label="Close menu"
+                  className="w-6 h-6 flex items-center justify-center text-white/80 hover:text-white rounded transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSlideOutOpen(false);
+                  window.location.href = "/admin/login";
+                }}
+                className="flex items-center gap-2 w-full text-left py-2 px-2 rounded-lg text-lg xl:text-xl font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          )}
+        </motion.div>
+      )}
     </aside>
   );
 }

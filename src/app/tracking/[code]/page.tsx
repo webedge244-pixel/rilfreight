@@ -18,14 +18,10 @@ import {
   Train,
   Truck,
   AlertTriangle,
-  ArrowRight,
   Clock,
   Package,
-  FileText,
-  Weight,
-  Layers,
-  Search,
   CheckCircle2,
+  MapPin,
 } from "lucide-react";
 
 // Dynamically load LiveTrackingMap with SSR disabled to prevent Leaflet window reference errors
@@ -34,7 +30,7 @@ const LiveTrackingMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[520px] rounded-3xl bg-slate-900 border border-slate-800 animate-pulse flex flex-col items-center justify-center text-slate-400 gap-3">
+      <div className="w-full h-[520px] rounded-3xl bg-slate-900 animate-pulse flex flex-col items-center justify-center text-slate-400 gap-3">
         <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-sm font-medium tracking-wide">Initializing Global Telemetry & Satellite Maps...</p>
       </div>
@@ -191,7 +187,7 @@ function TrackingDetailContent() {
   if (!shipment) {
     return (
       <div className="min-h-screen bg-slate-100 dark:bg-slate-950 py-16 px-4">
-        <div className="max-w-xl mx-auto text-center bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl">
+        <div className="max-w-xl mx-auto text-center bg-white dark:bg-slate-900 rounded-3xl p-8">
           <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 text-[#BA1C20] flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8" />
           </div>
@@ -206,7 +202,7 @@ function TrackingDetailContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="e.g. RIL-8492-3019-US"
-              className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#BA1C20]"
+              className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#BA1C20]"
             />
             <button
               type="submit"
@@ -216,7 +212,7 @@ function TrackingDetailContent() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-left">
+          <div className="mt-8 pt-6 text-left">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
               Try a verified sample shipment:
             </p>
@@ -259,38 +255,15 @@ function TrackingDetailContent() {
               Live Transit Monitor
             </span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
-              Telemetry Synchronized
-            </span>
-          </div>
         </div>
 
         {/* Telemetry Status Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6">
             <div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-black dark:text-white">
-                  {shipment.trackingCode}
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  {getModeIcon(shipment.mode)} {shipment.mode}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider ${
-                    shipment.isPaused
-                      ? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
-                      : isDelivered
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-                      : "bg-[#0F313A]/10 text-[#0F313A] dark:bg-sky-950 dark:text-sky-300"
-                  }`}
-                >
-                  {formatStatus(shipment.status)}
-                </span>
-              </div>
+              <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-black dark:text-white block">
+                {shipment.trackingCode}
+              </span>
               <p className="text-xs text-slate-400 dark:text-slate-500 font-mono mt-1">
                 Conveyance: <strong className="text-slate-700 dark:text-slate-300">{shipment.conveyanceName}</strong>
                 {shipment.voyageNumber ? ` | Voyage: ${shipment.voyageNumber}` : ""}
@@ -298,33 +271,26 @@ function TrackingDetailContent() {
             </div>
 
             {/* Estimated Delivery / ETA Countdown */}
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
-              <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center">
-                {isDelivered ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  {isDelivered ? "Delivered At" : "Estimated Arrival (ETA)"}
-                </p>
-                <p className="text-sm font-bold text-black dark:text-white">
-                  {new Date(etaDate).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                {isDelivered ? "Delivered At" : "Estimated Arrival (ETA)"}
+              </p>
+              <p className="text-sm font-bold text-black dark:text-white">
+                {new Date(etaDate).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
             </div>
           </div>
 
           {/* Route Overview Vector */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-500 text-white font-mono font-bold text-xs flex items-center justify-center shadow-sm">
-                A
-              </div>
+              <MapPin className="w-5 h-5 text-emerald-600 shrink-0" />
               <div>
                 <p className="text-xs text-slate-400 uppercase font-semibold">Origin Port</p>
                 <p className="text-sm font-bold text-black dark:text-white">{shipment.originName}</p>
@@ -338,40 +304,16 @@ function TrackingDetailContent() {
                 <p className="text-sm font-bold text-black dark:text-white">{shipment.destinationName}</p>
                 <p className="text-xs text-slate-500">{shipment.destinationCountry} ({shipment.destinationCode})</p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-[#BA1C20] text-white font-mono font-bold text-xs flex items-center justify-center shadow-sm">
-                B
-              </div>
+              <MapPin className="w-5 h-5 text-[#BA1C20] shrink-0" />
             </div>
           </div>
         </div>
-
-        {/* Operational Pause / Hold Gate Alert Banner */}
-        {shipment.isPaused && (
-          <div className="bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 dark:border-amber-700 rounded-3xl p-5 shadow-lg flex items-start gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wide">
-                Operational Hold Gate Active — Simulation Paused
-              </h4>
-              <p className="text-xs text-amber-900/90 dark:text-amber-300 leading-relaxed">
-                {shipment.pausedReason || "This shipment has been held by port authorities or customs officials. Tracking telemetry will resume once the administrative gate is released."}
-              </p>
-              {shipment.pausedLocationName && (
-                <p className="text-[11px] font-mono font-semibold text-amber-800 dark:text-amber-400 pt-1">
-                  Paused Location: {shipment.pausedLocationName}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Bento Grid: 2/3 Map and 1/3 Manifest & Milestones */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Main Map Card */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
@@ -394,8 +336,8 @@ function TrackingDetailContent() {
           {/* Sidebar: Cargo Manifest & Milestone Timeline */}
           <div className="lg:col-span-4 space-y-6">
             {/* Cargo Specifications Manifest Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center gap-2 pb-3">
                 <Package className="w-4 h-4 text-[#BA1C20]" />
                 <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
                   Cargo Specifications Manifest
@@ -417,7 +359,7 @@ function TrackingDetailContent() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-3 pt-2">
                   <div>
                     <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
                       Consignment Ref
@@ -436,7 +378,7 @@ function TrackingDetailContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-3 pt-2">
                   <div>
                     <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
                       Total Pieces
@@ -457,7 +399,7 @@ function TrackingDetailContent() {
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-2">
                   <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
                     Goods Description
                   </span>
@@ -467,7 +409,7 @@ function TrackingDetailContent() {
                 </div>
 
                 {shipment.clientName && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-2">
                     <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
                       Consignee / Client
                     </span>

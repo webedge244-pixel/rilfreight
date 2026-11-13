@@ -5,7 +5,7 @@
  * 1. Operational dwell times (`dwellHours`) representing gating, loading, rail yard switching, and inspections.
  * 2. Strict chronological monotonicity (`timestamp[i] <= timestamp[i+1]`).
  * 3. Default customs pause gate (`isHoldGate: true`) on international destination customs clearance (`CUSR`),
- *    which pauses automated tracking simulations until released by an administrator.
+ *    which places shipment on customs hold until released by an administrator.
  *    Domestic shipments guarantee `isHoldGate: false`.
  * 4. Mode-specific operational codes (Ocean: GTIN, LOAD, DEPA, CANL, ARRI, CUSR, DLV;
  *    Air: RCS, SEC, DEP, ARR, RCF, CUSR, DLV; Rail: RAMP_IN, MOUNTED, TRAIN_DEP, INTERCHANGE, RAMP_OUT, DLV;

@@ -151,7 +151,7 @@ export default function CheckpointStepper({
         <span className="text-[11px] text-slate-400">
           {errorCount + warningCount > 0
             ? `${errorCount} issue${errorCount === 1 ? "" : "s"} · ${warningCount} warning${warningCount === 1 ? "" : "s"}`
-            : "Pause Gate controls simulation dwell"}
+            : "Hold Gate controls customs & inspection dwell"}
         </span>
       </div>
 
@@ -479,7 +479,7 @@ export default function CheckpointStepper({
 
                         {m.isHoldGate ? (
                           <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                            Simulation paused until released
+                            Shipment held at customs until released
                           </span>
                         ) : (
                           <span className="text-[11px] text-slate-400">

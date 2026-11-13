@@ -61,14 +61,11 @@ function createVehicleIcon(mode: TransportMode, isPaused: boolean) {
       <span style="position:absolute;width:100%;height:100%;border-radius:50%;background:${haloColor};animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;opacity:0.75;"></span>
       
       <!-- Inner Glowing Core Badge -->
-      <div style="position:relative;z-index:10;width:34px;height:34px;border-radius:50%;background:${primaryColor};border:2.5px solid #ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:#ffffff;">
+      <div style="position:relative;z-index:10;width:34px;height:34px;border-radius:50%;background:${primaryColor};border:2px solid #ffffff;box-shadow:0 3px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#ffffff;">
         <svg viewBox="0 0 24 24" width="18" height="18" style="display:block;">
           ${glyph}
         </svg>
       </div>
-
-      <!-- State Status Indicator Dot -->
-      <span style="position:absolute;top:2px;right:2px;z-index:20;width:10px;height:10px;border-radius:50%;background:${isPaused ? "#ef4444" : "#10b981"};border:1.5px solid #ffffff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></span>
     </div>
   `;
 
@@ -85,13 +82,16 @@ function createPinIcon(label: string, color: string) {
   return L.divIcon({
     className: "map-pin-icon",
     html: `
-      <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:${color};border:2px solid #ffffff;border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,0.35);color:#ffffff;font-size:12px;font-weight:bold;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">
-        ${label}
+      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="${color}" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0z"/>
+          <circle cx="12" cy="10" r="3" fill="#ffffff" stroke="none"/>
+        </svg>
       </div>
     `,
     iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28],
   });
 }
 
@@ -99,13 +99,16 @@ function createWaypointIcon() {
   return L.divIcon({
     className: "map-waypoint-icon",
     html: `
-      <div style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;background:#06b6d4;border:2px solid #ffffff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.25);color:#ffffff;font-size:10px;font-weight:bold;">
-        ✦
+      <div style="cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#0284c7" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0z"/>
+          <circle cx="12" cy="10" r="2.5" fill="#ffffff" stroke="none"/>
+        </svg>
       </div>
     `,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -10],
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+    popupAnchor: [0, -22],
   });
 }
 

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { Settings, X } from "lucide-react";
+import { Settings, X, LogOut } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { ADMIN_NAV_LINKS } from "@/shared/lib/demoData";
 
@@ -211,25 +211,17 @@ export function AdminMobileNav() {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <Link
-                    href="/admin/settings"
-                    onClick={() => {
-                      setSlideOutOpen(false);
-                      setMenuOpen(false);
-                    }}
-                    className="block py-2 px-2 rounded-lg text-lg font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
-                  >
-                    Settings
-                  </Link>
                   <button
                     type="button"
                     onClick={() => {
                       setSlideOutOpen(false);
                       setMenuOpen(false);
+                      window.location.href = "/admin/login";
                     }}
-                    className="block w-full text-left py-2 px-2 rounded-lg text-lg font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
+                    className="flex items-center gap-2 w-full text-left py-2 px-2 rounded-lg text-lg font-black uppercase tracking-tight text-white hover:bg-white/10 transition-colors"
                   >
-                    Log Out
+                    <LogOut className="w-5 h-5" />
+                    <span>Log Out</span>
                   </button>
                 </div>
               )}

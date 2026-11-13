@@ -15,7 +15,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Demo authentication simulation (Firebase Auth will be wired here)
+    // Demo authentication handler (Firebase Auth will be wired here)
     setTimeout(() => {
       setIsLoading(false);
       router.push("/admin/dashboard");

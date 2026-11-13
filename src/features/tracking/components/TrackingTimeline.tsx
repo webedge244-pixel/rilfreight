@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import type { Shipment, TrackingMilestone } from "@/shared/types";
-import { Check, AlertCircle, Clock, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 
 export interface TrackingTimelineProps {
   shipment: Shipment;
@@ -18,7 +19,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
 
   // Find the index of the currently active milestone
   const activeMilestoneIndex = React.useMemo(() => {
-    // If paused, find the hold gate milestone or the first uncompleted milestone
     if (shipment.isPaused) {
       const holdGateIdx = milestones.findIndex((m) => m.isHoldGate && !m.isCompleted);
       if (holdGateIdx !== -1) return holdGateIdx;
@@ -29,144 +29,156 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
 
   if (milestones.length === 0) {
     return (
-      <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center text-sm text-slate-400">
+      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 text-center text-sm text-slate-400">
         No tracking milestones recorded for this shipment.
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-6">
-      <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
-            Transit Checkpoints & Milestones
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Sequential route progression and customs dwell monitoring
-          </p>
-        </div>
-        <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-          {milestones.filter((m) => m.isCompleted).length} / {milestones.length} Completed
-        </span>
+    <div className="rounded-3xl bg-white dark:bg-slate-900 p-6 space-y-6">
+      {/* Header */}
+      <div className="pb-2">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
+          Transit Checkpoints & Milestones
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Sequential route progression and customs dwell monitoring
+        </p>
       </div>
 
-      <div className="relative pl-6 space-y-8 before:absolute before:left-[23px] before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+      {/* Vertical Stepper Timeline (Inspired by CheckpointStepper in New Shipments) */}
+      <div className="relative pl-7 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
         {milestones.map((m: TrackingMilestone, idx: number) => {
           const isCompleted = m.isCompleted;
           const isActive = idx === activeMilestoneIndex && !isCompleted;
-          const isFuture = !isCompleted && !isActive;
-          const isCustoms = m.code === "CUSR" || m.title.toLowerCase().includes("customs") || Boolean(m.isHoldGate);
+          const isPausedHere = isActive && shipment.isPaused;
+          const last = idx === milestones.length - 1;
+
+          const dateStr = m.timestamp
+            ? new Date(m.timestamp).toLocaleString(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "";
 
           return (
-            <div key={m.id || `ms-${idx}`} className="relative group">
-              {/* Node Indicator */}
+            <div
+              key={m.id || `ms-${idx}`}
+              className={cn("relative pt-4", last ? "pb-0" : "pb-5")}
+            >
+              {/* Minimal Node Marker */}
               <div
-                className={`absolute -left-[30px] top-0.5 flex items-center justify-center w-7 h-7 rounded-full border-2 transition-all ${
+                className={cn(
+                  "absolute -left-7 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] font-bold transition-colors",
                   isCompleted
-                    ? "bg-emerald-500 border-white text-white shadow-md shadow-emerald-500/20"
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : isPausedHere
+                    ? "border-amber-500 bg-amber-500 text-white ring-2 ring-amber-400/30"
                     : isActive
-                    ? shipment.isPaused
-                      ? "bg-amber-500 border-white text-white ring-4 ring-amber-400/30 animate-pulse shadow-lg"
-                      : "bg-[#0284c7] border-white text-white ring-4 ring-sky-400/30 animate-pulse shadow-lg"
-                    : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400"
-                }`}
+                    ? "border-[#0F313A] bg-[#0F313A] text-white dark:border-white dark:bg-white dark:text-black ring-2 ring-sky-400/30"
+                    : "border-slate-300 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500"
+                )}
               >
                 {isCompleted ? (
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                ) : isActive && shipment.isPaused ? (
-                  <AlertCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <Check className="h-3 w-3 stroke-[3]" />
+                ) : isPausedHere ? (
+                  <AlertCircle className="h-3 w-3 stroke-[2.5]" />
                 ) : (
-                  <span className="text-[11px] font-bold font-mono">{idx + 1}</span>
+                  <span>{idx + 1}</span>
                 )}
               </div>
 
-              {/* Milestone Content Card */}
-              <div
-                className={`p-4 rounded-2xl border transition-all ${
-                  isActive
-                    ? shipment.isPaused
-                      ? "bg-amber-50/70 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60 shadow-sm"
-                      : "bg-sky-50/70 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800/60 shadow-sm"
-                    : isCompleted
-                    ? "bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800"
-                    : "bg-transparent border-transparent opacity-60"
-                }`}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                      {m.code}
-                    </span>
-                    <h4 className="text-sm font-bold text-black dark:text-white">
-                      {m.title}
-                    </h4>
-                  </div>
+              {/* Milestone Details */}
+              <div className="relative">
+                {/* Title and Date */}
+                <div className="flex items-start justify-between gap-2">
+                  <h4
+                    className={cn(
+                      "text-sm font-semibold transition-colors",
+                      isCompleted || isActive
+                        ? "text-slate-900 dark:text-white"
+                        : "text-slate-400 dark:text-slate-500"
+                    )}
+                  >
+                    {m.title}
+                  </h4>
+                  <span className="whitespace-nowrap font-mono text-[11px] text-slate-400 dark:text-slate-500">
+                    {dateStr}
+                  </span>
+                </div>
 
-                  {/* Status Badges */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {isCustoms && (
+                {/* Technical Metadata Row (Dwell, Code, Location Code) */}
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] font-mono">
+                  <span className="font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {m.code}
+                  </span>
+
+                  {m.dwellHours && m.dwellHours > 0 ? (
+                    <>
+                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {m.dwellHours}h dwell
+                      </span>
+                    </>
+                  ) : null}
+
+                  {m.locationCode ? (
+                    <>
+                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
+                      <span className="font-semibold text-slate-500 dark:text-slate-400">
+                        {m.locationCode}
+                      </span>
+                    </>
+                  ) : null}
+
+                  {m.isHoldGate && (
+                    <>
+                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        className={cn(
+                          "px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider",
                           isCompleted
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : isActive && shipment.isPaused
-                            ? "bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200"
-                            : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <>
-                            <ShieldCheck className="w-3 h-3" /> Cleared (Green Lane)
-                          </>
-                        ) : isActive && shipment.isPaused ? (
-                          <>
-                            <ShieldAlert className="w-3 h-3" /> Hold Gate Active
-                          </>
-                        ) : (
-                          "Customs Gate"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : isPausedHere
+                            ? "text-amber-600 dark:text-amber-400 font-extrabold"
+                            : "text-slate-400"
                         )}
+                      >
+                        {isCompleted
+                          ? "Cleared"
+                          : isPausedHere
+                          ? "Held"
+                          : "Hold Gate"}
                       </span>
-                    )}
-
-                    {m.dwellHours && m.dwellHours > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                        <Clock className="w-3 h-3" /> {m.dwellHours}h dwell
-                      </span>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
 
-                <div className="mt-2 text-xs flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400">
-                  <span>
-                    📍 <strong className="text-slate-700 dark:text-slate-300">{m.locationName}</strong>
-                    {m.locationCode ? ` (${m.locationCode})` : ""}
-                  </span>
-                  <span>
-                    🕒 {new Date(m.timestamp).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      timeZoneName: "short",
-                    })}
-                  </span>
-                </div>
+                {/* Location Name */}
+                {m.locationName && (
+                  <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {m.locationName}
+                  </p>
+                )}
 
+                {/* Description */}
                 {m.description && (
-                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                     {m.description}
                   </p>
                 )}
 
                 {/* Paused alert on active milestone */}
-                {isActive && shipment.isPaused && (
-                  <div className="mt-3 p-3 rounded-xl bg-amber-100/70 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700/50 text-xs text-amber-950 dark:text-amber-200">
+                {isPausedHere && (
+                  <div className="mt-2.5 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-xs text-amber-900 dark:text-amber-200">
                     <p className="font-bold flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5" /> Simulation On Hold at this Gate
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      Held at Customs / Checkpoint Hold
                     </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed">
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300/90">
                       {shipment.pausedReason || "Awaiting mandatory customs entry inspection and customs clearance release."}
                     </p>
                   </div>
