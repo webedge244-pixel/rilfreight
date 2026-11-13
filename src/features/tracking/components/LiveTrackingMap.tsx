@@ -163,11 +163,12 @@ export default function LiveTrackingMap({
         center={vehicleLatLng}
         zoom={3}
         scrollWheelZoom={false}
+        attributionControl={false}
         style={{ height: "100%", width: "100%", zIndex: 0 }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+          maxZoom={19}
         />
 
         {bounds && <MapBoundsController bounds={bounds} />}

@@ -5,7 +5,8 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import type { TransportMode, RouteWaypoint } from "@/shared/types";
 
-const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_URL =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
@@ -183,9 +184,10 @@ export default function RouteMiniMap({
       center: initialCenterRef.current,
       zoom: 2,
       scrollWheelZoom: false,
+      attributionControl: false,
     });
 
-    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION }).addTo(map);
+    L.tileLayer(TILE_URL, { maxZoom: 19 }).addTo(map);
 
     mapRef.current = map;
     overlayRef.current = L.layerGroup().addTo(map);

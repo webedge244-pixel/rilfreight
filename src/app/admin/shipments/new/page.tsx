@@ -743,18 +743,21 @@ export default function NewShipmentPage() {
         {/* Right Column: Mini-Map Preview & Checkpoint Stepper (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Route Map Preview */}
-          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-4">
-            <div className="flex items-center justify-between pb-3 px-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Interactive Corridor Preview
-              </h3>
+          <div className="relative w-full rounded-3xl overflow-hidden">
+            {/* Floating Header on top of map */}
+            <div className="absolute top-3 left-3 right-3 z-[400] flex items-center justify-between pointer-events-none">
+              <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-sm">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                  Interactive Corridor Preview
+                </h3>
+              </div>
               {routeSummary && (
-                <span className="text-[11px] font-mono font-medium text-slate-500 dark:text-slate-400">
+                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl font-mono text-[11px] font-medium text-slate-700 dark:text-slate-300 shadow-sm">
                   {routeSummary.distanceKm.toLocaleString()} km
                   {routeSummary.passages && routeSummary.passages.length > 0
                     ? ` (${routeSummary.passages.join(", ")})`
                     : ""}
-                </span>
+                </div>
               )}
             </div>
 
@@ -774,7 +777,7 @@ export default function NewShipmentPage() {
               }}
               waypoints={waypoints}
               mode={mode}
-              height="340px"
+              height="380px"
             />
           </div>
 

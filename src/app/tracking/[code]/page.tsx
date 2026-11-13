@@ -312,24 +312,25 @@ function TrackingDetailContent() {
         {/* Bento Grid: 2/3 Map and 1/3 Manifest & Milestones */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Main Map Card */}
-          <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
+          <div className="lg:col-span-8">
+            <div className="relative w-full rounded-3xl overflow-hidden">
+              {/* Floating Header directly on top of map */}
+              <div className="absolute top-4 left-4 right-4 z-[400] flex items-center justify-between pointer-events-none">
+                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-sm">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-black dark:text-white">
                     Live Geodesic Trajectory
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Real-time AIS / ADS-B vessel positioning & corridor partition
                   </p>
                 </div>
-                <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-500">
-                  <span>GPS Lat/Lon Tracking</span>
+                <div className="hidden sm:block bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl font-mono text-[11px] text-slate-600 dark:text-slate-300 shadow-sm">
+                  GPS Lat/Lon Tracking
                 </div>
               </div>
 
               {/* Interactive Leaflet Map */}
-              <LiveTrackingMap shipment={shipment} height="520px" />
+              <LiveTrackingMap shipment={shipment} height="560px" />
             </div>
           </div>
 
