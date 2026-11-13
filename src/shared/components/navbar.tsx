@@ -90,6 +90,18 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Prevent body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   // Reset mobile menu and active dropdown when pathname changes
   const [prevPathname, setPrevPathname] = React.useState(pathname);
   if (prevPathname !== pathname) {
@@ -290,85 +302,129 @@ export function Navbar() {
     </div>
   );
 
-  const renderMobileDrawer = () => (
-    mobileMenuOpen && (
-      <div className="lg:hidden bg-white/98 backdrop-blur-lg px-4 pt-4 pb-6 shadow-xl border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
-        <nav aria-label="Mobile Navigation" className="space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(item);
-            const isOpen = activeDropdown === item.label;
-
-            return (
-              <div key={item.label} className="border-b border-slate-50 last:border-0">
-                {item.hasDropdown ? (
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveDropdown(isOpen ? null : item.label)
-                      }
-                      className={cn(
-                        "w-full flex items-center justify-between py-3 px-3 rounded-xl text-sm font-medium transition-colors",
-                        active
-                          ? "bg-slate-100 text-[#0F313A] font-bold"
-                          : "text-slate-700 hover:bg-slate-50"
-                      )}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronDown
-                        className={cn(
-                          "w-4 h-4 text-slate-400 transition-transform",
-                          isOpen && "rotate-180 text-[#0F313A]"
-                        )}
-                      />
-                    </button>
-
-                    {isOpen && item.children && (
-                      <div className="pl-4 pr-2 pb-2 space-y-1 bg-slate-50/60 rounded-b-xl">
-                        {item.children.map((sub) => (
-                          <Link
-                            key={sub.label}
-                            href={sub.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block py-2 px-3 text-xs font-medium text-slate-600 hover:text-[#0F313A] rounded-lg transition-colors"
-                          >
-                            {sub.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      "block py-3 px-3 rounded-xl text-sm font-medium transition-colors",
-                      active
-                        ? "bg-slate-100 text-[#0F313A] font-bold"
-                        : "text-slate-700 hover:bg-slate-50"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                )}
+  const renderMobileMenu = () => (
+    <AnimatePresence>
+      {mobileMenuOpen && (
+        <motion.div
+          key="mobile-nav-modal"
+          initial={{ opacity: 0, scale: 0.98, y: -6 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.98, y: -6 }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:hidden fixed top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 z-50 h-[calc(100dvh-20px)] rounded-2xl bg-white shadow-2xl p-6 sm:p-7 flex flex-col justify-between overflow-hidden"
+        >
+          {/* Header Row: Wordmark + Close Button */}
+          <div className="flex items-center justify-between shrink-0 pb-4 border-b border-slate-100">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center select-none"
+            >
+              <div className="flex flex-col">
+                <span className="text-2xl font-black tracking-tight text-[#0F313A] leading-none">
+                  RILFREIGHT
+                  <span className="text-[#BA1C20] ml-0.5">.</span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 leading-none mt-1">
+                  Express Logistics
+                </span>
               </div>
-            );
-          })}
-        </nav>
+            </Link>
 
-        {/* Mobile CTA */}
-        <div className="pt-4 mt-2">
-          <Link
-            href="/tracking"
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full flex items-center justify-center py-3.5 px-6 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-base font-bold transition-all shadow-xs active:scale-[0.99]"
-          >
-            Track Your Shipment
-          </Link>
-        </div>
-      </div>
-    )
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close navigation menu"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Nav List with Enlarged Bold Typography & Underline Active Indicator */}
+          <div className="flex-1 overflow-y-auto py-6">
+            <nav aria-label="Mobile Navigation">
+              <ul className="space-y-4">
+                {NAV_ITEMS.map((item) => {
+                  const active = isActive(item);
+                  const isOpen = activeDropdown === item.label;
+
+                  return (
+                    <li key={item.label}>
+                      {item.hasDropdown ? (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveDropdown(isOpen ? null : item.label)
+                            }
+                            className={cn(
+                              "w-full flex items-center justify-between py-3 px-2 font-black uppercase tracking-tight text-2xl sm:text-3xl transition-colors relative leading-none",
+                              active ? "text-[#0F313A]" : "text-slate-900"
+                            )}
+                          >
+                            <span>{item.label}</span>
+                            <ChevronDown
+                              className={cn(
+                                "w-6 h-6 text-slate-400 transition-transform",
+                                isOpen && "rotate-180 text-[#0F313A]"
+                              )}
+                            />
+                            {active && (
+                              <span className="absolute -bottom-1 left-2 right-2 h-[4px] bg-[#BA1C20] rounded-full" />
+                            )}
+                          </button>
+
+                          {isOpen && item.children && (
+                            <div className="pl-4 pr-2 py-3 space-y-2 bg-slate-50/70 rounded-xl mt-2">
+                              {item.children.map((sub) => (
+                                <Link
+                                  key={sub.label}
+                                  href={sub.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="block py-2 px-3 text-base font-bold text-slate-700 hover:text-[#BA1C20] transition-colors"
+                                >
+                                  {sub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "block py-3 px-2 font-black uppercase tracking-tight text-2xl sm:text-3xl transition-colors relative leading-none",
+                            active ? "text-[#0F313A]" : "text-slate-900"
+                          )}
+                        >
+                          {item.label}
+                          {active && (
+                            <span className="absolute -bottom-1 left-2 right-2 h-[4px] bg-[#BA1C20] rounded-full" />
+                          )}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Bottom Action: Crimson CTA */}
+          <div className="pt-4 border-t border-slate-100 shrink-0">
+            <Link
+              href="/tracking"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full flex items-center justify-center py-4 px-6 rounded-full bg-[#BA1C20] hover:bg-[#9c171a] text-white text-base sm:text-lg font-bold uppercase tracking-tight transition-all shadow-md active:scale-[0.99]"
+            >
+              Track Your Shipment
+            </Link>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   return (
@@ -376,7 +432,6 @@ export function Navbar() {
       {/* 1. INITIAL STATIC NAVBAR: Sits in document flow, fully scrollable with page */}
       <header className="relative w-full bg-white z-40 transition-colors">
         {renderNavContent()}
-        {renderMobileDrawer()}
       </header>
 
       {/* 2. ANIMATED FIXED NAVBAR: Slides down smoothly via Motion once initial navbar scrolls off-screen */}
@@ -388,13 +443,15 @@ export function Navbar() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md shadow-md"
+            className="fixed top-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-md"
           >
             {renderNavContent()}
-            {renderMobileDrawer()}
           </motion.header>
         )}
       </AnimatePresence>
+
+      {/* 3. FULL-SCREEN FIXED MOBILE NAV MODAL */}
+      {renderMobileMenu()}
     </>
   );
 }

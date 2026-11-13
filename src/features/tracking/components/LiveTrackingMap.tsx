@@ -167,7 +167,7 @@ export default function LiveTrackingMap({
         style={{ height: "100%", width: "100%", zIndex: 0 }}
       >
         <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}"
           maxZoom={19}
         />
 
