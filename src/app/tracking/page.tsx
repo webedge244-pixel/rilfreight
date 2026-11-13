@@ -171,7 +171,7 @@ export default function TrackingSearchPage() {
               2. HERO BANNER (Matching Contact & About)
               ==================================================== */}
           <section aria-labelledby="tracking-header-title">
-            <div className="relative w-full min-h-[340px] md:min-h-[420px] rounded-[32px] md:rounded-[36px] overflow-hidden group">
+            <div className="relative w-full min-h-85 md:min-h-105 rounded-4xl md:rounded-[36px] overflow-hidden group">
               {/* Background Photography */}
               <Image
                 src="/images/home-telemetry-control-room.jpg"
@@ -182,10 +182,10 @@ export default function TrackingSearchPage() {
               />
 
               {/* Overlay for typography contrast */}
-              <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
+              <div className="absolute inset-0 bg-primary/55 backdrop-blur-[1px]" />
 
               {/* Banner Content */}
-              <div className="relative z-10 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px] p-8 sm:p-12 md:p-16">
+              <div className="relative z-10 flex flex-col justify-between h-full min-h-85 md:min-h-105 p-8 sm:p-12 md:p-16">
                 <div />
 
                 {/* Giant Title */}
@@ -202,7 +202,7 @@ export default function TrackingSearchPage() {
                 <div>
                   <nav
                     aria-label="Breadcrumb"
-                    className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
+                    className="inline-flex items-center gap-2 bg-white text-primary px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
                   >
                     <Link
                       href="/"
@@ -230,7 +230,7 @@ export default function TrackingSearchPage() {
               <div>
                 <h2
                   id="track-trace-heading"
-                  className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight leading-[1.08] max-w-3xl"
+                  className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-primary tracking-tight leading-[1.08] max-w-3xl"
                 >
                   Track your shipment
                 </h2>
@@ -252,13 +252,13 @@ export default function TrackingSearchPage() {
                       placeholder="Enter your tracking number"
                       value={trackingInput}
                       onChange={(e) => setTrackingInput(e.target.value)}
-                      className="w-full bg-transparent text-sm sm:text-base text-[#0F313A] placeholder:text-slate-400 focus:outline-none py-2.5 font-medium"
+                      className="w-full bg-transparent text-sm sm:text-base text-primary placeholder:text-slate-400 focus:outline-none py-2.5 font-medium"
                     />
                     <button
                       type="submit"
                       disabled={isSearching}
                       aria-label="Track shipment"
-                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#0F313A] hover:bg-[#BA1C20] text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer disabled:opacity-60"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary hover:bg-[#BA1C20] text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer disabled:opacity-60"
                     >
                       <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
                     </button>
@@ -269,9 +269,9 @@ export default function TrackingSearchPage() {
 
             {/* ── RIGHT COLUMN: Recently Tracked Packages (4 cols) ── */}
             <div className="lg:col-span-4">
-              <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 sticky top-28">
+              <div className="bg-white rounded-[28px] sm:rounded-4xl p-6 sm:p-8 sticky top-28">
                 {/* Header */}
-                <h3 className="text-lg font-bold text-[#0F313A] mb-1">
+                <h3 className="text-lg font-bold text-primary mb-1">
                   Recently Tracked
                 </h3>
                 <p className="text-xs text-slate-500 mb-5">
@@ -287,11 +287,11 @@ export default function TrackingSearchPage() {
                         href={`/tracking/${encodeURIComponent(item.code)}`}
                         className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#F0F2F5] transition-all group"
                       >
-                        <div className="w-9 h-9 rounded-full bg-[#F0F2F5] group-hover:bg-white flex items-center justify-center text-[#0F313A] shrink-0 transition-colors">
+                        <div className="w-9 h-9 rounded-full bg-[#F0F2F5] group-hover:bg-white flex items-center justify-center text-primary shrink-0 transition-colors">
                           {getModeIcon(item.mode, "w-4 h-4")}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-mono text-xs font-bold text-[#0F313A] group-hover:text-[#BA1C20] transition-colors truncate">
+                          <p className="font-mono text-xs font-bold text-primary group-hover:text-[#BA1C20] transition-colors truncate">
                             {item.code}
                           </p>
                           <p className="text-[11px] text-slate-400 truncate mt-0.5">
@@ -310,7 +310,7 @@ export default function TrackingSearchPage() {
                     <p className="text-sm font-semibold text-slate-500">
                       No recent shipments
                     </p>
-                    <p className="text-xs text-slate-400 mt-1 max-w-[200px] mx-auto">
+                    <p className="text-xs text-slate-400 mt-1 max-w-50 mx-auto">
                       Track a shipment and it will appear here for quick
                       re-access
                     </p>
@@ -334,11 +334,11 @@ export default function TrackingSearchPage() {
                         href={`/tracking/${encodeURIComponent(item.code)}`}
                         className="shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white transition-all group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-[#F0F2F5] flex items-center justify-center text-[#0F313A]">
+                        <div className="w-8 h-8 rounded-full bg-[#F0F2F5] flex items-center justify-center text-primary">
                           {getModeIcon(item.mode, "w-3.5 h-3.5")}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-mono text-xs font-bold text-[#0F313A] group-hover:text-[#BA1C20] transition-colors whitespace-nowrap">
+                          <p className="font-mono text-xs font-bold text-primary group-hover:text-[#BA1C20] transition-colors whitespace-nowrap">
                             {item.code}
                           </p>
                         </div>
@@ -351,15 +351,12 @@ export default function TrackingSearchPage() {
             </div>
           </section>
 
-          {/* ====================================================
-              4. FAQ SECTION
-              ==================================================== */}
           <section aria-labelledby="faq-heading" className="space-y-10">
             {/* Section Header */}
             <div>
               <h2
                 id="faq-heading"
-                className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#0F313A] tracking-tight leading-[1.08] max-w-3xl"
+                className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-primary tracking-tight leading-[1.08] max-w-3xl"
               >
                 Frequently asked questions
               </h2>
@@ -383,10 +380,10 @@ export default function TrackingSearchPage() {
                     className="w-full flex items-center justify-between gap-4 py-6 sm:py-7 text-left group cursor-pointer"
                     aria-expanded={openFaqIndex === index}
                   >
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#0F313A] group-hover:text-[#BA1C20] transition-colors pr-4">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-primary group-hover:text-[#BA1C20] transition-colors pr-4">
                       {item.question}
                     </h3>
-                    <span className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F0F2F5] group-hover:bg-[#0F313A] group-hover:text-white text-[#0F313A] flex items-center justify-center shrink-0 transition-all">
+                    <span className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F0F2F5] group-hover:bg-primary group-hover:text-white text-[#0F313A] flex items-center justify-center shrink-0 transition-all">
                       {openFaqIndex === index ? (
                         <Minus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.8]" />
                       ) : (
@@ -399,7 +396,7 @@ export default function TrackingSearchPage() {
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
                       openFaqIndex === index
-                        ? "max-h-[500px] opacity-100 pb-6"
+                        ? "max-h-125 opacity-100 pb-6"
                         : "max-h-0 opacity-0"
                     }`}
                   >
