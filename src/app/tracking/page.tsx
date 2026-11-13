@@ -275,10 +275,10 @@ export default function TrackingSearchPage() {
                 </p>
               </div>
 
-              {/* Search Input Box */}
-              <div className="bg-white rounded-[28px] p-6 sm:p-8">
+              {/* Search Input (No wrapping background card) */}
+              <div className="space-y-4">
                 <form onSubmit={handleSearch} className="space-y-4">
-                  <div className="relative flex items-center bg-[#F0F2F5] rounded-full pl-5 pr-1.5 py-1.5 transition-colors">
+                  <div className="relative flex items-center bg-white border border-slate-200 shadow-xs rounded-full pl-5 pr-2.5 sm:pr-3.5 py-1.5 sm:py-2 transition-all focus-within:border-[#0F313A] focus-within:ring-2 focus-within:ring-[#0F313A]/10">
                     <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
                     <input
                       type="text"
@@ -298,7 +298,7 @@ export default function TrackingSearchPage() {
                   </div>
 
                   {/* Quick Demo Shipments */}
-                  <div className="pt-4 border-t border-slate-100">
+                  <div className="pt-4 border-t border-slate-200/60">
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
                       Explore Active Corridor Shipments:
                     </p>
@@ -452,17 +452,17 @@ export default function TrackingSearchPage() {
                   <button
                     type="button"
                     onClick={() => toggleFaq(index)}
-                    className="w-full flex items-center justify-between gap-4 py-6 text-left group cursor-pointer"
+                    className="w-full flex items-center justify-between gap-4 py-6 sm:py-7 text-left group cursor-pointer"
                     aria-expanded={openFaqIndex === index}
                   >
-                    <h3 className="text-base sm:text-lg font-bold text-[#0F313A] group-hover:text-[#BA1C20] transition-colors pr-4">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#0F313A] group-hover:text-[#BA1C20] transition-colors pr-4">
                       {item.question}
                     </h3>
-                    <span className="w-9 h-9 rounded-xl bg-[#F0F2F5] group-hover:bg-[#0F313A] group-hover:text-white text-[#0F313A] flex items-center justify-center shrink-0 transition-all">
+                    <span className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F0F2F5] group-hover:bg-[#0F313A] group-hover:text-white text-[#0F313A] flex items-center justify-center shrink-0 transition-all">
                       {openFaqIndex === index ? (
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.8]" />
                       ) : (
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.8]" />
                       )}
                     </span>
                   </button>
