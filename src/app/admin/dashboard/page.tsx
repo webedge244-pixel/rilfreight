@@ -274,8 +274,60 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Mobile Cards (< sm) */}
+          <div className="sm:hidden space-y-3">
+            {recentShipments.map((shipment) => (
+              <div
+                key={shipment.id}
+                className="bg-white dark:bg-slate-900 rounded-xl p-4 space-y-2.5"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <Link
+                    href={`/admin/shipments/${shipment.id}`}
+                    className="font-mono font-bold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors"
+                  >
+                    {shipment.trackingCode}
+                  </Link>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 capitalize shrink-0">
+                    {modeIcon(shipment.mode)}
+                    <span>{shipment.mode}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <span
+                    className={cn(
+                      "inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider",
+                      statusColor(shipment.status)
+                    )}
+                  >
+                    {formatStatus(shipment.status)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Route</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      {shipment.originCode} → {shipment.destinationCode}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">ETA</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      {new Date(shipment.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Table (>= sm) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">

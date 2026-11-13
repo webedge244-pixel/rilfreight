@@ -427,8 +427,157 @@ export default function ShipmentsPage() {
         </div>
       </div>
 
-      {/* Shipments Table matching Dashboard styling */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 overflow-x-auto">
+      {/* 1. MOBILE SHIPMENT CARDS (< md) */}
+      <div className="md:hidden space-y-3.5">
+        {filteredShipments.map((s) => {
+          const hasHoldGate =
+            s.isPaused ||
+            s.status === "customs_hold" ||
+            s.milestones?.some((m) => m.isHoldGate && !m.isCompleted);
+          const canTriggerException = s.status !== "delivered";
+
+          return (
+            <div
+              key={s.id}
+              className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 space-y-3"
+            >
+              {/* Top Row: Tracking Code + Mode Pill */}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <Link
+                    href={`/admin/shipments/${s.id}`}
+                    className="font-mono font-bold text-base text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
+                  >
+                    {s.trackingCode}
+                  </Link>
+                  {s.consignmentReference && (
+                    <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[200px]">
+                      {s.consignmentReference}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize shrink-0">
+                  {modeIcon(s.mode)}
+                  <span>{s.mode}</span>
+                </div>
+              </div>
+
+              {/* Status Badge & Hold Gate Notice */}
+              <div>
+                {s.isPaused ? (
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                      <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                      HOLD GATE ACTIVE
+                    </span>
+                    {s.pausedReason && (
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        {s.pausedReason}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <span
+                    className={cn(
+                      "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                      statusColor(s.status)
+                    )}
+                  >
+                    {formatStatus(s.status)}
+                  </span>
+                )}
+              </div>
+
+              {/* Route & Shipment Meta Grid */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                    Route
+                  </span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {s.originCode} → {s.destinationCode}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                    ETA
+                  </span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {new Date(
+                      s.actualDeliveryDate || s.estimatedDeliveryDate
+                    ).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                {s.conveyanceName && (
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                      Conveyance
+                    </span>
+                    <span className="text-slate-600 dark:text-slate-400 truncate block">
+                      {s.conveyanceName}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                    Weight
+                  </span>
+                  <span className="font-mono text-slate-600 dark:text-slate-400">
+                    {s.grossWeightKg.toLocaleString()} kg
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Actions Row */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                <Link
+                  href={`/admin/shipments/${s.id}`}
+                  className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  View Details →
+                </Link>
+                <div className="flex items-center gap-1.5">
+                  {hasHoldGate && (
+                    <button
+                      type="button"
+                      onClick={() => handleReleaseGate(s)}
+                      disabled={isSubmittingAction}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-all"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5" />
+                      Release
+                    </button>
+                  )}
+                  {canTriggerException && (
+                    <button
+                      type="button"
+                      onClick={() => openExceptionModal(s)}
+                      disabled={isSubmittingAction}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Exception
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredShipments.length === 0 && (
+          <div className="py-12 text-center text-sm text-slate-400 bg-white dark:bg-slate-900 rounded-2xl">
+            No shipments found matching current query and filters.
+          </div>
+        )}
+      </div>
+
+      {/* 2. DESKTOP SHIPMENTS TABLE (>= md) */}
+      <div className="hidden md:block bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">

@@ -154,39 +154,6 @@ export default function TrackingSearchPage() {
     }, 150);
   };
 
-  const handleQuickTrack = (code: string) => {
-    setTrackingInput(code);
-    // Save to recently tracked
-    try {
-      const existing = getRecentlyTracked();
-      const demo = DEMO_SHIPMENTS.find(
-        (s) => s.trackingCode.toUpperCase() === code.toUpperCase(),
-      );
-      const newItem: RecentlyTrackedItem = {
-        code: code.toUpperCase(),
-        mode: demo?.mode || "ocean",
-        origin: demo
-          ? `${demo.originName} (${demo.originCode})`
-          : "Unknown Origin",
-        destination: demo
-          ? `${demo.destinationName} (${demo.destinationCode})`
-          : "Unknown Destination",
-        timestamp: Date.now(),
-      };
-      const filtered = existing.filter((r) => r.code !== code.toUpperCase());
-      const updated = [newItem, ...filtered].slice(0, 5);
-      localStorage.setItem(
-        "rilfreight_recently_tracked",
-        JSON.stringify(updated),
-      );
-      setRecentItems(updated);
-    } catch {
-      // silently fail
-    }
-
-    router.push(`/tracking/${encodeURIComponent(code)}`);
-  };
-
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index));
   };
@@ -295,45 +262,6 @@ export default function TrackingSearchPage() {
                     >
                       <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
                     </button>
-                  </div>
-
-                  {/* Quick Demo Shipments */}
-                  <div className="pt-4 border-t border-slate-200/60">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-                      Explore Active Corridor Shipments:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {DEMO_SHIPMENTS.map((s) => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          onClick={() => handleQuickTrack(s.trackingCode)}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F0F2F5] hover:bg-slate-200 text-xs font-mono font-medium text-[#0F313A] transition-all group cursor-pointer"
-                        >
-                          <span className="text-slate-400 group-hover:text-[#BA1C20] transition-colors">
-                            {getModeIcon(s.mode, "w-3.5 h-3.5")}
-                          </span>
-                          <span className="group-hover:text-[#BA1C20] transition-colors">
-                            {s.trackingCode}
-                          </span>
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                              s.isPaused
-                                ? "bg-amber-100 text-amber-800"
-                                : s.status === "delivered"
-                                  ? "bg-emerald-100 text-emerald-800"
-                                  : "bg-sky-100 text-sky-800"
-                            }`}
-                          >
-                            {s.isPaused
-                              ? "Hold"
-                              : s.status === "delivered"
-                                ? "Delivered"
-                                : "Active"}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 </form>
               </div>
