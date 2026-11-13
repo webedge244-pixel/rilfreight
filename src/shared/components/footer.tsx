@@ -52,25 +52,7 @@ export function Footer({ embedded = false }: FooterProps) {
               </Link>
 
               {/* Social Media Links */}
-              <div className="flex items-center gap-3 mb-8">
-                {[
-                  { name: "Facebook", label: "f", href: "https://facebook.com" },
-                  { name: "Twitter/X", label: "X", href: "https://x.com" },
-                  { name: "LinkedIn", label: "in", href: "https://linkedin.com" },
-                  { name: "YouTube", label: "yt", href: "https://youtube.com" },
-                ].map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Visit our ${social.name} page`}
-                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#BA1C20] hover:text-white text-slate-300 font-bold text-xs flex items-center justify-center transition-all duration-200"
-                  >
-                    {social.label}
-                  </a>
-                ))}
-              </div>
+              <div></div>
             </div>
 
             {/* Stylized Outlined Text "since 2000" */}

@@ -302,47 +302,19 @@ export function Navbar() {
     </div>
   );
 
-  const renderMobileMenu = () => (
+  const renderMobileDropdown = () => (
     <AnimatePresence>
       {mobileMenuOpen && (
         <motion.div
-          key="mobile-nav-modal"
-          initial={{ opacity: 0, scale: 0.98, y: -6 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: -6 }}
-          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:hidden fixed top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 z-50 h-[calc(100dvh-20px)] rounded-2xl bg-white shadow-2xl p-6 sm:p-7 flex flex-col justify-between overflow-hidden"
+          key="mobile-nav-dropdown"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:hidden fixed top-28 sm:top-32 left-0 right-0 bottom-0 z-40 bg-white px-6 py-6 flex flex-col justify-between overflow-y-auto"
         >
-          {/* Header Row: Wordmark + Close Button */}
-          <div className="flex items-center justify-between shrink-0 pb-4 border-b border-slate-100">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center select-none"
-            >
-              <div className="flex flex-col">
-                <span className="text-2xl font-black tracking-tight text-[#0F313A] leading-none">
-                  RILFREIGHT
-                  <span className="text-[#BA1C20] ml-0.5">.</span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 leading-none mt-1">
-                  Express Logistics
-                </span>
-              </div>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label="Close navigation menu"
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
           {/* Nav List with Enlarged Bold Typography & Underline Active Indicator */}
-          <div className="flex-1 overflow-y-auto py-6">
+          <div className="flex-1 overflow-y-auto py-2">
             <nav aria-label="Mobile Navigation">
               <ul className="space-y-4">
                 {NAV_ITEMS.map((item) => {
@@ -429,14 +401,21 @@ export function Navbar() {
 
   return (
     <>
-      {/* 1. INITIAL STATIC NAVBAR: Sits in document flow, fully scrollable with page */}
-      <header className="relative w-full bg-white z-40 transition-colors">
+      {/* 1. INITIAL STATIC NAVBAR: Pinned fixed if mobile menu is open, otherwise in-flow */}
+      <header
+        className={cn(
+          "w-full bg-white transition-colors",
+          mobileMenuOpen
+            ? "fixed top-0 left-0 right-0 z-50 border-b border-slate-100 shadow-sm"
+            : "relative z-40"
+        )}
+      >
         {renderNavContent()}
       </header>
 
       {/* 2. ANIMATED FIXED NAVBAR: Slides down smoothly via Motion once initial navbar scrolls off-screen */}
       <AnimatePresence>
-        {isScrolledPast && (
+        {isScrolledPast && !mobileMenuOpen && (
           <motion.header
             key="fixed-navbar"
             initial={{ y: -100, opacity: 0 }}
@@ -450,8 +429,8 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* 3. FULL-SCREEN FIXED MOBILE NAV MODAL */}
-      {renderMobileMenu()}
+      {/* 3. FULL-WIDTH FIXED MOBILE DROPDOWN (Directly below header) */}
+      {renderMobileDropdown()}
     </>
   );
 }
