@@ -25,14 +25,14 @@ import { Select } from "@/shared/components/select";
 import { Button } from "@/shared/components/button";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 
-// SSR-safe dynamic import for Leaflet RouteMiniMap
+// SSR-safe dynamic import for Vector RouteMiniMapLibre
 const RouteMiniMap = dynamic(
-  () => import("@/features/routing/components/RouteMiniMap"),
+  () => import("@/features/routing/components/RouteMiniMapLibre"),
   {
     ssr: false,
     loading: () => (
       <div className="h-[380px] w-full rounded-2xl bg-slate-900 flex items-center justify-center text-slate-500 text-xs font-mono">
-        Loading Interactive Route Map...
+        Loading Interactive Vector Route Map...
       </div>
     ),
   }
@@ -405,23 +405,28 @@ export default function NewShipmentPage() {
 
         departureDate: depDate.toISOString(),
         estimatedDeliveryDate: estDelDate.toISOString(),
+        actualDeliveryDate: null,
 
         isPaused: false,
+        pausedAtTimestamp: null,
+        pausedLocationName: null,
+        pausedCoordinates: null,
+        pausedReason: null,
 
         conveyanceName: conveyance,
-        conveyanceIdentifier: formState.conveyanceIdentifier.trim(),
-        voyageNumber: formState.voyageNumber.trim(),
+        conveyanceIdentifier: formState.conveyanceIdentifier.trim() || null,
+        voyageNumber: formState.voyageNumber.trim() || null,
         consignmentReference:
           formState.consignmentReference.trim() ||
           `REF-${Date.now().toString().slice(-6)}`,
-        containerNumber: formState.containerNumber.trim(),
-        sealNumber: formState.sealNumber.trim(),
+        containerNumber: formState.containerNumber.trim() || null,
+        sealNumber: formState.sealNumber.trim() || null,
 
         totalPieces: pieces,
         grossWeightKg: weight,
-        volumeCbm: Number(formState.volumeCbm) || 0,
+        volumeCbm: formState.volumeCbm ? Number(formState.volumeCbm) : null,
         goodsDescription: goods,
-        clientName: formState.clientName.trim(),
+        clientName: formState.clientName.trim() || null,
 
         routeCoordinates: finalCoords,
         waypoints: waypoints,

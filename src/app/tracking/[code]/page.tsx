@@ -21,16 +21,19 @@ import {
   Package,
   CheckCircle2,
   MapPin,
+  X,
+  ArrowUpRight,
 } from "lucide-react";
 
-// Dynamically load LiveTrackingMap with SSR disabled to prevent Leaflet window reference errors
+// Dynamically load LiveTrackingMapLibre with SSR disabled to prevent window reference errors
 const LiveTrackingMap = dynamic(
-  () => import("@/features/tracking/components/LiveTrackingMap"),
+  () => import("@/features/tracking/components/LiveTrackingMapLibre"),
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[520px] rounded-3xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <p className="text-sm font-medium tracking-wide">Initializing Global Telemetry & Satellite Maps...</p>
+      <div className="w-full h-[620px] rounded-3xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3">
+        <div className="w-10 h-10 border-3 border-[#0284c7] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm font-semibold tracking-wide text-slate-300">Initializing High-Definition Vector Telemetry...</p>
       </div>
     ),
   }
@@ -83,6 +86,7 @@ function TrackingDetailContent() {
   const [shipment, setShipment] = React.useState<Shipment | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [showManifestModal, setShowManifestModal] = React.useState<boolean>(false);
 
   // Automatically mark user as connected when they open a tracking link with ?uid=...
   React.useEffect(() => {
@@ -370,8 +374,8 @@ function TrackingDetailContent() {
       {/* Main Page Content (Bento Grid: Map, Manifest & Milestones) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Map Card */}
-          <div className="lg:col-span-8">
+          {/* Main Map Card (7 cols) */}
+          <div className="lg:col-span-7">
             <div className="relative w-full rounded-3xl overflow-hidden">
               {/* Floating Header directly on top of map */}
               <div className="absolute top-4 left-4 right-4 z-[400] flex items-center justify-between pointer-events-none">
@@ -388,108 +392,188 @@ function TrackingDetailContent() {
                 </div>
               </div>
 
-              {/* Interactive Leaflet Map */}
+              {/* Interactive Vector Map */}
               <LiveTrackingMap
                 shipment={shipment}
-                height="560px"
+                height="620px"
                 className="border border-slate-200 dark:border-slate-800 shadow-inner"
               />
+
+              {/* Cargo Specifications Manifest Overlay (Bottom 40% of Map, flush to bottom & sides, rounded-t-3xl) */}
+              <div className="absolute bottom-0 left-0 right-0 z-[400] h-[40%] rounded-t-3xl rounded-b-none border-t border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-2xl p-5 sm:p-6 flex flex-col justify-between overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                    CARGO MANIFEST
+                  </h3>
+                  <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+                    {shipment.consignmentReference}
+                  </span>
+                </div>
+
+                {/* Structured metrics on main background with clean vertical hairlines */}
+                <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-800 py-3 border-y border-slate-200/70 dark:border-slate-800/70 text-xs">
+                  <div className="pr-3">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                      Conveyance
+                    </span>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
+                      {shipment.conveyanceName}
+                    </p>
+                    <p className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
+                      {shipment.voyageNumber ? `Voyage ${shipment.voyageNumber}` : shipment.conveyanceIdentifier ? `ID: ${shipment.conveyanceIdentifier}` : "Active Transit"}
+                    </p>
+                  </div>
+
+                  <div className="px-3">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                      Gross Weight
+                    </span>
+                    <p className="text-sm sm:text-base font-extrabold font-mono text-slate-900 dark:text-white mt-0.5">
+                      {shipment.grossWeightKg.toLocaleString()} <span className="text-xs font-semibold text-slate-500 font-sans">kg</span>
+                    </p>
+                    <p className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
+                      {shipment.volumeCbm ? `${shipment.volumeCbm} CBM` : "Verified Scale"}
+                    </p>
+                  </div>
+
+                  <div className="pl-3">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                      Total Pieces
+                    </span>
+                    <p className="text-sm sm:text-base font-extrabold font-mono text-slate-900 dark:text-white mt-0.5">
+                      {shipment.totalPieces} <span className="text-xs font-semibold text-slate-500 font-sans">units</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      {shipment.goodsDescription || "General Cargo"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Signature RIL Freight CTA Button (inspired by home page) */}
+                <button
+                  type="button"
+                  onClick={() => setShowManifestModal(true)}
+                  className="group w-full inline-flex items-center justify-between bg-[#0F313A] hover:bg-[#BA1C20] text-white rounded-2xl pl-6 pr-2.5 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                >
+                  <span>View Full Manifest Details</span>
+                  <span className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center transition-all duration-300 group-hover:bg-white/25 group-hover:rotate-45">
+                    <ArrowUpRight className="w-4 h-4 text-white stroke-[2.5]" />
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Sidebar: Cargo Manifest & Milestone Timeline */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Cargo Specifications Manifest Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 space-y-4">
-              <div className="flex items-center gap-2 pb-3">
-                <Package className="w-4 h-4 text-[#BA1C20]" />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-black dark:text-white">
-                  Cargo Specifications Manifest
-                </h3>
-              </div>
-
-              <div className="space-y-3.5 text-xs">
-                <div>
-                  <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                    Conveyance & Identification
-                  </span>
-                  <p className="font-bold text-black dark:text-white mt-0.5">
-                    {shipment.conveyanceName}
-                  </p>
-                  {shipment.conveyanceIdentifier && (
-                    <p className="font-mono text-slate-500 text-[11px]">
-                      ID: {shipment.conveyanceIdentifier}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div>
-                    <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                      Consignment Ref
-                    </span>
-                    <p className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {shipment.consignmentReference}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                      Gross Weight
-                    </span>
-                    <p className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {shipment.grossWeightKg.toLocaleString()} kg
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div>
-                    <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                      Total Pieces
-                    </span>
-                    <p className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {shipment.totalPieces} units
-                    </p>
-                  </div>
-                  {shipment.volumeCbm && (
-                    <div>
-                      <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                        Volume
-                      </span>
-                      <p className="font-mono font-bold text-black dark:text-white mt-0.5">
-                        {shipment.volumeCbm} CBM
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-2">
-                  <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                    Goods Description
-                  </span>
-                  <p className="text-slate-700 dark:text-slate-300 font-medium mt-0.5 leading-relaxed">
-                    {shipment.goodsDescription}
-                  </p>
-                </div>
-
-                {shipment.clientName && (
-                  <div className="pt-2">
-                    <span className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider block">
-                      Consignee / Client
-                    </span>
-                    <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                      {shipment.clientName}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Checkpoint Timeline */}
+          {/* Sidebar: Checkpoint Milestone Timeline (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
             <TrackingTimeline shipment={shipment} />
           </div>
         </div>
       </div>
+
+      {/* Fixed Position Popup Modal for Full Cargo Manifest (Clean unified document canvas) */}
+      {showManifestModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative max-w-2xl w-full bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  CARGO MANIFEST SPECIFICATIONS
+                </h3>
+                <p className="text-xs font-mono text-slate-500 mt-0.5">
+                  Consignment Reference: <strong className="text-slate-800 dark:text-slate-200">{shipment.consignmentReference}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowManifestModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close manifest"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Section 1: Conveyance & Transit */}
+            <div className="space-y-3 pb-5 border-b border-slate-200 dark:border-slate-800">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-wider uppercase">
+                CONVEYANCE & TRANSIT INFORMATION
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-xs pt-1">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Conveyance Name</span>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{shipment.conveyanceName}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Identifier / IMO</span>
+                  <p className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm mt-0.5">{shipment.conveyanceIdentifier || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Voyage / Flight No</span>
+                  <p className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm mt-0.5">{shipment.voyageNumber || "—"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Weight, Quantity & Equipment */}
+            <div className="space-y-3 pb-5 border-b border-slate-200 dark:border-slate-800">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-wider uppercase">
+                WEIGHT, QUANTITY & EQUIPMENT
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-3 gap-x-4 text-xs pt-1">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Gross Weight</span>
+                  <p className="font-mono font-bold text-slate-900 dark:text-white text-sm mt-0.5">{shipment.grossWeightKg.toLocaleString()} kg</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Total Quantity</span>
+                  <p className="font-mono font-bold text-slate-900 dark:text-white text-sm mt-0.5">{shipment.totalPieces} units</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Volume</span>
+                  <p className="font-mono font-bold text-slate-900 dark:text-white text-sm mt-0.5">{shipment.volumeCbm ? `${shipment.volumeCbm} CBM` : "—"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Container Number</span>
+                  <p className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5">{shipment.containerNumber || "Breakbulk"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Cargo Description & Consignee */}
+            <div className="space-y-3 pb-2">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-wider uppercase">
+                CARGO DESCRIPTION & CONSIGNEE
+              </h4>
+              <div className="space-y-2.5 pt-1">
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                  {shipment.goodsDescription || "Standard commercial freight shipment."}
+                </p>
+                {shipment.clientName && (
+                  <p className="text-xs text-slate-500">
+                    Consignee / Client: <strong className="text-slate-800 dark:text-slate-200">{shipment.clientName}</strong>
+                  </p>
+                )}
+                {shipment.sealNumber && (
+                  <p className="text-xs text-slate-500 font-mono">
+                    Security Seal: <strong className="text-slate-800 dark:text-slate-200">{shipment.sealNumber}</strong>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setShowManifestModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-[#0F313A] hover:bg-[#BA1C20] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                Close Manifest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Settings, X, LogOut } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { ADMIN_NAV_LINKS } from "@/shared/lib/demoData";
+import { ADMIN_NAV_LINKS } from "@/features/admin/constants";
 import { useAdminAuth } from "@/features/auth/AdminAuthProvider";
 
 /**
@@ -15,7 +15,7 @@ import { useAdminAuth } from "@/features/auth/AdminAuthProvider";
 function getPageTitle(pathname: string): string {
   const clean = pathname.replace(/^\/admin/, "") || "/dashboard";
   if (clean === "/dashboard" || clean === "/") return "DASHBOARD";
-  if (clean === "/shipments/new") return "NEW SHIPMENT";
+  if (clean === "/new" || clean === "/shipments/new") return "NEW SHIPMENT";
   if (clean.startsWith("/shipments/")) return "SHIPMENT";
   if (clean === "/shipments") return "SHIPMENTS";
   if (clean === "/users") return "USERS";
@@ -82,7 +82,13 @@ export function AdminMobileNav() {
         pathname === "/"
       );
     }
-    return cleanPath.startsWith(cleanHref);
+    if (cleanHref === "/shipments") {
+      return (
+        cleanPath === "/shipments" ||
+        (cleanPath.startsWith("/shipments/") && cleanPath !== "/shipments/new")
+      );
+    }
+    return cleanPath === cleanHref || cleanPath.startsWith(cleanHref + "/");
   };
 
   return (

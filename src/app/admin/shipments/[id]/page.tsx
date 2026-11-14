@@ -37,15 +37,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-// SSR-safe dynamic import for the Leaflet map
+// SSR-safe dynamic import for the MapLibre GL vector map
 const LiveTrackingMap = dynamic(
-  () => import("@/features/tracking/components/LiveTrackingMap"),
+  () => import("@/features/tracking/components/LiveTrackingMapLibre"),
   {
     ssr: false,
     loading: () => (
-      <div className="h-[280px] sm:h-[360px] rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-        <span className="text-sm text-slate-400 font-semibold">
-          Loading route map...
+      <div className="h-[280px] sm:h-[360px] rounded-2xl bg-slate-900 flex items-center justify-center">
+        <span className="text-sm text-slate-300 font-semibold">
+          Loading Vector Route Map...
         </span>
       </div>
     ),
@@ -428,10 +428,12 @@ function ShipmentDetailContent() {
           : shipment.estimatedDeliveryDate,
         actualDeliveryDate: editFormData.actualDeliveryDate
           ? new Date(editFormData.actualDeliveryDate).toISOString()
-          : undefined,
+          : null,
         isPaused: editFormData.isPaused,
-        pausedReason: editFormData.isPaused ? editFormData.pausedReason : undefined,
-        pausedLocationName: editFormData.isPaused ? editFormData.pausedLocationName : undefined,
+        pausedReason: editFormData.isPaused ? editFormData.pausedReason.trim() || null : null,
+        pausedLocationName: editFormData.isPaused ? editFormData.pausedLocationName.trim() || null : null,
+        pausedAtTimestamp: editFormData.isPaused ? shipment.pausedAtTimestamp || new Date().toISOString() : null,
+        pausedCoordinates: editFormData.isPaused ? shipment.pausedCoordinates || null : null,
         originName: editFormData.originName,
         originCode: editFormData.originCode,
         originCountry: editFormData.originCountry,
@@ -439,16 +441,16 @@ function ShipmentDetailContent() {
         destinationCode: editFormData.destinationCode,
         destinationCountry: editFormData.destinationCountry,
         conveyanceName: editFormData.conveyanceName,
-        conveyanceIdentifier: editFormData.conveyanceIdentifier,
-        voyageNumber: editFormData.voyageNumber,
+        conveyanceIdentifier: editFormData.conveyanceIdentifier?.trim() || null,
+        voyageNumber: editFormData.voyageNumber?.trim() || null,
         consignmentReference: editFormData.consignmentReference,
-        containerNumber: editFormData.containerNumber,
-        sealNumber: editFormData.sealNumber,
+        containerNumber: editFormData.containerNumber?.trim() || null,
+        sealNumber: editFormData.sealNumber?.trim() || null,
         totalPieces: Number(editFormData.totalPieces) || 0,
         grossWeightKg: Number(editFormData.grossWeightKg) || 0,
-        volumeCbm: editFormData.volumeCbm ? Number(editFormData.volumeCbm) : undefined,
+        volumeCbm: editFormData.volumeCbm ? Number(editFormData.volumeCbm) : null,
         goodsDescription: editFormData.goodsDescription,
-        clientName: editFormData.clientName,
+        clientName: editFormData.clientName?.trim() || null,
         milestones: formattedMilestones,
         updatedAt: new Date().toISOString(),
       };

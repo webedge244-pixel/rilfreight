@@ -156,27 +156,27 @@ export interface Shipment {
   // Schedule timestamps
   departureDate: string; // ISO string
   estimatedDeliveryDate: string;
-  actualDeliveryDate?: string;
+  actualDeliveryDate: string | null;
 
   // Real-time tracking control state
   isPaused: boolean;
-  pausedAtTimestamp?: string;
-  pausedLocationName?: string;
-  pausedCoordinates?: [number, number];
-  pausedReason?: string;
+  pausedAtTimestamp: string | null;
+  pausedLocationName: string | null;
+  pausedCoordinates: [number, number] | null;
+  pausedReason: string | null;
 
   // Cargo Specifications
   conveyanceName: string; // Vessel name, Flight No, or Train ID
-  conveyanceIdentifier?: string; // IMO number, Aircraft reg, Wagon ID
-  voyageNumber?: string;
+  conveyanceIdentifier: string | null; // IMO number, Aircraft reg, Wagon ID
+  voyageNumber: string | null;
   consignmentReference: string; // Bill of Lading, AWB, or CIM number
-  containerNumber?: string;
-  sealNumber?: string;
+  containerNumber: string | null;
+  sealNumber: string | null;
   totalPieces: number;
   grossWeightKg: number;
-  volumeCbm?: number;
+  volumeCbm: number | null;
   goodsDescription: string;
-  clientName?: string; // Client / Consignee Name
+  clientName: string | null; // Client / Consignee Name
   linkedUserIds?: string[]; // IDs of PlatformUsers linked to this shipment
 
   // Geometry and Timeline

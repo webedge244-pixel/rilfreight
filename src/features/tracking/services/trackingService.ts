@@ -187,15 +187,13 @@ export function releaseShipmentGate(shipment: Shipment): Shipment {
     ...shipment,
     isPaused: false,
     status: "in_transit",
+    pausedReason: null,
+    pausedAtTimestamp: null,
+    pausedCoordinates: null,
+    pausedLocationName: null,
     milestones: updatedMilestones,
     updatedAt: new Date().toISOString(),
   };
-
-  // Remove paused fields so Firestore payload has zero undefined values
-  delete updated.pausedReason;
-  delete updated.pausedAtTimestamp;
-  delete updated.pausedCoordinates;
-  delete updated.pausedLocationName;
 
   return updated;
 }

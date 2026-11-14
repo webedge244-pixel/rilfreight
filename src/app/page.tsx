@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   ChevronRight,
@@ -73,145 +74,10 @@ const HERO_SLIDES: HeroSlide[] = [
   },
 ];
 
-interface TrackingRecord {
-  code: string;
-  mode: "ocean" | "air" | "rail" | "road";
-  vesselOrFlight: string;
-  carrier: string;
-  origin: string;
-  destination: string;
-  currentStatus: string;
-  progressPercent: number;
-  currentLocation: string;
-  eta: string;
-  temperature?: string;
-  milestones: { title: string; time: string; completed: boolean }[];
-}
 
-const MOCK_TRACKING_DATABASE: Record<string, TrackingRecord> = {
-  "RIL-849201": {
-    code: "RIL-849201",
-    mode: "ocean",
-    vesselOrFlight: "M/V Atlantic Voyager (IMO 9821045)",
-    carrier: "RILFREIGHT Maritime Alliance",
-    origin: "Shanghai Port (CNSHA)",
-    destination: "Rotterdam Gateway (NLRTM)",
-    currentStatus: "In Transit — Navigating Red Sea Corridor",
-    progressPercent: 68,
-    currentLocation: "21.4820° N, 38.0124° E (Speed: 19.4 knots)",
-    eta: "Nov 14, 2026 — 08:30 CET",
-    temperature: "21.2°C (Dry Freight Standard)",
-    milestones: [
-      {
-        title: "Container Loaded at CNSHA Berth 4",
-        time: "Oct 28, 04:15",
-        completed: true,
-      },
-      {
-        title: "Malacca Strait High-Speed Transit",
-        time: "Nov 02, 11:40",
-        completed: true,
-      },
-      {
-        title: "Bab-el-Mandeb Secure Checkpoint",
-        time: "Nov 06, 18:20",
-        completed: true,
-      },
-      {
-        title: "Suez Canal Priority Transit Queue",
-        time: "In Progress",
-        completed: false,
-      },
-      {
-        title: "Rotterdam Maasvlakte Berth Arrival",
-        time: "Nov 14, 08:30",
-        completed: false,
-      },
-    ],
-  },
-  "AIR-309112": {
-    code: "AIR-309112",
-    mode: "air",
-    vesselOrFlight: "Boeing 747-8F (Flight RIL-824)",
-    carrier: "RILFREIGHT SkyCargo Worldwide",
-    origin: "Tokyo Narita Hub (NRT)",
-    destination: "Frankfurt Cargo City (FRA)",
-    currentStatus: "Final Descent — Approaching Runway 25C",
-    progressPercent: 92,
-    currentLocation: "50.0379° N, 8.5622° E (Alt: 3,400 ft)",
-    eta: "Today — 16:45 CET",
-    temperature: "4.8°C (PharmaSec GDP Validated)",
-    milestones: [
-      {
-        title: "Export Customs Release at Tokyo NRT",
-        time: "Nov 08, 02:10",
-        completed: true,
-      },
-      {
-        title: "Main-Deck Biocontainer Staging",
-        time: "Nov 08, 03:45",
-        completed: true,
-      },
-      {
-        title: "Trans Polar Great Circle Transit",
-        time: "Nov 08, 09:20",
-        completed: true,
-      },
-      {
-        title: "Frankfurt Air Traffic Control Contact",
-        time: "Nov 08, 16:15",
-        completed: true,
-      },
-      {
-        title: "Direct Ramp Cross-Dock Transfer",
-        time: "Estimated 17:15",
-        completed: false,
-      },
-    ],
-  },
-  "RAI-552904": {
-    code: "RAI-552904",
-    mode: "rail",
-    vesselOrFlight: "Heavy Intermodal Train #CPKC-9044",
-    carrier: "RILFREIGHT Transcontinental Rail",
-    origin: "Vancouver Roberts Bank (VAN)",
-    destination: "Chicago Intermodal Yard (CHI)",
-    currentStatus: "En Route — Continental Divide Trestle",
-    progressPercent: 46,
-    currentLocation: "51.4281° N, 116.3129° W (Speed: 52 mph)",
-    eta: "Nov 11, 2026 — 22:00 CST",
-    temperature: "Ambient Sensor Active (-2°C)",
-    milestones: [
-      {
-        title: "Double-Stack Well Cars Loaded",
-        time: "Nov 05, 14:00",
-        completed: true,
-      },
-      {
-        title: "Departed Fraser Valley Corridor",
-        time: "Nov 06, 08:30",
-        completed: true,
-      },
-      {
-        title: "Kicking Horse Pass Mountain Curve",
-        time: "Current Sector",
-        completed: true,
-      },
-      {
-        title: "Calgary Classification Sorting",
-        time: "Nov 09, 06:00",
-        completed: false,
-      },
-      {
-        title: "Chicago Logistics Park Handover",
-        time: "Nov 11, 22:00",
-        completed: false,
-      },
-    ],
-  },
-};
 
 export default function HomePage() {
+  const router = useRouter();
   // ----------------------------------------------------
   // Hero Carousel State
   // ----------------------------------------------------
@@ -241,8 +107,6 @@ export default function HomePage() {
   // Live Tracking Search State
   // ----------------------------------------------------
   const [trackingCodeInput, setTrackingCodeInput] = React.useState("");
-  const [activeTrackingResult, setActiveTrackingResult] =
-    React.useState<TrackingRecord | null>(null);
   const [trackingError, setTrackingError] = React.useState<string | null>(null);
   const [isSearchingTracking, setIsSearchingTracking] = React.useState(false);
 
@@ -252,66 +116,14 @@ export default function HomePage() {
 
     if (!clean) {
       setTrackingError(
-        "Please enter a valid tracking number (e.g., RIL-849201).",
+        "Please enter a valid tracking number (e.g., RIL-8492-3019-US)."
       );
       return;
     }
 
     setTrackingError(null);
     setIsSearchingTracking(true);
-
-    setTimeout(() => {
-      setIsSearchingTracking(false);
-      if (MOCK_TRACKING_DATABASE[clean]) {
-        setActiveTrackingResult(MOCK_TRACKING_DATABASE[clean]);
-      } else {
-        // Fallback dynamic tracking record for any valid alphanumeric format
-        setActiveTrackingResult({
-          code: clean,
-          mode: clean.startsWith("AIR")
-            ? "air"
-            : clean.startsWith("RAI")
-              ? "rail"
-              : "ocean",
-          vesselOrFlight: `RILFREIGHT Carrier #${clean.slice(-4)}`,
-          carrier: "RILFREIGHT Integrated Logistics",
-          origin: "Shenzhen Yantian Terminal (CNSZX)",
-          destination: "Los Angeles Long Beach (USLAX)",
-          currentStatus: "In Transit — High Seas Satellite Tracking Active",
-          progressPercent: 54,
-          currentLocation: "32.1402° N, 148.9102° W (Speed: 18.2 kts)",
-          eta: "Nov 16, 2026 — 14:00 PST",
-          temperature: "19.5°C Verified",
-          milestones: [
-            {
-              title: "Consignment Handover & Scanned",
-              time: "Nov 02, 10:00",
-              completed: true,
-            },
-            {
-              title: "Export Clearance & Terminal Loading",
-              time: "Nov 03, 16:30",
-              completed: true,
-            },
-            {
-              title: "Mid-Pacific Transit Corridor",
-              time: "Current Sector",
-              completed: true,
-            },
-            {
-              title: "Port Pilot Boarding & Berthing",
-              time: "Nov 15, 20:00",
-              completed: false,
-            },
-            {
-              title: "Final Drayage Hub Delivery",
-              time: "Nov 16, 14:00",
-              completed: false,
-            },
-          ],
-        });
-      }
-    }, 450);
+    router.push(`/tracking/${encodeURIComponent(clean)}`);
   };
 
   // ----------------------------------------------------
@@ -612,147 +424,7 @@ export default function HomePage() {
           </div>
 
           {/* Interactive Modal / Popover: Render Live Tracking Record when active */}
-          {activeTrackingResult && (
-            <div className="mt-6 bg-white border-2 border-[#0F313A] rounded-3xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-top-4 duration-300">
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#0F313A] text-white flex items-center justify-center">
-                    {activeTrackingResult.mode === "ocean" && (
-                      <Ship className="w-5 h-5 text-[#BA1C20]" />
-                    )}
-                    {activeTrackingResult.mode === "air" && (
-                      <Plane className="w-5 h-5 text-[#BA1C20]" />
-                    )}
-                    {activeTrackingResult.mode === "rail" && (
-                      <Train className="w-5 h-5 text-[#BA1C20]" />
-                    )}
-                    {activeTrackingResult.mode === "road" && (
-                      <Truck className="w-5 h-5 text-[#BA1C20]" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-black text-[#0F313A] font-mono">
-                        {activeTrackingResult.code}
-                      </span>
-                      <Badge variant="success" className="text-[10px]">
-                        Active Signal
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      {activeTrackingResult.carrier} •{" "}
-                      {activeTrackingResult.vesselOrFlight}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400 block font-semibold uppercase">
-                      Estimated Arrival
-                    </span>
-                    <span className="text-sm font-bold text-[#0F313A]">
-                      {activeTrackingResult.eta}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setActiveTrackingResult(null)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Waypoints & Progress */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
-                    Origin Hub
-                  </span>
-                  <p className="text-sm font-bold text-[#0F313A]">
-                    {activeTrackingResult.origin}
-                  </p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
-                    Current Coordinates
-                  </span>
-                  <p className="text-sm font-bold text-[#BA1C20]">
-                    {activeTrackingResult.currentLocation}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {activeTrackingResult.currentStatus}
-                  </p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">
-                    Destination Gateway
-                  </span>
-                  <p className="text-sm font-bold text-[#0F313A]">
-                    {activeTrackingResult.destination}
-                  </p>
-                  {activeTrackingResult.temperature && (
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Sensor: {activeTrackingResult.temperature}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-6">
-                <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                  <span>Transit Progress</span>
-                  <span className="text-[#0F313A] font-mono">
-                    {activeTrackingResult.progressPercent}% Complete
-                  </span>
-                </div>
-                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#0F313A] h-full rounded-full transition-all duration-500 flex justify-end items-center pr-1"
-                    style={{
-                      width: `${activeTrackingResult.progressPercent}%`,
-                    }}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#BA1C20]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Milestones Checklist */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                  Waypoint Telemetry Feed
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                  {activeTrackingResult.milestones.map((m, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-xl border text-xs ${
-                        m.completed
-                          ? "bg-emerald-50/60 border-emerald-200 text-emerald-900"
-                          : "bg-slate-50 border-slate-200 text-slate-400"
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1 font-bold">
-                        {m.completed ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        ) : (
-                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        )}
-                        <span className="truncate">{m.title}</span>
-                      </div>
-                      <span className="font-mono text-[10px] block opacity-80">
-                        {m.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
+          </section>
 
         {/* ====================================================
             4. / services / SECTION WITH DOTTED WATERMARK

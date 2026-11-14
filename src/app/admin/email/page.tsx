@@ -4,7 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, AlertCircle, Info, Loader2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { DEMO_EMAIL_TEMPLATES } from "@/shared/lib/demoData";
+import { DEFAULT_EMAIL_TEMPLATES } from "@/features/admin/constants";
 import { listenToPlatformUsers } from "@/shared/lib/firebase";
 import type { PlatformUser } from "@/features/admin/types";
 
@@ -48,7 +48,7 @@ function EmailComposerContent() {
     setSelectedTemplateId(templateId);
     if (!templateId) return;
 
-    const template = DEMO_EMAIL_TEMPLATES.find((t) => t.id === templateId);
+    const template = DEFAULT_EMAIL_TEMPLATES.find((t) => t.id === templateId);
     if (template) {
       setSubject(template.subject);
       setBody(template.body);
@@ -194,7 +194,7 @@ function EmailComposerContent() {
                 className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
               >
                 <option value="">— Select an operational template —</option>
-                {DEMO_EMAIL_TEMPLATES.map((tpl) => (
+                {DEFAULT_EMAIL_TEMPLATES.map((tpl) => (
                   <option key={tpl.id} value={tpl.id}>
                     {tpl.name}
                   </option>
@@ -290,7 +290,7 @@ function EmailComposerContent() {
           Quick Template Directory
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {DEMO_EMAIL_TEMPLATES.map((tpl) => (
+          {DEFAULT_EMAIL_TEMPLATES.map((tpl) => (
             <button
               key={tpl.id}
               type="button"

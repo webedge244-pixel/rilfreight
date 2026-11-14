@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Settings, X, LogOut } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { ADMIN_NAV_LINKS } from "@/shared/lib/demoData";
+import { ADMIN_NAV_LINKS } from "@/features/admin/constants";
 import { useAdminAuth } from "@/features/auth/AdminAuthProvider";
 
 // Icon definition for collapsed mode (Image 2 reference)
@@ -26,7 +26,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
       <path d="M12 22V12" />
     </svg>
   ),
-  "/admin/shipments/new": (
+  "/admin/new": (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v8M8 12h8" />
@@ -84,7 +84,13 @@ export function AdminSidebar() {
         pathname === "/"
       );
     }
-    return cleanPath.startsWith(cleanHref);
+    if (cleanHref === "/shipments") {
+      return (
+        cleanPath === "/shipments" ||
+        (cleanPath.startsWith("/shipments/") && cleanPath !== "/shipments/new")
+      );
+    }
+    return cleanPath === cleanHref || cleanPath.startsWith(cleanHref + "/");
   };
 
   return (
