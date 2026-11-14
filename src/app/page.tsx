@@ -818,6 +818,7 @@ export default function HomePage() {
                   src="/images/illustrations/illustration-plane.png"
                   alt="Expedited Air Cargo Illustration"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain object-left-bottom group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -839,6 +840,7 @@ export default function HomePage() {
                   src="/images/illustrations/illustration-ship.png"
                   alt="Transoceanic Maritime Illustration"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain object-left-bottom group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -860,6 +862,7 @@ export default function HomePage() {
                   src="/images/illustrations/illustration-truck.png"
                   alt="Overland Truckload Illustration"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain object-left-bottom group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -881,6 +884,7 @@ export default function HomePage() {
                   src="/images/illustrations/illustration-train.png"
                   alt="Intermodal Rail Pass Illustration"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-contain object-left-bottom group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
