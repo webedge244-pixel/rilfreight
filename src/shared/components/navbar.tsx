@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
-  Search,
   User,
   Menu,
   X,
@@ -54,8 +53,6 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState("");
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Scroll detection: determine when natural navbar has scrolled off-screen
@@ -224,49 +221,6 @@ export function Navbar() {
 
       {/* Right Side: Utility Action Icons + Secondary Red Double-Sized CTA Button */}
       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        {/* Search Toggle */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="w-12 h-12 flex items-center justify-center rounded-full text-slate-700 hover:text-[#0F313A] bg-slate-100/80 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BA1C20]"
-            aria-label="Search site"
-          >
-            <Search className="w-5 h-5" />
-          </button>
-
-          {/* Quick Search Popover */}
-          {searchOpen && (
-            <div className="absolute right-0 top-14 z-50 w-72 bg-white p-2.5 rounded-2xl shadow-xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSearchOpen(false);
-                }}
-                className="flex items-center gap-2"
-              >
-                <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search tracking, corridors..."
-                  className="w-full text-xs py-1.5 px-2 bg-transparent focus:outline-none text-slate-800"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1"
-                  aria-label="Close search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
-
         {/* User Profile */}
         <Link
           href="/#account"
