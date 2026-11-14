@@ -13,13 +13,14 @@ import { useAdminAuth } from "@/features/auth/AdminAuthProvider";
  * Page title derived from the current pathname.
  */
 function getPageTitle(pathname: string): string {
-  if (pathname === "/admin" || pathname === "/admin/dashboard") return "DASHBOARD";
-  if (pathname === "/admin/shipments/new") return "NEW SHIPMENT";
-  if (pathname.startsWith("/admin/shipments/")) return "SHIPMENT";
-  if (pathname === "/admin/shipments") return "SHIPMENTS";
-  if (pathname === "/admin/users") return "USERS";
-  if (pathname === "/admin/email") return "SEND EMAIL";
-  if (pathname === "/admin/settings") return "SETTINGS";
+  const clean = pathname.replace(/^\/admin/, "") || "/dashboard";
+  if (clean === "/dashboard" || clean === "/") return "DASHBOARD";
+  if (clean === "/shipments/new") return "NEW SHIPMENT";
+  if (clean.startsWith("/shipments/")) return "SHIPMENT";
+  if (clean === "/shipments") return "SHIPMENTS";
+  if (clean === "/users") return "USERS";
+  if (clean === "/email") return "SEND EMAIL";
+  if (clean === "/settings") return "SETTINGS";
   return "ADMIN";
 }
 
@@ -31,11 +32,22 @@ export function AdminMobileNav() {
   const pageTitle = getPageTitle(pathname);
   const { email, displayName, initial, signOutAdmin } = useAdminAuth();
 
+  const resolveHref = React.useCallback((href: string) => {
+    if (typeof window !== "undefined" && window.location.hostname.startsWith("admin.")) {
+      return href.replace(/^\/admin/, "") || "/dashboard";
+    }
+    return href;
+  }, []);
+
   const handleSignOut = React.useCallback(async () => {
     setSlideOutOpen(false);
     setMenuOpen(false);
     await signOutAdmin();
-    router.replace("/admin/login");
+    const loginTarget =
+      typeof window !== "undefined" && window.location.hostname.startsWith("admin.")
+        ? "/login"
+        : "/admin/login";
+    router.replace(loginTarget);
   }, [signOutAdmin, router]);
 
   // Close menu on route change
@@ -59,13 +71,18 @@ export function AdminMobileNav() {
   }, [menuOpen]);
 
   const isActive = (href: string) => {
-    if (href === "/admin/dashboard") {
-      return pathname === "/admin" || pathname === "/admin/dashboard";
+    const cleanHref = href.replace(/^\/admin/, "") || "/dashboard";
+    const cleanPath = pathname.replace(/^\/admin/, "") || "/dashboard";
+
+    if (cleanHref === "/dashboard") {
+      return (
+        pathname === "/admin" ||
+        pathname === "/admin/dashboard" ||
+        pathname === "/dashboard" ||
+        pathname === "/"
+      );
     }
-    if (href === "/admin/shipments") {
-      return pathname === "/admin/shipments";
-    }
-    return pathname.startsWith(href);
+    return cleanPath.startsWith(cleanHref);
   };
 
   return (
@@ -163,7 +180,7 @@ export function AdminMobileNav() {
                     return (
                       <li key={link.href}>
                         <Link
-                          href={link.href}
+                          href={resolveHref(link.href)}
                           onClick={() => setMenuOpen(false)}
                           className={cn(
                             "block py-3 px-2 font-black uppercase tracking-tight text-2xl sm:text-3xl transition-colors relative leading-none",

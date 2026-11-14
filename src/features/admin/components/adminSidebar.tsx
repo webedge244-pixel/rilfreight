@@ -55,20 +55,36 @@ export function AdminSidebar() {
   const [slideOutOpen, setSlideOutOpen] = React.useState(false);
   const { email, displayName, initial, signOutAdmin } = useAdminAuth();
 
+  const resolveHref = React.useCallback((href: string) => {
+    if (typeof window !== "undefined" && window.location.hostname.startsWith("admin.")) {
+      return href.replace(/^\/admin/, "") || "/dashboard";
+    }
+    return href;
+  }, []);
+
   const handleSignOut = React.useCallback(async () => {
     setSlideOutOpen(false);
     await signOutAdmin();
-    router.replace("/admin/login");
+    const loginTarget =
+      typeof window !== "undefined" && window.location.hostname.startsWith("admin.")
+        ? "/login"
+        : "/admin/login";
+    router.replace(loginTarget);
   }, [signOutAdmin, router]);
 
   const isActive = (href: string) => {
-    if (href === "/admin/dashboard") {
-      return pathname === "/admin" || pathname === "/admin/dashboard";
+    const cleanHref = href.replace(/^\/admin/, "") || "/dashboard";
+    const cleanPath = pathname.replace(/^\/admin/, "") || "/dashboard";
+
+    if (cleanHref === "/dashboard") {
+      return (
+        pathname === "/admin" ||
+        pathname === "/admin/dashboard" ||
+        pathname === "/dashboard" ||
+        pathname === "/"
+      );
     }
-    if (href === "/admin/shipments") {
-      return pathname === "/admin/shipments";
-    }
-    return pathname.startsWith(href);
+    return cleanPath.startsWith(cleanHref);
   };
 
   return (
@@ -133,7 +149,7 @@ export function AdminSidebar() {
                 return (
                   <li key={link.href} className="w-full flex justify-center">
                     <Link
-                      href={link.href}
+                      href={resolveHref(link.href)}
                       title={link.label}
                       className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group",
@@ -156,7 +172,7 @@ export function AdminSidebar() {
               return (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={resolveHref(link.href)}
                     className={cn(
                       "block py-3.5 sm:py-4 px-2.5 font-black uppercase tracking-tight text-xl xl:text-2xl whitespace-nowrap transition-colors relative leading-none",
                       active
