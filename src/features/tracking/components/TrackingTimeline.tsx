@@ -27,6 +27,25 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
     return firstUncompleted === -1 ? milestones.length - 1 : firstUncompleted;
   }, [milestones, shipment.isPaused]);
 
+  // Hybrid milestone filtering:
+  // Show all completed milestones + ONLY the single immediate next uncompleted milestone.
+  // Far-future milestones beyond that are completely hidden.
+  const visibleMilestones = React.useMemo(() => {
+    const firstUncompletedIndex = milestones.findIndex((m) => !m.isCompleted);
+    if (firstUncompletedIndex === -1) {
+      return milestones; // All are completed
+    }
+    return milestones.slice(0, firstUncompletedIndex + 1);
+  }, [milestones]);
+
+  const getMilestoneTitle = (m: TrackingMilestone, isCompleted: boolean) => {
+    if (isCompleted) return m.title;
+    if (m.code === "DEPA" || m.title.toLowerCase().includes("depart")) {
+      return "Awaiting Departure";
+    }
+    return `Awaiting: ${m.title}`;
+  };
+
   if (milestones.length === 0) {
     return (
       <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 text-center text-sm text-slate-400">
@@ -49,11 +68,11 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
 
       {/* Vertical Stepper Timeline (Inspired by CheckpointStepper in New Shipments) */}
       <div className="relative pl-7 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
-        {milestones.map((m: TrackingMilestone, idx: number) => {
+        {visibleMilestones.map((m: TrackingMilestone, idx: number) => {
           const isCompleted = m.isCompleted;
           const isActive = idx === activeMilestoneIndex && !isCompleted;
           const isPausedHere = isActive && shipment.isPaused;
-          const last = idx === milestones.length - 1;
+          const last = idx === visibleMilestones.length - 1;
 
           const dateStr = m.timestamp
             ? new Date(m.timestamp).toLocaleString(undefined, {
@@ -87,12 +106,12 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                 ) : isPausedHere ? (
                   <AlertCircle className="h-3 w-3 stroke-[2.5]" />
                 ) : (
-                  <span>{idx + 1}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
                 )}
               </div>
 
               {/* Milestone Details */}
-              <div className="relative">
+              <div className={cn("relative transition-all", !isCompleted && "opacity-75 blur-[0.6px] select-none")}>
                 {/* Title and Date */}
                 <div className="flex items-start justify-between gap-2">
                   <h4
@@ -103,10 +122,10 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                         : "text-slate-400 dark:text-slate-500"
                     )}
                   >
-                    {m.title}
+                    {getMilestoneTitle(m, isCompleted)}
                   </h4>
                   <span className="whitespace-nowrap font-mono text-[11px] text-slate-400 dark:text-slate-500">
-                    {dateStr}
+                    {dateStr ? (!isCompleted ? `Est. ${dateStr}` : dateStr) : "Scheduled"}
                   </span>
                 </div>
 
