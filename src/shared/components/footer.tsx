@@ -116,11 +116,12 @@ export function Footer({ embedded = false }: FooterProps) {
             <h3 className="text-base font-bold text-white mb-4">Services</h3>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
               {[
-                { label: "Air Freight", href: "/#services" },
-                { label: "Sea Freight", href: "/#services" },
-                { label: "Land Transport", href: "/#services" },
-                { label: "Consultancy", href: "/contact" },
-                { label: "Value Added Services", href: "/#special-services" },
+                { label: "Ocean Freight", href: "/services/ocean-freight" },
+                { label: "Air Cargo Express", href: "/services/air-cargo" },
+                { label: "Intermodal Rail", href: "/services/intermodal-rail" },
+                { label: "Road Freight Transport", href: "/services/road-freight" },
+                { label: "Cold Chain Logistics", href: "/services/cold-chain" },
+                { label: "Life Sciences & Healthcare", href: "/services/life-sciences" },
               ].map((service) => (
                 <li key={service.label}>
                   <Link

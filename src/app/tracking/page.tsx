@@ -324,9 +324,6 @@ export default function TrackingSearchPage() {
                         href={`/tracking/${encodeURIComponent(item.code)}`}
                         className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#F0F2F5] transition-all group"
                       >
-                        <div className="w-9 h-9 rounded-full bg-[#F0F2F5] group-hover:bg-white flex items-center justify-center text-primary shrink-0 transition-colors">
-                          {getModeIcon(item.mode, "w-4 h-4")}
-                        </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-mono text-xs font-bold text-primary group-hover:text-[#BA1C20] transition-colors truncate">
                             {item.code}
@@ -371,9 +368,6 @@ export default function TrackingSearchPage() {
                         href={`/tracking/${encodeURIComponent(item.code)}`}
                         className="shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white transition-all group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-[#F0F2F5] flex items-center justify-center text-primary">
-                          {getModeIcon(item.mode, "w-3.5 h-3.5")}
-                        </div>
                         <div className="min-w-0">
                           <p className="font-mono text-xs font-bold text-primary group-hover:text-[#BA1C20] transition-colors whitespace-nowrap">
                             {item.code}

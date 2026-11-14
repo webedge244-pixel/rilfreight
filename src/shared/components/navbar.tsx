@@ -27,14 +27,15 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Services",
-    href: "/#services",
+    href: "/services",
     hasDropdown: true,
     children: [
-      { label: "Ocean Freight", href: "/#services" },
-      { label: "Air Cargo Express", href: "/#services" },
-      { label: "Intermodal Rail", href: "/#services" },
-      { label: "Road Freight Transport", href: "/#services" },
-      { label: "Cold-Chain Life Sciences", href: "/#special-services" },
+      { label: "Ocean Freight", href: "/services/ocean-freight" },
+      { label: "Air Cargo Express", href: "/services/air-cargo" },
+      { label: "Intermodal Rail", href: "/services/intermodal-rail" },
+      { label: "Road Freight Transport", href: "/services/road-freight" },
+      { label: "Cold Chain Logistics", href: "/services/cold-chain" },
+      { label: "Life Sciences & Healthcare", href: "/services/life-sciences" },
     ],
   },
   {
@@ -181,7 +182,7 @@ export function Navbar() {
 
                     {/* Dropdown Flyout */}
                     {isOpen && item.children && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 min-w-[220px]">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 min-w-[250px]">
                         <div className="bg-white rounded-2xl p-2 shadow-xl border border-slate-100 ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-150">
                           {item.children.map((sub) => (
                             <Link
