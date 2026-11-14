@@ -12,7 +12,6 @@ import {
   unlinkShipmentFromUser,
   listenToShipments,
 } from "@/shared/lib/firebase";
-import { DEMO_USERS } from "@/shared/lib/demoData";
 import type { PlatformUser } from "@/features/admin/types";
 import type { Shipment, TransportMode } from "@/shared/types";
 import {
@@ -98,19 +97,12 @@ function UserDetailContent() {
     const unsubscribe = listenToPlatformUserRecord(
       userId,
       (liveUser) => {
-        if (liveUser) {
-          setUser(liveUser);
-        } else {
-          // Fallback to demo users
-          const demo = DEMO_USERS.find((u) => u.id === userId) || null;
-          setUser(demo);
-        }
+        setUser(liveUser || null);
         setIsLoading(false);
       },
       (error) => {
-        console.warn("Error listening to user record, checking demo data:", error);
-        const demo = DEMO_USERS.find((u) => u.id === userId) || null;
-        setUser(demo);
+        console.error("Error listening to user record in Firestore:", error);
+        setUser(null);
         setIsLoading(false);
       }
     );
@@ -270,16 +262,16 @@ function UserDetailContent() {
       {toastMessage && (
         <div
           className={cn(
-            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all",
+            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all border-0",
             toastMessage.type === "success"
-              ? "bg-slate-900 dark:bg-white text-white dark:text-black"
+              ? "bg-[#0D5C46] text-white"
               : "bg-[#BA1C20] text-white"
           )}
         >
           {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
           ) : (
-            <AlertTriangle className="w-4 h-4" />
+            <AlertTriangle className="w-4 h-4 text-white/90" />
           )}
           <span>{toastMessage.text}</span>
           <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">

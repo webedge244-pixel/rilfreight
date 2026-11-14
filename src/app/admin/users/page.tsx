@@ -9,7 +9,6 @@ import {
   updatePlatformUserRecord,
   listenToShipments,
 } from "@/shared/lib/firebase";
-import { DEMO_USERS } from "@/shared/lib/demoData";
 import type { PlatformUser } from "@/features/admin/types";
 import type { Shipment } from "@/shared/types";
 import {
@@ -67,20 +66,16 @@ export default function UsersPage() {
   const [sharingData, setSharingData] = React.useState<{ user: PlatformUser; trackingCode: string } | null>(null);
   const [copiedLink, setCopiedLink] = React.useState(false);
 
-  // 1. Subscribe to Platform Users in Firestore with fallback
+  // 1. Subscribe to Platform Users in Firestore
   React.useEffect(() => {
     const unsubscribe = listenToPlatformUsers(
       (liveUsers) => {
-        if (liveUsers && liveUsers.length > 0) {
-          setUsers(liveUsers);
-        } else {
-          setUsers(DEMO_USERS);
-        }
+        setUsers(liveUsers || []);
         setIsLoading(false);
       },
       (error) => {
-        console.warn("Firestore listenToPlatformUsers fallback to DEMO_USERS:", error);
-        setUsers(DEMO_USERS);
+        console.error("Firestore listenToPlatformUsers error:", error);
+        setUsers([]);
         setIsLoading(false);
       }
     );
@@ -150,16 +145,22 @@ export default function UsersPage() {
 
     setIsSubmittingUser(true);
     try {
-      await createPlatformUserRecord({
+      const clientData: Omit<PlatformUser, "id" | "createdAt"> = {
         name: newUserForm.name.trim(),
         email: newUserForm.email.trim().toLowerCase(),
-        phone: newUserForm.phone.trim() || undefined,
-        company: newUserForm.company.trim() || undefined,
         connectionStatus: "pending",
         emailUpdatesEnabled: newUserForm.emailUpdatesEnabled,
         linkedShipmentIds: [],
         status: "active",
-      });
+      };
+      if (newUserForm.phone.trim()) {
+        clientData.phone = newUserForm.phone.trim();
+      }
+      if (newUserForm.company.trim()) {
+        clientData.company = newUserForm.company.trim();
+      }
+
+      await createPlatformUserRecord(clientData);
 
       showToast(`Client ${newUserForm.name} created successfully.`);
       setIsAddUserOpen(false);
@@ -170,9 +171,11 @@ export default function UsersPage() {
         company: "",
         emailUpdatesEnabled: true,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to create user:", err);
-      showToast("Failed to create client in Firestore.", "error");
+      const message =
+        err instanceof Error ? err.message : "Failed to create client in Firestore.";
+      showToast(message, "error");
     } finally {
       setIsSubmittingUser(false);
     }
@@ -181,12 +184,21 @@ export default function UsersPage() {
   // Toggle Email Updates
   const handleToggleEmailUpdates = async (user: PlatformUser) => {
     const nextState = !user.emailUpdatesEnabled;
+    // Optimistic UI update
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, emailUpdatesEnabled: nextState } : u))
+    );
+
     try {
       await updatePlatformUserRecord(user.id, { emailUpdatesEnabled: nextState });
       showToast(
         `Milestone updates ${nextState ? "enabled" : "disabled"} for ${user.name}.`
       );
     } catch (err) {
+      // Revert on failure
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, emailUpdatesEnabled: !nextState } : u))
+      );
       console.error("Failed to toggle email updates:", err);
       showToast("Failed to update notification settings.", "error");
     }
@@ -213,16 +225,16 @@ export default function UsersPage() {
       {toastMessage && (
         <div
           className={cn(
-            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all",
+            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all border-0",
             toastMessage.type === "success"
-              ? "bg-slate-900 dark:bg-white text-white dark:text-black"
+              ? "bg-[#0D5C46] text-white"
               : "bg-[#BA1C20] text-white"
           )}
         >
           {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
           ) : (
-            <AlertTriangle className="w-4 h-4" />
+            <AlertTriangle className="w-4 h-4 text-white/90" />
           )}
           <span>{toastMessage.text}</span>
           <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">
@@ -420,7 +432,9 @@ export default function UsersPage() {
 
         {filteredUsers.length === 0 && !isLoading && (
           <div className="py-12 text-center text-sm text-slate-400 bg-slate-50 dark:bg-slate-900/40 rounded-2xl">
-            No registered clients match your search criteria.
+            {users.length === 0
+              ? "No registered clients yet. Click 'Add Client' above to create your first client."
+              : "No registered clients match your search criteria."}
           </div>
         )}
       </div>
@@ -562,7 +576,9 @@ export default function UsersPage() {
             {filteredUsers.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-sm text-slate-400">
-                  No registered clients match your search criteria.
+                  {users.length === 0
+                    ? "No registered clients yet. Click 'Add Client' above to create your first client."
+                    : "No registered clients match your search criteria."}
                 </td>
               </tr>
             )}
@@ -599,7 +615,7 @@ export default function UsersPage() {
                   required
                   value={newUserForm.name}
                   onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
-                  placeholder="e.g. Marcus Chen"
+                  placeholder="e.g. Sarah Jenkins"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 border-0"
                 />
               </div>
@@ -613,14 +629,14 @@ export default function UsersPage() {
                   required
                   value={newUserForm.email}
                   onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
-                  placeholder="e.g. m.chen@company.com"
+                  placeholder="e.g. s.jenkins@company.com"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 border-0"
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Phone / WhatsApp (Optional)
+                  Phone (Optional)
                 </label>
                 <input
                   type="text"

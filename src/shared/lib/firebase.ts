@@ -444,7 +444,15 @@ export async function createPlatformUserRecord(
     createdAt: new Date().toISOString(),
   };
 
-  await setDoc(userRef, newUser);
+  // Strip undefined fields to ensure Firestore compatibility
+  const cleanPayload: Record<string, any> = {};
+  for (const [key, value] of Object.entries(newUser)) {
+    if (value !== undefined) {
+      cleanPayload[key] = value;
+    }
+  }
+
+  await setDoc(userRef, cleanPayload);
   return newUser;
 }
 
@@ -456,10 +464,15 @@ export async function updatePlatformUserRecord(
   updates: Partial<PlatformUser>
 ): Promise<void> {
   const userRef = doc(db, "users", id);
-  await updateDoc(userRef, {
-    ...updates,
+  const cleanPayload: Record<string, any> = {
     updatedAt: new Date().toISOString(),
-  });
+  };
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined) {
+      cleanPayload[key] = value;
+    }
+  }
+  await updateDoc(userRef, cleanPayload);
 }
 
 /**

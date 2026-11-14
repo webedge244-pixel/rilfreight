@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle2, AlertCircle, Info, Loader2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { DEMO_USERS, DEMO_EMAIL_TEMPLATES } from "@/shared/lib/demoData";
+import { DEMO_EMAIL_TEMPLATES } from "@/shared/lib/demoData";
+import { listenToPlatformUsers } from "@/shared/lib/firebase";
+import type { PlatformUser } from "@/features/admin/types";
 
 export default function EmailPage() {
   return (
@@ -18,10 +21,27 @@ function EmailComposerContent() {
   const prefilledRecipient = searchParams.get("recipient") || "";
 
   const [recipient, setRecipient] = React.useState(prefilledRecipient);
+  const [registeredUsers, setRegisteredUsers] = React.useState<PlatformUser[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState("");
   const [subject, setSubject] = React.useState("");
   const [body, setBody] = React.useState("");
-  const [sentSuccess, setSentSuccess] = React.useState(false);
+  const [isSending, setIsSending] = React.useState(false);
+  const [sentSuccessRecipient, setSentSuccessRecipient] = React.useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = React.useState<string | null>(null);
+
+  // Subscribe to live registered clients from Firestore
+  React.useEffect(() => {
+    const unsubscribe = listenToPlatformUsers(
+      (live) => {
+        setRegisteredUsers(live || []);
+      },
+      (err) => {
+        console.error("Failed to load registered users for email composer:", err);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
 
   // When a template is chosen, populate subject and body
   const handleTemplateChange = (templateId: string) => {
@@ -32,35 +52,104 @@ function EmailComposerContent() {
     if (template) {
       setSubject(template.subject);
       setBody(template.body);
+      setErrorMessage(null);
+      setInfoMessage(`Loaded "${template.name}" template. Review details before dispatching.`);
     }
   };
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipient || !subject || !body) {
-      alert("Please enter a recipient, subject, and message body.");
+    if (!recipient.trim() || !subject.trim() || !body.trim()) {
+      setErrorMessage("Please enter a recipient, subject, and message body.");
       return;
     }
 
-    // Demo send logic
-    console.log("Dispatching Email:", { recipient, subject, body });
-    setSentSuccess(true);
-    setTimeout(() => {
-      setSentSuccess(false);
+    setIsSending(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    setSentSuccessRecipient(null);
+
+    try {
+      const res = await fetch("/api/admin/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: recipient.trim(),
+          subject: subject.trim(),
+          body: body.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to dispatch email via Resend.");
+      }
+
+      setSentSuccessRecipient(recipient.trim());
       setRecipient("");
       setSelectedTemplateId("");
       setSubject("");
       setBody("");
-    }, 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setErrorMessage(msg);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
     <div className="max-w-4xl">
-      {/* Success Banner */}
-      {sentSuccess && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm font-semibold flex items-center justify-between">
-          <span>Email successfully dispatched to {recipient}. (Demo mode — Firebase/Resend will send in production)</span>
-          <span className="text-xs font-mono uppercase bg-emerald-100 dark:bg-emerald-900 px-2 py-0.5 rounded">Sent</span>
+      {/* Success Notification (Solid Green, No Border) */}
+      {sentSuccessRecipient && (
+        <div className="mb-6 p-4 rounded-2xl bg-[#0D5C46] text-white shadow-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 border-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <CheckCircle2 className="w-5 h-5 text-emerald-300 shrink-0" />
+            <span className="text-sm font-semibold">
+              Email successfully dispatched to <strong className="font-mono text-emerald-200">{sentSuccessRecipient}</strong> from <strong>support@rilfreight.com</strong>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSentSuccessRecipient(null)}
+            className="text-xs font-mono uppercase bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg shrink-0 ml-4 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Destructive / Error Notification (Solid Red, No Border) */}
+      {errorMessage && (
+        <div className="mb-6 p-4 rounded-2xl bg-[#BA1C20] text-white shadow-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 border-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <AlertCircle className="w-5 h-5 text-white/90 shrink-0" />
+            <span className="text-sm font-semibold">{errorMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="text-xs font-mono uppercase bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg shrink-0 ml-4 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Information Notification (Solid Primary Teal, No Border) */}
+      {infoMessage && (
+        <div className="mb-6 p-4 rounded-2xl bg-[#0F313A] text-white shadow-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 border-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <Info className="w-5 h-5 text-teal-300 shrink-0" />
+            <span className="text-sm font-semibold">{infoMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setInfoMessage(null)}
+            className="text-xs font-mono uppercase bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg shrink-0 ml-4 transition-colors"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -75,14 +164,18 @@ function EmailComposerContent() {
                 Select Registered Client
               </label>
               <select
-                value={DEMO_USERS.some((u) => u.email === recipient) ? recipient : ""}
+                value={registeredUsers.some((u) => u.email === recipient) ? recipient : ""}
                 onChange={(e) => {
                   if (e.target.value) setRecipient(e.target.value);
                 }}
                 className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
               >
-                <option value="">— Or pick from registered users —</option>
-                {DEMO_USERS.map((u) => (
+                <option value="">
+                  {registeredUsers.length === 0
+                    ? "— No registered clients in database —"
+                    : "— Or pick from registered clients —"}
+                </option>
+                {registeredUsers.map((u) => (
                   <option key={u.id} value={u.email}>
                     {u.name} ({u.company || u.email})
                   </option>
@@ -164,6 +257,9 @@ function EmailComposerContent() {
                 setSelectedTemplateId("");
                 setSubject("");
                 setBody("");
+                setSentSuccessRecipient(null);
+                setErrorMessage(null);
+                setInfoMessage("Email composer form cleared.");
               }}
               className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-black dark:hover:text-white transition-colors"
             >
@@ -172,9 +268,17 @@ function EmailComposerContent() {
 
             <button
               type="submit"
-              className="px-8 py-3.5 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-sm font-bold uppercase tracking-wider transition-colors active:scale-[0.98]"
+              disabled={isSending}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] disabled:opacity-50 disabled:pointer-events-none text-white text-sm font-bold uppercase tracking-wider transition-all active:scale-[0.98]"
             >
-              Send Email
+              {isSending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Dispatching...</span>
+                </>
+              ) : (
+                <span>Send Email</span>
+              )}
             </button>
           </div>
         </form>
