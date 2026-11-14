@@ -187,8 +187,9 @@ function TrackingDetailContent() {
 
     const unsubscribe = listenToShipmentRecord(
       shipment.id,
-      (updatedShipment) => {
-        if (updatedShipment) {
+      (incoming) => {
+        if (incoming) {
+          const { updatedShipment } = evaluateShipmentProgression(incoming);
           setShipment(updatedShipment);
         }
       },
@@ -200,6 +201,31 @@ function TrackingDetailContent() {
     return () => {
       unsubscribe();
     };
+  }, [shipment?.id]);
+
+  // Periodic progression re-evaluation in case milestone time arrives while user is on page
+  React.useEffect(() => {
+    if (!shipment?.id) return;
+
+    const interval = setInterval(() => {
+      setShipment((current) => {
+        if (!current) return current;
+        const { updatedShipment, hasChanged } = evaluateShipmentProgression(current);
+        if (hasChanged) {
+          if (typeof window !== "undefined") {
+            fetch("/api/tracking/sync", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: current.trackingCode }),
+            }).catch((err) => console.warn("Background tracking sync failed:", err));
+          }
+          return updatedShipment;
+        }
+        return current;
+      });
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [shipment?.id]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

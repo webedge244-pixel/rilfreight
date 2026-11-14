@@ -14,9 +14,11 @@ service cloud.firestore {
       );
     }
 
-    // Public tracking: customers can retrieve individual shipment documents by tracking code.
+    // Public tracking: customers can retrieve individual shipment documents by tracking code,
+    // and sync auto-advanced milestone timestamps.
     match /shipments/{shipmentId} {
       allow get: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['milestones', 'status', 'updatedAt']);
     }
 
     // Public forms: visitors can submit quote requests and contact messages.
