@@ -200,58 +200,56 @@ export default function TrackingSearchPage() {
       <Navbar />
 
       <main className="flex-1 w-full overflow-x-hidden">
-        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-16 md:space-y-24">
-          {/* ====================================================
-              2. HERO BANNER (Matching Contact & About)
-              ==================================================== */}
-          <section aria-labelledby="tracking-header-title">
-            <div className="relative w-full min-h-85 md:min-h-105 rounded-4xl md:rounded-[36px] overflow-hidden group">
-              {/* Background Photography */}
-              <Image
-                src="/images/home-telemetry-control-room.jpg"
-                alt="RILFREIGHT Global Shipment Tracking and Telemetry"
-                fill
-                priority
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+        {/* ====================================================
+            2. HERO BANNER (Full-width edge-to-edge)
+            ==================================================== */}
+        <section aria-labelledby="tracking-header-title" className="w-full relative min-h-85 md:min-h-105 overflow-hidden group">
+          {/* Background Photography */}
+          <Image
+            src="/images/home-telemetry-control-room.jpg"
+            alt="RILFREIGHT Global Shipment Tracking and Telemetry"
+            fill
+            priority
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
 
-              {/* Overlay for typography contrast */}
-              <div className="absolute inset-0 bg-primary/55 backdrop-blur-[1px]" />
+          {/* Overlay for typography contrast */}
+          <div className="absolute inset-0 bg-primary/55 backdrop-blur-[1px]" />
 
-              {/* Banner Content */}
-              <div className="relative z-10 flex flex-col justify-between h-full min-h-85 md:min-h-105 p-8 sm:p-12 md:p-16">
-                <div />
+          {/* Banner Content */}
+          <div className="relative z-10 max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 flex flex-col justify-between h-full min-h-85 md:min-h-105">
+            <div />
 
-                {/* Giant Title */}
-                <div>
-                  <h1
-                    id="tracking-header-title"
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
-                  >
-                    TRACKING
-                  </h1>
-                </div>
-
-                {/* Breadcrumb Pill */}
-                <div>
-                  <nav
-                    aria-label="Breadcrumb"
-                    className="inline-flex items-center gap-2 bg-white text-primary px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
-                  >
-                    <Link
-                      href="/"
-                      className="hover:text-[#BA1C20] transition-colors"
-                    >
-                      Home
-                    </Link>
-                    <span className="text-slate-400">/</span>
-                    <span className="text-slate-800">Tracking</span>
-                  </nav>
-                </div>
-              </div>
+            {/* Giant Title */}
+            <div>
+              <h1
+                id="tracking-header-title"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
+              >
+                TRACKING
+              </h1>
             </div>
-          </section>
 
+            {/* Breadcrumb Pill */}
+            <div>
+              <nav
+                aria-label="Breadcrumb"
+                className="inline-flex items-center gap-2 bg-white text-primary px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
+              >
+                <Link
+                  href="/"
+                  className="hover:text-[#BA1C20] transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="text-slate-400">/</span>
+                <span className="text-slate-800">Tracking</span>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-16 md:space-y-24">
           {/* ====================================================
               3. MAIN CONTENT: TRACK INPUT + RECENTLY TRACKED
               ==================================================== */}

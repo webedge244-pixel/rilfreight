@@ -146,57 +146,55 @@ export default function ContactPage() {
       <Navbar />
 
       <main className="flex-1 w-full overflow-x-hidden">
-        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-16 md:space-y-24">
-          {/* 2. HERO BANNER: Clean rounded container with giant CONTACTS and breadcrumb */}
-          <section aria-labelledby="contact-header-title">
-            <div className="relative w-full min-h-[340px] md:min-h-[420px] rounded-[32px] md:rounded-[36px] overflow-hidden group">
-              {/* Background Logistics Photography */}
-              <Image
-                src="/images/home-multimodal-connectivity.jpg"
-                alt="RILFREIGHT Multimodal Logistics and Shipping Terminal"
-                fill
-                priority
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+        {/* 2. HERO BANNER: Full-width edge-to-edge container with giant CONTACTS and breadcrumb */}
+        <section aria-labelledby="contact-header-title" className="w-full relative min-h-[340px] md:min-h-[420px] overflow-hidden group">
+          {/* Background Logistics Photography */}
+          <Image
+            src="/images/home-multimodal-connectivity.jpg"
+            alt="RILFREIGHT Multimodal Logistics and Shipping Terminal"
+            fill
+            priority
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
 
-              {/* Subtle Overlay for typography contrast */}
-              <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
+          {/* Subtle Overlay for typography contrast */}
+          <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
 
-              {/* Banner Content Container */}
-              <div className="relative z-10 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px] p-8 sm:p-12 md:p-16">
-                <div />
+          {/* Banner Content Container */}
+          <div className="relative z-10 max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px]">
+            <div />
 
-                {/* Giant Typography matching reference */}
-                <div>
-                  <h1
-                    id="contact-header-title"
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
-                  >
-                    CONTACTS
-                  </h1>
-                </div>
-
-                {/* Breadcrumb Pill at bottom-left */}
-                <div>
-                  <nav
-                    aria-label="Breadcrumb"
-                    className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
-                  >
-                    <Link
-                      href="/"
-                      className="hover:text-[#BA1C20] transition-colors"
-                    >
-                      Home
-                    </Link>
-                    <span className="text-slate-400">/</span>
-                    <span className="text-slate-800">Contacts</span>
-                  </nav>
-                </div>
-              </div>
+            {/* Giant Typography matching reference */}
+            <div>
+              <h1
+                id="contact-header-title"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
+              >
+                CONTACTS
+              </h1>
             </div>
-          </section>
 
-          {/* 3. TWO-COLUMN CONTENT & FORM SECTION */}
+            {/* Breadcrumb Pill at bottom-left */}
+            <div>
+              <nav
+                aria-label="Breadcrumb"
+                className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
+              >
+                <Link
+                  href="/"
+                  className="hover:text-[#BA1C20] transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="text-slate-400">/</span>
+                <span className="text-slate-800">Contacts</span>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. TWO-COLUMN CONTENT & FORM SECTION */}
+        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <section
             aria-labelledby="contact-heading"
             className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start"
@@ -521,60 +519,64 @@ export default function ContactPage() {
               </div>
             </div>
           </section>
+        </div>
 
-          {/* 4. INTERACTIVE GRAYSCALE MAP SECTION */}
-          <section
-            aria-label="Location Map"
-            className="relative w-full h-[460px] md:h-[520px] rounded-[32px] md:rounded-[36px] overflow-hidden border border-slate-200 group"
-          >
-            {/* Grayscale Map Embed */}
-            <iframe
-              src="https://maps.google.com/maps?q=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB,+UK&t=&z=14&ie=UTF8&iwloc=&output=embed"
-              className="w-full h-full border-0 filter grayscale contrast-95 opacity-90"
-              loading="lazy"
-              title="RILFREIGHT London Headquarters Map"
-            />
+        {/* 4. INTERACTIVE GRAYSCALE MAP SECTION (Full-width edge-to-edge) */}
+        <section
+          aria-label="Location Map"
+          className="w-full relative h-[460px] md:h-[520px] overflow-hidden group"
+        >
+          {/* Grayscale Map Embed */}
+          <iframe
+            src="https://maps.google.com/maps?q=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB,+UK&t=&z=14&ie=UTF8&iwloc=&output=embed"
+            className="w-full h-full border-0 filter grayscale contrast-95 opacity-90"
+            loading="lazy"
+            title="RILFREIGHT London Headquarters Map"
+          />
 
-            {/* Floating London Headquarters Card (matching frame_0030.jpg) */}
-            <div className="absolute top-5 sm:top-6 left-5 sm:left-6 z-10 max-w-[280px] sm:max-w-xs bg-white rounded-2xl p-5 border border-slate-200/90 font-sans">
-              <h4 className="text-base font-bold text-slate-900 leading-snug">
-                London Headquarters
-              </h4>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Riverside Building, County Hall, Westminster Bridge Rd, London
-                SE1 7PB, UK
-              </p>
+          {/* Floating London Headquarters Card aligned inside page container */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 h-full">
+              <div className="pointer-events-auto max-w-[280px] sm:max-w-xs bg-white rounded-2xl p-5 border border-slate-200/90 font-sans shadow-lg">
+                <h4 className="text-base font-bold text-slate-900 leading-snug">
+                  London Headquarters
+                </h4>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  Riverside Building, County Hall, Westminster Bridge Rd, London
+                  SE1 7PB, UK
+                </p>
 
-              <div className="flex items-center gap-1.5 text-xs text-slate-700 mt-2 font-medium">
-                <span className="font-bold text-slate-900">4.9</span>
-                <span className="text-amber-500">★</span>
-                <span className="text-slate-400">(2,840 reviews)</span>
-              </div>
+                <div className="flex items-center gap-1.5 text-xs text-slate-700 mt-2 font-medium">
+                  <span className="font-bold text-slate-900">4.9</span>
+                  <span className="text-amber-500">★</span>
+                  <span className="text-slate-400">(2,840 reviews)</span>
+                </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F313A] hover:bg-[#15434f] text-white text-xs font-semibold transition-colors"
-                >
-                  <span>Open in Maps</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0F313A] hover:bg-[#15434f] text-white text-xs font-semibold transition-colors"
+                  >
+                    <span>Open in Maps</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
 
-                <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Directions to London Headquarters"
-                  className="w-8 h-8 rounded-lg border border-slate-200 hover:border-[#0F313A] text-slate-700 flex items-center justify-center transition-colors"
-                >
-                  <Navigation className="w-3.5 h-3.5 text-[#0F313A]" />
-                </a>
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination=Riverside+Building,+County+Hall,+Westminster+Bridge+Rd,+London+SE1+7PB"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Directions to London Headquarters"
+                    className="w-8 h-8 rounded-lg border border-slate-200 hover:border-[#0F313A] text-slate-700 flex items-center justify-center transition-colors"
+                  >
+                    <Navigation className="w-3.5 h-3.5 text-[#0F313A]" />
+                  </a>
+                </div>
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
 
         {/* 5. STANDARDIZED UNIFIED FOOTER (Exact Match with Homepage - 100% Full Width) */}
         <PageFooter />

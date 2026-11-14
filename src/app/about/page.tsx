@@ -148,60 +148,58 @@ export default function AboutPage() {
       <Navbar />
 
       <main className="flex-1 w-full overflow-x-hidden">
-        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-16 md:space-y-24">
-          {/* 2. HERO BANNER: Clean rounded container with giant ABOUT and breadcrumb */}
-          <section aria-labelledby="about-header-title">
-            <div className="relative w-full min-h-[340px] md:min-h-[420px] rounded-[32px] md:rounded-[36px] overflow-hidden group">
-              {/* Background Logistics Photography */}
-              <Image
-                src="/images/hero-ocean-megaship.jpg"
-                alt="RILFREIGHT Global Maritime and Logistics Operations"
-                fill
-                priority
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+        {/* 2. HERO BANNER: Full-width edge-to-edge container with giant ABOUT and breadcrumb */}
+        <section aria-labelledby="about-header-title" className="w-full relative min-h-[340px] md:min-h-[420px] overflow-hidden group">
+          {/* Background Logistics Photography */}
+          <Image
+            src="/images/hero-ocean-megaship.jpg"
+            alt="RILFREIGHT Global Maritime and Logistics Operations"
+            fill
+            priority
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
 
-              {/* Subtle Overlay for typography contrast */}
-              <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
+          {/* Subtle Overlay for typography contrast */}
+          <div className="absolute inset-0 bg-[#0F313A]/55 backdrop-blur-[1px]" />
 
-              {/* Banner Content Container */}
-              <div className="relative z-10 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px] p-8 sm:p-12 md:p-16">
-                <div />
+          {/* Banner Content Container */}
+          <div className="relative z-10 max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 flex flex-col justify-between h-full min-h-[340px] md:min-h-[420px]">
+            <div />
 
-                {/* Giant Typography matching reference */}
-                <div>
-                  <h1
-                    id="about-header-title"
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
-                  >
-                    ABOUT
-                  </h1>
-                </div>
-
-                {/* Breadcrumb Pill at bottom-left */}
-                <div>
-                  <nav
-                    aria-label="Breadcrumb"
-                    className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
-                  >
-                    <Link
-                      href="/"
-                      className="hover:text-[#BA1C20] transition-colors"
-                    >
-                      Home
-                    </Link>
-                    <span className="text-slate-400">/</span>
-                    <span className="text-slate-800">About</span>
-                  </nav>
-                </div>
-              </div>
+            {/* Giant Typography matching reference */}
+            <div>
+              <h1
+                id="about-header-title"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none select-none"
+              >
+                ABOUT
+              </h1>
             </div>
-          </section>
 
-          {/* 3. SECTION 1: Clean 2-Column Typography (Matching Reference image media_1794231667371_d1872096.jpg) */}
+            {/* Breadcrumb Pill at bottom-left */}
+            <div>
+              <nav
+                aria-label="Breadcrumb"
+                className="inline-flex items-center gap-2 bg-white text-[#0F313A] px-5 py-2 rounded-full text-xs sm:text-sm font-semibold select-none"
+              >
+                <Link
+                  href="/"
+                  className="hover:text-[#BA1C20] transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="text-slate-400">/</span>
+                <span className="text-slate-800">About</span>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. SECTION 1: Clean 2-Column Typography */}
+        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <section
             aria-labelledby="company-statement-heading"
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start pt-4 sm:pt-6"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start"
           >
             {/* Left Column: Bold Headline Statement */}
             <div className="lg:col-span-5">
@@ -238,35 +236,37 @@ export default function AboutPage() {
               </p>
             </div>
           </section>
+        </div>
 
-          {/* 4. SECTION 2: Large Landscape Feature Banner (Matching Reference image media_1794231667450_0fa5e43b.jpg) */}
-          <section aria-label="Company Capabilities Banner">
-            <div className="relative rounded-[32px] md:rounded-[36px] overflow-hidden min-h-[300px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-end p-6 sm:p-10 md:p-16 group">
-              {/* Background Transportation Photography */}
-              <Image
-                src="/images/road-service-hero.jpg"
-                alt="RILFREIGHT Heavy-Duty Intermodal Transportation Fleet"
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+        {/* 4. SECTION 2: Large Landscape Feature Banner (Full-width edge-to-edge) */}
+        <section aria-label="Company Capabilities Banner" className="w-full relative overflow-hidden min-h-[300px] sm:min-h-[360px] md:min-h-[420px] flex items-center group">
+          {/* Background Transportation Photography */}
+          <Image
+            src="/images/road-service-hero.jpg"
+            alt="RILFREIGHT Heavy-Duty Intermodal Transportation Fleet"
+            fill
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
 
-              {/* Dark Gradient Overlay for text contrast */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/50 to-black/85" />
+          {/* Dark Gradient Overlay for text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/50 to-black/85" />
 
-              {/* Right-Aligned Bold Typography */}
-              <div className="relative z-10 max-w-xl text-right sm:text-left md:text-right">
-                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase text-white tracking-tight leading-snug">
-                  DRIVING YOUR JOURNEY FORWARD WITH RELIABLE, EFFICIENT, AND
-                  SEAMLESS TRANSPORTATION SOLUTIONS
-                </h3>
-              </div>
+          {/* Right-Aligned Bold Typography wrapped in max-w-[1760px] container */}
+          <div className="relative z-10 max-w-[1760px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 flex justify-end">
+            <div className="max-w-xl text-right sm:text-left md:text-right">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase text-white tracking-tight leading-snug">
+                DRIVING YOUR JOURNEY FORWARD WITH RELIABLE, EFFICIENT, AND
+                SEAMLESS TRANSPORTATION SOLUTIONS
+              </h3>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* 5. SECTION 3: History of Our Company (5 Milestones Matching Reference media_1794231667337_d2e5afaf.png) */}
+        {/* 5. SECTION 3: History of Our Company */}
+        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <section
             aria-labelledby="history-heading"
-            className="space-y-10 sm:space-y-14 pt-4 select-none"
+            className="space-y-10 sm:space-y-14 select-none"
           >
             {/* Centered Section Title with Reference Tag */}
             <div className="text-center space-y-2">

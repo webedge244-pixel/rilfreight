@@ -365,34 +365,35 @@ export default function HomePage() {
             2. HERO SECTION WITH 3-MODE INTERACTIVE CAROUSEL
             ==================================================== */}
         <section
-          className="px-4 sm:px-6 lg:px-8 pt-4 pb-6 max-w-[1760px] mx-auto"
+          className="w-full relative overflow-hidden min-h-[600px] md:min-h-[760px] lg:min-h-[820px] flex flex-col justify-between bg-[#0F313A]"
           aria-label="Transportation Services Hero"
           onMouseEnter={() => setIsHeroHovered(true)}
           onMouseLeave={() => setIsHeroHovered(false)}
         >
-          <div className="relative rounded-3xl md:rounded-[36px] overflow-hidden min-h-[600px] md:min-h-[760px] lg:min-h-[820px] flex flex-col justify-between p-6 sm:p-10 md:p-12 lg:p-14 bg-[#0F313A] shadow-2xl">
-            {/* Background Photographic Layer with Smooth Opacity Crossfade */}
-            {HERO_SLIDES.map((slide, idx) => (
-              <div
-                key={slide.id}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  idx === currentSlide
-                    ? "opacity-100 z-0"
-                    : "opacity-0 pointer-events-none -z-10"
-                }`}
-              >
-                <Image
-                  src={slide.image}
-                  alt={slide.headline}
-                  fill
-                  priority={idx === 0}
-                  className="object-cover object-center scale-[1.02] transform transition-transform duration-10000"
-                />
-                {/* Multi-Stop Cinematic Vignette Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0F313A]/95 via-[#0F313A]/60 to-[#0F313A]/20" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0F313A]/90 via-transparent to-black/30" />
-              </div>
-            ))}
+          {/* Background Photographic Layer with Smooth Opacity Crossfade */}
+          {HERO_SLIDES.map((slide, idx) => (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                idx === currentSlide
+                  ? "opacity-100 z-0"
+                  : "opacity-0 pointer-events-none -z-10"
+              }`}
+            >
+              <Image
+                src={slide.image}
+                alt={slide.headline}
+                fill
+                priority={idx === 0}
+                className="object-cover object-center scale-[1.02] transform transition-transform duration-10000"
+              />
+              {/* Multi-Stop Cinematic Vignette Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0F313A]/95 via-[#0F313A]/60 to-[#0F313A]/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0F313A]/90 via-transparent to-black/30" />
+            </div>
+          ))}
+
+          <div className="relative z-10 max-w-[1760px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-12 flex flex-col justify-between flex-1">
 
             {/* Central Headline & Value Narrative */}
             <div className="relative z-10 my-auto py-8 max-w-4xl">
@@ -920,10 +921,10 @@ export default function HomePage() {
             ==================================================== */}
         <section
           id="about"
-          className="px-4 sm:px-6 lg:px-8 py-10 max-w-[1760px] mx-auto scroll-mt-24"
+          className="w-full bg-[#0F313A] text-white py-14 sm:py-18 md:py-20 relative overflow-hidden scroll-mt-24"
           aria-label="About RILFREIGHT and Operational Scale"
         >
-          <div className="bg-[#0F313A] text-white rounded-3xl md:rounded-[36px] p-5 sm:p-8 md:p-12 lg:p-16 relative overflow-hidden shadow-2xl">
+          <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* 1. Category Tag at the Top */}
             <p className="text-xs uppercase font-extrabold tracking-widest text-[#BA1C20] mb-4">
               / about us /
@@ -1277,22 +1278,22 @@ export default function HomePage() {
             ==================================================== */}
         <section
           id="quote"
-          className="px-4 sm:px-6 lg:px-8 py-10 max-w-[1760px] mx-auto scroll-mt-24"
+          className="w-full relative overflow-hidden min-h-[720px] py-14 sm:py-18 md:py-20 flex items-center scroll-mt-24"
           aria-label="Request a Freight Quote"
         >
-          <div className="relative rounded-3xl md:rounded-[36px] overflow-hidden min-h-[720px] p-6 sm:p-10 md:p-12 lg:p-16 flex items-center">
-            {/* Background Photographic Layer: Port Gantry Cranes at Sunset */}
-            <Image
-              src="/images/quote-port-cranes.jpg"
-              alt="Container Port Gantry Cranes at Sunset"
-              fill
-              className="object-cover object-center"
-            />
-            {/* Subtle Gradient Overlay for visual depth & legibility */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70 pointer-events-none" />
+          {/* Background Photographic Layer: Port Gantry Cranes at Sunset */}
+          <Image
+            src="/images/quote-port-cranes.jpg"
+            alt="Container Port Gantry Cranes at Sunset"
+            fill
+            className="object-cover object-center"
+          />
+          {/* Subtle Gradient Overlay for visual depth & legibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70 pointer-events-none" />
 
-            {/* 2-Column Layout Grid */}
-            <div className="relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+          {/* 2-Column Layout Grid */}
+          <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
               {/* Left Column: Minimal White Card (lg:col-span-7) */}
               <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-10 md:p-12 border border-slate-100">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-8">
