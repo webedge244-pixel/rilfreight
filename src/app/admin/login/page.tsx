@@ -25,12 +25,21 @@ import { checkPermittedEmail } from "@/shared/lib/permissions";
  * so the `next` parameter cannot be used as an open redirect.
  */
 function resolveNextPath(raw: string | null): string {
-  if (!raw) return "/admin/dashboard";
-  if (!raw.startsWith("/admin")) return "/admin/dashboard";
-  if (raw.startsWith("//") || raw.startsWith("/admin/login")) {
-    return "/admin/dashboard";
+  const isSubdomain =
+    typeof window !== "undefined" && window.location.hostname.startsWith("admin.");
+  const defaultTarget = isSubdomain ? "/dashboard" : "/admin/dashboard";
+
+  if (!raw) return defaultTarget;
+  if (raw.startsWith("//") || raw === "/admin/login" || raw === "/login") {
+    return defaultTarget;
   }
-  return raw;
+  if (raw.startsWith("/admin") || raw.startsWith("/")) {
+    if (isSubdomain && raw.startsWith("/admin")) {
+      return raw.replace(/^\/admin/, "") || "/dashboard";
+    }
+    return raw;
+  }
+  return defaultTarget;
 }
 
 /**

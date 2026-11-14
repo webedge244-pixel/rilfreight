@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/admin/login";
+  const isLoginPage = pathname === "/admin/login" || pathname === "/login";
 
   if (isLoginPage) {
     return (
@@ -51,7 +51,10 @@ function AdminGate({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (status === "unauthenticated" || status === "unauthorized") {
-      router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`);
+      const isSubdomain =
+        typeof window !== "undefined" && window.location.hostname.startsWith("admin.");
+      const loginPath = isSubdomain ? "/login" : "/admin/login";
+      router.replace(`${loginPath}?next=${encodeURIComponent(pathname)}`);
     }
   }, [status, router, pathname]);
 
