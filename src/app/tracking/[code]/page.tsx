@@ -205,11 +205,12 @@ function TrackingDetailContent() {
 
   // Periodic progression re-evaluation in case milestone time arrives while user is on page
   React.useEffect(() => {
-    if (!shipment?.id) return;
+    if (!shipment?.id || shipment.status === "delivered" || shipment.isPaused) return;
 
-    const interval = setInterval(() => {
+    const checkProgression = () => {
+      if (typeof document !== "undefined" && document.hidden) return; // Save CPU when tab is in background
       setShipment((current) => {
-        if (!current) return current;
+        if (!current || current.status === "delivered" || current.isPaused) return current;
         const { updatedShipment, hasChanged } = evaluateShipmentProgression(current);
         if (hasChanged) {
           if (typeof window !== "undefined") {
@@ -223,10 +224,20 @@ function TrackingDetailContent() {
         }
         return current;
       });
-    }, 30000);
+    };
 
-    return () => clearInterval(interval);
-  }, [shipment?.id]);
+    const interval = setInterval(checkProgression, 30000);
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", checkProgression);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", checkProgression);
+      }
+    };
+  }, [shipment?.id, shipment?.status, shipment?.isPaused]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
