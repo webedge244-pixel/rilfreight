@@ -10,6 +10,7 @@ import {
 } from "@/shared/lib/firebase";
 import type { Shipment, TransportMode } from "@/shared/types";
 import TrackingTimeline from "@/features/tracking/components/TrackingTimeline";
+import { evaluateShipmentProgression } from "@/features/tracking/services/trackingService";
 import {
   Ship,
   Plane,
@@ -112,27 +113,39 @@ function TrackingDetailContent() {
         const found = await getShipmentByTrackingCode(codeParam);
 
         if (isMounted) {
-          if (found && typeof window !== "undefined") {
-            try {
-              const raw = localStorage.getItem("rilfreight_recently_tracked");
-              const existing = raw
-                ? (JSON.parse(raw) as Array<{ code: string; origin: string }>).filter(
-                    (item) => item.code !== found.trackingCode && item.origin !== "Unknown Origin"
-                  )
-                : [];
-              const newItem = {
-                code: found.trackingCode,
-                mode: found.mode,
-                origin: `${found.originName} (${found.originCode})`,
-                destination: `${found.destinationName} (${found.destinationCode})`,
-                timestamp: Date.now(),
-              };
-              localStorage.setItem(
-                "rilfreight_recently_tracked",
-                JSON.stringify([newItem, ...existing].slice(0, 5))
-              );
-            } catch {
-              // Ignore localStorage write failures
+          if (found) {
+            const { updatedShipment, hasChanged } = evaluateShipmentProgression(found);
+            if (hasChanged && typeof window !== "undefined") {
+              fetch("/api/tracking/sync", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: found.trackingCode }),
+              }).catch((err) => console.warn("Background tracking sync failed:", err));
+            }
+            setShipment(updatedShipment);
+
+            if (typeof window !== "undefined") {
+              try {
+                const raw = localStorage.getItem("rilfreight_recently_tracked");
+                const existing = raw
+                  ? (JSON.parse(raw) as Array<{ code: string; origin: string }>).filter(
+                      (item) => item.code !== found.trackingCode && item.origin !== "Unknown Origin"
+                    )
+                  : [];
+                const newItem = {
+                  code: found.trackingCode,
+                  mode: found.mode,
+                  origin: `${found.originName} (${found.originCode})`,
+                  destination: `${found.destinationName} (${found.destinationCode})`,
+                  timestamp: Date.now(),
+                };
+                localStorage.setItem(
+                  "rilfreight_recently_tracked",
+                  JSON.stringify([newItem, ...existing].slice(0, 5))
+                );
+              } catch {
+                // Ignore localStorage write failures
+              }
             }
           } else if (!found && typeof window !== "undefined") {
             // If shipment is not found (e.g. was deleted by admin), purge it from local cache
@@ -148,8 +161,8 @@ function TrackingDetailContent() {
             } catch {
               // Ignore localStorage failures
             }
+            setShipment(null);
           }
-          setShipment(found);
           setIsLoading(false);
         }
       } catch (err) {

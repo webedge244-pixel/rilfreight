@@ -8,12 +8,14 @@ import { cn } from "@/shared/lib/utils";
 import {
   listenToShipmentRecord,
   replaceShipmentRecord,
+  updateShipmentRecord,
   deleteShipmentRecord,
   listPlatformUsers,
 } from "@/shared/lib/firebase";
 import {
   releaseShipmentGate,
   triggerShipmentException,
+  evaluateShipmentProgression,
 } from "@/features/tracking/services/trackingService";
 import type {
   Shipment,
@@ -116,7 +118,18 @@ function ShipmentDetailContent() {
     const unsubscribe = listenToShipmentRecord(
       shipmentId,
       (live) => {
-        setShipment(live);
+        if (live) {
+          const { updatedShipment, hasChanged } = evaluateShipmentProgression(live);
+          if (hasChanged) {
+            void updateShipmentRecord(updatedShipment.id, {
+              milestones: updatedShipment.milestones,
+              status: updatedShipment.status,
+            });
+          }
+          setShipment(updatedShipment);
+        } else {
+          setShipment(null);
+        }
         setIsLoading(false);
         setLoadError(null);
       },

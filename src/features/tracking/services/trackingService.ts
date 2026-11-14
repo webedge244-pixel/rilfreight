@@ -223,3 +223,54 @@ export function triggerShipmentException(
     updatedAt: new Date(currentTimestamp).toISOString(),
   };
 }
+
+/**
+ * Evaluates whether scheduled milestones have been reached in real-world UTC time.
+ * Protects against advancing past active hold gates or paused states.
+ */
+export function evaluateShipmentProgression(
+  shipment: Shipment,
+  now: number = Date.now()
+): { updatedShipment: Shipment; hasChanged: boolean } {
+  if (!shipment.milestones || shipment.milestones.length === 0 || shipment.isPaused) {
+    return { updatedShipment: shipment, hasChanged: false };
+  }
+
+  let hasChanged = false;
+
+  const updatedMilestones = shipment.milestones.map((m) => {
+    if (m.isCompleted) return m;
+
+    // Do not auto-advance hold gate checkpoints without operator release
+    if (m.isHoldGate) return m;
+
+    const milestoneTime = new Date(m.timestamp).getTime();
+    if (!isNaN(milestoneTime) && milestoneTime <= now) {
+      hasChanged = true;
+      return { ...m, isCompleted: true };
+    }
+    return m;
+  });
+
+  let updatedStatus = shipment.status;
+  const allCompleted = updatedMilestones.every((m) => m.isCompleted);
+  if (allCompleted && updatedStatus !== "delivered") {
+    updatedStatus = "delivered";
+    hasChanged = true;
+  } else if (!allCompleted && (updatedStatus === "pending" || updatedStatus === "draft")) {
+    const departureTime = new Date(shipment.departureDate).getTime();
+    if (!isNaN(departureTime) && departureTime <= now) {
+      updatedStatus = "in_transit";
+      hasChanged = true;
+    }
+  }
+
+  return {
+    updatedShipment: {
+      ...shipment,
+      milestones: updatedMilestones,
+      status: updatedStatus,
+    },
+    hasChanged,
+  };
+}
