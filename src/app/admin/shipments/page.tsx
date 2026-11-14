@@ -5,31 +5,23 @@ import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
 import {
   listenToShipments,
-  updateShipmentRecord,
   listShipments,
   deleteShipmentRecord,
 } from "@/shared/lib/firebase";
-import type { TransportMode, ShipmentStatus, Shipment } from "@/shared/types";
-import {
-  releaseShipmentGate,
-  triggerShipmentException,
-} from "@/features/tracking/services/trackingService";
+import type { TransportMode, Shipment } from "@/shared/types";
 import {
   Search,
   Filter,
-  PlayCircle,
-  AlertTriangle,
   CheckCircle2,
-  Clock,
-  ShieldAlert,
+  AlertTriangle,
   X,
-  ExternalLink,
   Ship,
   Plane,
   Train,
   Truck,
   Plus,
   ChevronDown,
+  ChevronRight,
   Trash2,
 } from "lucide-react";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
@@ -62,13 +54,6 @@ export default function ShipmentsPage() {
   }, []);
 
   const activeFilterCount = (modeFilter !== "all" ? 1 : 0) + (activeTab !== "all" ? 1 : 0);
-
-  // Exception Modal State
-  const [selectedShipmentForException, setSelectedShipmentForException] = React.useState<Shipment | null>(null);
-  const [exceptionReasonPreset, setExceptionReasonPreset] = React.useState<string>("Customs Inspection Hold Gate");
-  const [customExceptionReason, setCustomExceptionReason] = React.useState<string>("");
-  const [exceptionStatusType, setExceptionStatusType] = React.useState<ShipmentStatus>("customs_hold");
-  const [isSubmittingAction, setIsSubmittingAction] = React.useState<boolean>(false);
 
   // 1. Subscribe to Firestore shipments collection in real time
   React.useEffect(() => {
@@ -106,84 +91,6 @@ export default function ShipmentsPage() {
     setTimeout(() => {
       setToastMessage(null);
     }, 4500);
-  };
-
-  // Quick Action 1: "Release Gate"
-  const handleReleaseGate = async (shipment: Shipment) => {
-    try {
-      setIsSubmittingAction(true);
-      const updatedShipment = releaseShipmentGate(shipment);
-
-      // 1. Update Firestore
-      await updateShipmentRecord(shipment.id, {
-        isPaused: false,
-        status: "in_transit",
-        pausedReason: "",
-        pausedAtTimestamp: "",
-        pausedLocationName: "",
-        milestones: updatedShipment.milestones,
-      });
-
-      // 2. Update local state
-      setShipments((prev) =>
-        prev.map((s) => (s.id === shipment.id ? updatedShipment : s))
-      );
-
-      showToast(`Release Gate: Shipment ${shipment.trackingCode} is now in transit!`, "success");
-    } catch (err: unknown) {
-      console.error("Failed to release gate:", err);
-      showToast(`Failed to release hold gate for ${shipment.trackingCode}`, "error");
-    } finally {
-      setIsSubmittingAction(false);
-    }
-  };
-
-  // Quick Action 2: Open "Trigger Exception" modal
-  const openExceptionModal = (shipment: Shipment) => {
-    setSelectedShipmentForException(shipment);
-    setExceptionReasonPreset("Customs Inspection Hold Gate");
-    setCustomExceptionReason("");
-    setExceptionStatusType("customs_hold");
-  };
-
-  // Quick Action 2: Submit Exception
-  const handleConfirmTriggerException = async () => {
-    if (!selectedShipmentForException) return;
-
-    const finalReason = customExceptionReason.trim()
-      ? customExceptionReason.trim()
-      : exceptionReasonPreset;
-
-    try {
-      setIsSubmittingAction(true);
-      const updatedShipment = triggerShipmentException(
-        selectedShipmentForException,
-        finalReason,
-        exceptionStatusType
-      );
-
-      // 1. Update Firestore
-      await updateShipmentRecord(selectedShipmentForException.id, {
-        isPaused: true,
-        status: exceptionStatusType,
-        pausedReason: finalReason,
-        pausedAtTimestamp: updatedShipment.pausedAtTimestamp,
-        pausedCoordinates: updatedShipment.pausedCoordinates,
-      });
-
-      // 2. Update local state
-      setShipments((prev) =>
-        prev.map((s) => (s.id === selectedShipmentForException.id ? updatedShipment : s))
-      );
-
-      showToast(`Exception Triggered: ${selectedShipmentForException.trackingCode} placed on hold.`, "success");
-      setSelectedShipmentForException(null);
-    } catch (err: unknown) {
-      console.error("Failed to trigger exception:", err);
-      showToast(`Failed to trigger exception for ${selectedShipmentForException.trackingCode}`, "error");
-    } finally {
-      setIsSubmittingAction(false);
-    }
   };
 
   // Delete Shipment & Cascade Unlink across users
@@ -447,153 +354,90 @@ export default function ShipmentsPage() {
 
       {/* 1. MOBILE SHIPMENT CARDS (< md) */}
       <div className="md:hidden space-y-3.5">
-        {filteredShipments.map((s) => {
-          const hasHoldGate =
-            s.isPaused ||
-            s.status === "customs_hold" ||
-            s.milestones?.some((m) => m.isHoldGate && !m.isCompleted);
-          const canTriggerException = s.status !== "delivered";
-
-          return (
-            <div
-              key={s.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 space-y-3"
-            >
-              {/* Top Row: Tracking Code + Mode Pill */}
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <Link
-                    href={`/admin/shipments/${s.id}`}
-                    className="font-mono font-bold text-base text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
-                  >
-                    {s.trackingCode}
-                  </Link>
-                  {s.consignmentReference && (
-                    <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[200px]">
-                      {s.consignmentReference}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize shrink-0">
-                  {modeIcon(s.mode)}
-                  <span>{s.mode}</span>
-                </div>
-              </div>
-
-              {/* Status Badge & Hold Gate Notice */}
+        {filteredShipments.map((s) => (
+          <div
+            key={s.id}
+            className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 space-y-3"
+          >
+            {/* Top Row: Tracking Code + Mode Pill */}
+            <div className="flex items-start justify-between gap-2">
               <div>
-                {s.isPaused ? (
-                  <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-                      <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-                      HOLD GATE ACTIVE
-                    </span>
-                    {s.pausedReason && (
-                      <p className="text-xs text-amber-700 dark:text-amber-300">
-                        {s.pausedReason}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <span
-                    className={cn(
-                      "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-                      statusColor(s.status)
-                    )}
-                  >
-                    {formatStatus(s.status)}
-                  </span>
-                )}
-              </div>
-
-              {/* Route & Shipment Meta Grid */}
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
-                    Route
-                  </span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {s.originCode} → {s.destinationCode}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
-                    ETA
-                  </span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {new Date(
-                      s.actualDeliveryDate || s.estimatedDeliveryDate
-                    ).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-                {s.conveyanceName && (
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">
-                      Conveyance
-                    </span>
-                    <span className="text-slate-600 dark:text-slate-400 truncate block">
-                      {s.conveyanceName}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">
-                    Weight
-                  </span>
-                  <span className="font-mono text-slate-600 dark:text-slate-400">
-                    {s.grossWeightKg.toLocaleString()} kg
-                  </span>
-                </div>
-              </div>
-
-              {/* Bottom Actions Row */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                 <Link
                   href={`/admin/shipments/${s.id}`}
-                  className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                  className="font-mono font-bold text-base text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
                 >
-                  View Details →
+                  {s.trackingCode}
                 </Link>
-                <div className="flex items-center gap-1.5">
-                  {hasHoldGate && (
-                    <button
-                      type="button"
-                      onClick={() => handleReleaseGate(s)}
-                      disabled={isSubmittingAction}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-all"
-                    >
-                      <PlayCircle className="w-3.5 h-3.5" />
-                      Release
-                    </button>
-                  )}
-                  {canTriggerException && (
-                    <button
-                      type="button"
-                      onClick={() => openExceptionModal(s)}
-                      disabled={isSubmittingAction}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all"
-                    >
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Exception
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShipmentToDelete(s)}
-                    className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
-                    title="Delete Shipment"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                {s.consignmentReference && (
+                  <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[200px]">
+                    {s.consignmentReference}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize shrink-0">
+                {modeIcon(s.mode)}
+                <span>{s.mode}</span>
               </div>
             </div>
-          );
-        })}
+
+            {/* Status Badge */}
+            <div>
+              <span
+                className={cn(
+                  "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                  s.isPaused ? "text-[#BA1C20] bg-[#BA1C20]/10" : statusColor(s.status)
+                )}
+              >
+                {s.isPaused ? "On Hold" : formatStatus(s.status)}
+              </span>
+            </div>
+
+            {/* Route & ETA Grid */}
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                  Route
+                </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {s.originCode} → {s.destinationCode}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                  ETA
+                </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {new Date(
+                    s.actualDeliveryDate || s.estimatedDeliveryDate
+                  ).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
+
+            {/* Bottom Actions Row */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+              <Link
+                href={`/admin/shipments/${s.id}`}
+                className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1"
+              >
+                <span>View Details</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShipmentToDelete(s)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
+                title="Delete Shipment"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
 
         {filteredShipments.length === 0 && (
           <div className="py-12 text-center text-sm text-slate-400 bg-white dark:bg-slate-900 rounded-2xl">
@@ -605,159 +449,103 @@ export default function ShipmentsPage() {
       </div>
 
       {/* 2. DESKTOP SHIPMENTS TABLE (>= md) */}
-      <div className="hidden md:block bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 overflow-x-auto">
+      <div className="hidden md:block bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 lg:p-8 overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Tracking Code</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Mode</th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden md:table-cell">Conveyance</th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden sm:table-cell">Route</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Route</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Status</th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden lg:table-cell">Weight</th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">ETA</th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Quick Actions</th>
+              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredShipments.map((s) => {
-              const hasHoldGate = s.isPaused || s.status === "customs_hold" || s.milestones?.some((m) => m.isHoldGate && !m.isCompleted);
-              const canTriggerException = s.status !== "delivered";
+            {filteredShipments.map((s) => (
+              <tr
+                key={s.id}
+                className="border-b border-slate-100 dark:border-slate-800 last:border-b-0 hover:bg-slate-100/40 dark:hover:bg-slate-800/30 transition-colors"
+              >
+                {/* Tracking Code */}
+                <td className="py-3.5 pr-4">
+                  <Link
+                    href={`/admin/shipments/${s.id}`}
+                    className="font-mono font-semibold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
+                  >
+                    {s.trackingCode}
+                  </Link>
+                  {s.consignmentReference && (
+                    <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[140px]">
+                      {s.consignmentReference}
+                    </span>
+                  )}
+                </td>
 
-              return (
-                <tr
-                  key={s.id}
-                  className="border-b border-slate-100 dark:border-slate-800 last:border-b-0 hover:bg-slate-100/40 dark:hover:bg-slate-800/30 transition-colors"
-                >
-                  {/* Tracking Code */}
-                  <td className="py-3.5 pr-4">
+                {/* Mode */}
+                <td className="py-3.5 pr-4">
+                  <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 capitalize">
+                    {modeIcon(s.mode)}
+                    <span>{s.mode}</span>
+                  </div>
+                </td>
+
+                {/* Route */}
+                <td className="py-3.5 pr-4">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {s.originCode} → {s.destinationCode}
+                  </span>
+                </td>
+
+                {/* Status */}
+                <td className="py-3.5 pr-4">
+                  <span
+                    className={cn(
+                      "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                      s.isPaused ? "text-[#BA1C20] bg-[#BA1C20]/10" : statusColor(s.status)
+                    )}
+                  >
+                    {s.isPaused ? "On Hold" : formatStatus(s.status)}
+                  </span>
+                </td>
+
+                {/* ETA */}
+                <td className="py-3.5 pr-4">
+                  <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    {new Date(s.actualDeliveryDate || s.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </td>
+
+                {/* Actions */}
+                <td className="py-3.5 text-right">
+                  <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/shipments/${s.id}`}
-                      className="font-mono font-semibold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider transition-colors"
                     >
-                      {s.trackingCode}
+                      <span>View Details</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
-                    {s.consignmentReference && (
-                      <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[140px]">
-                        {s.consignmentReference}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Mode */}
-                  <td className="py-3.5 pr-4">
-                    <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 capitalize">
-                      {modeIcon(s.mode)}
-                      <span>{s.mode}</span>
-                    </div>
-                  </td>
-
-                  {/* Conveyance */}
-                  <td className="py-3.5 pr-4 hidden md:table-cell">
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
-                      {s.conveyanceName || "—"}
-                    </span>
-                  </td>
-
-                  {/* Route */}
-                  <td className="py-3.5 pr-4 hidden sm:table-cell">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {s.originCode} → {s.destinationCode}
-                    </span>
-                  </td>
-
-                  {/* Status & Pause Gate Indicator */}
-                  <td className="py-3.5 pr-4">
-                    {s.isPaused ? (
-                      <div className="space-y-1">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-                          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-                          HOLD GATE ACTIVE
-                        </span>
-                        {s.pausedReason && (
-                          <p className="text-[11px] text-amber-700 dark:text-amber-300 max-w-[180px] truncate" title={s.pausedReason}>
-                            {s.pausedReason}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span
-                        className={cn(
-                          "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-                          statusColor(s.status)
-                        )}
-                      >
-                        {formatStatus(s.status)}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Weight */}
-                  <td className="py-3.5 pr-4 hidden lg:table-cell">
-                    <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">
-                      {s.grossWeightKg.toLocaleString()} kg
-                    </span>
-                  </td>
-
-                  {/* ETA */}
-                  <td className="py-3.5 pr-4">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      {new Date(s.actualDeliveryDate || s.estimatedDeliveryDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </td>
-
-                  {/* Quick Actions */}
-                  <td className="py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {/* Quick Action 1: Release Gate */}
-                      {hasHoldGate ? (
-                        <button
-                          type="button"
-                          onClick={() => handleReleaseGate(s)}
-                          disabled={isSubmittingAction}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
-                          title="Release Hold Gate and Resume Tracking"
-                        >
-                          <PlayCircle className="w-3.5 h-3.5" />
-                          Release Gate
-                        </button>
-                      ) : null}
-
-                      {/* Quick Action 2: Trigger Exception */}
-                      {canTriggerException ? (
-                        <button
-                          type="button"
-                          onClick={() => openExceptionModal(s)}
-                          disabled={isSubmittingAction}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
-                          title="Report Exception or Delay"
-                        >
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          Trigger Exception
-                        </button>
-                      ) : null}
-
-                      {/* Quick Action 3: Delete Shipment */}
-                      <button
-                        type="button"
-                        onClick={() => setShipmentToDelete(s)}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
-                        title="Delete Shipment & Unlink from Users"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                    <button
+                      type="button"
+                      onClick={() => setShipmentToDelete(s)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
+                      title="Delete Shipment"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
 
             {filteredShipments.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-sm text-slate-400">
+                <td colSpan={6} className="py-12 text-center text-sm text-slate-400">
                   {shipments.length === 0
                     ? "No shipments yet. Create the first shipment to populate the console."
                     : "No shipments found matching current query and filters."}
@@ -767,120 +555,6 @@ export default function ShipmentsPage() {
           </tbody>
         </table>
       </div>
-
-      {/* Exception Trigger Dialog Modal */}
-      {selectedShipmentForException && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="w-5 h-5" />
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  Trigger Operational Exception
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedShipmentForException(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-black dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-xs">
-                <p>
-                  Target Shipment: <strong className="font-mono text-black dark:text-white">{selectedShipmentForException.trackingCode}</strong>
-                </p>
-                <p className="text-slate-500 mt-0.5">
-                  Conveyance: {selectedShipmentForException.conveyanceName} ({selectedShipmentForException.mode})
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Exception Category
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setExceptionStatusType("customs_hold")}
-                    className={cn(
-                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider border text-left transition-all",
-                      exceptionStatusType === "customs_hold"
-                        ? "bg-amber-500 text-white border-amber-600 shadow-sm"
-                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-                    )}
-                  >
-                    Customs Hold Gate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setExceptionStatusType("weather_delay")}
-                    className={cn(
-                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider border text-left transition-all",
-                      exceptionStatusType === "weather_delay"
-                        ? "bg-red-500 text-white border-red-600 shadow-sm"
-                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-                    )}
-                  >
-                    Weather / Route Delay
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Preset Reason
-                </label>
-                <select
-                  value={exceptionReasonPreset}
-                  onChange={(e) => setExceptionReasonPreset(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-                >
-                  <option value="Customs Inspection Hold Gate">Customs Inspection Hold Gate</option>
-                  <option value="Port Congestion Dwell Hold">Port Congestion Dwell Hold</option>
-                  <option value="Severe Typhoon Warning — Vessel Anchored">Severe Typhoon Warning — Vessel Anchored</option>
-                  <option value="Mechanical Conveyance Inspection">Mechanical Conveyance Inspection</option>
-                  <option value="Border Transit Security Verification">Border Transit Security Verification</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Custom Operational Note (Optional)
-                </label>
-                <textarea
-                  value={customExceptionReason}
-                  onChange={(e) => setCustomExceptionReason(e.target.value)}
-                  placeholder="Specify custom reason or operational instructions..."
-                  rows={2}
-                  className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setSelectedShipmentForException(null)}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmTriggerException}
-                disabled={isSubmittingAction}
-                className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md shadow-amber-500/20"
-              >
-                {isSubmittingAction ? "Applying..." : "Confirm & Pause Gate"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Shipment Deletion Confirmation Modal */}
       {shipmentToDelete && (
