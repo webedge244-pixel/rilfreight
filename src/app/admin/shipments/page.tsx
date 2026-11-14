@@ -7,6 +7,7 @@ import {
   listenToShipments,
   updateShipmentRecord,
   listShipments,
+  deleteShipmentRecord,
 } from "@/shared/lib/firebase";
 import type { TransportMode, ShipmentStatus, Shipment } from "@/shared/types";
 import {
@@ -29,6 +30,7 @@ import {
   Truck,
   Plus,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 
@@ -181,6 +183,29 @@ export default function ShipmentsPage() {
       showToast(`Failed to trigger exception for ${selectedShipmentForException.trackingCode}`, "error");
     } finally {
       setIsSubmittingAction(false);
+    }
+  };
+
+  // Delete Shipment & Cascade Unlink across users
+  const [shipmentToDelete, setShipmentToDelete] = React.useState<Shipment | null>(null);
+  const [isDeletingShipment, setIsDeletingShipment] = React.useState<boolean>(false);
+
+  const handleConfirmDelete = async () => {
+    if (!shipmentToDelete) return;
+    setIsDeletingShipment(true);
+    try {
+      await deleteShipmentRecord(shipmentToDelete.id);
+      setShipments((prev) => prev.filter((s) => s.id !== shipmentToDelete.id));
+      showToast(
+        `Shipment ${shipmentToDelete.trackingCode} deleted and unlinked from all clients.`,
+        "success"
+      );
+      setShipmentToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete shipment:", err);
+      showToast("Failed to delete shipment record.", "error");
+    } finally {
+      setIsDeletingShipment(false);
     }
   };
 
@@ -556,6 +581,14 @@ export default function ShipmentsPage() {
                       Exception
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setShipmentToDelete(s)}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
+                    title="Delete Shipment"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -706,6 +739,16 @@ export default function ShipmentsPage() {
                           Trigger Exception
                         </button>
                       ) : null}
+
+                      {/* Quick Action 3: Delete Shipment */}
+                      <button
+                        type="button"
+                        onClick={() => setShipmentToDelete(s)}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
+                        title="Delete Shipment & Unlink from Users"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -833,6 +876,38 @@ export default function ShipmentsPage() {
                 className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md shadow-amber-500/20"
               >
                 {isSubmittingAction ? "Applying..." : "Confirm & Pause Gate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shipment Deletion Confirmation Modal */}
+      {shipmentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-base font-bold text-black dark:text-white">
+              Delete Shipment {shipmentToDelete.trackingCode}?
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              This will permanently delete the shipment from the registry and immediately wipe it from all connected client accounts.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShipmentToDelete(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingShipment}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                {isDeletingShipment ? "Deleting..." : "Delete Everywhere"}
               </button>
             </div>
           </div>

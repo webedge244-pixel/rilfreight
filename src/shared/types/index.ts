@@ -177,6 +177,7 @@ export interface Shipment {
   volumeCbm?: number;
   goodsDescription: string;
   clientName?: string; // Client / Consignee Name
+  linkedUserIds?: string[]; // IDs of PlatformUsers linked to this shipment
 
   // Geometry and Timeline
   routeCoordinates: [number, number][]; // Array of [lon, lat] points

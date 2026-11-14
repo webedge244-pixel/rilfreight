@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   getShipmentByTrackingCode,
@@ -68,15 +68,32 @@ export default function TrackingDetailPage() {
 function TrackingDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const codeParam = React.useMemo(() => {
     const raw = Array.isArray(params?.code) ? params.code[0] : (params?.code as string);
     return raw ? decodeURIComponent(raw).trim() : "";
   }, [params]);
 
+  const uidParam = React.useMemo(() => {
+    return searchParams ? searchParams.get("uid") : null;
+  }, [searchParams]);
+
   const [shipment, setShipment] = React.useState<Shipment | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+
+  // Automatically mark user as connected when they open a tracking link with ?uid=...
+  React.useEffect(() => {
+    if (!uidParam) return;
+    fetch("/api/tracking/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid: uidParam }),
+    }).catch((err) => {
+      console.warn("Connection ping failed:", err);
+    });
+  }, [uidParam]);
 
   // Fetch shipment from Firestore with demo fallback
   React.useEffect(() => {
@@ -116,6 +133,20 @@ function TrackingDetailContent() {
               );
             } catch {
               // Ignore localStorage write failures
+            }
+          } else if (!found && typeof window !== "undefined") {
+            // If shipment is not found (e.g. was deleted by admin), purge it from local cache
+            try {
+              const raw = localStorage.getItem("rilfreight_recently_tracked");
+              if (raw) {
+                const existing = JSON.parse(raw) as Array<{ code: string }>;
+                const cleaned = existing.filter(
+                  (item) => item.code.toUpperCase() !== codeParam.toUpperCase()
+                );
+                localStorage.setItem("rilfreight_recently_tracked", JSON.stringify(cleaned));
+              }
+            } catch {
+              // Ignore localStorage failures
             }
           }
           setShipment(found);
@@ -185,7 +216,7 @@ function TrackingDetailContent() {
           </div>
           <h2 className="text-2xl font-bold text-black dark:text-white">Shipment Not Found</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            No live shipment matched tracking reference <code className="font-mono text-black dark:text-white font-bold">{codeParam}</code>.
+            No live shipment matched tracking reference <code className="font-mono text-black dark:text-white font-bold">{codeParam}</code>. This shipment record no longer exists or has been removed from the registry.
           </p>
 
           <form onSubmit={handleSearchSubmit} className="mt-6 flex gap-2">

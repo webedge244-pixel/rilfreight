@@ -28,6 +28,9 @@ export interface PlatformUser {
   country?: string;
   linkedShipmentIds: string[];
   status: "active" | "inactive";
+  connectionStatus: "pending" | "connected";
+  firstConnectedAt?: string;
+  emailUpdatesEnabled: boolean;
   createdAt: string;
   lastLoginAt?: string;
 }

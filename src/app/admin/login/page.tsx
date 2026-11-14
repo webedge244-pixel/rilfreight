@@ -186,107 +186,105 @@ function AdminLoginContent() {
         </Link>
       </div>
 
-      {/* Main Login Card */}
-      <div className="w-full max-w-md mx-auto my-auto">
-        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-3xl p-8 sm:p-10">
-          {/* Brand Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="text-2xl font-black tracking-wider text-black dark:text-white leading-none">
-                RILFREIGHT
-              </span>
-              <span className="text-2xl font-black text-[#BA1C20] leading-none">.</span>
-            </div>
-            <h1 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Operations Admin Console
-            </h1>
+      {/* Main Login Form Directly on Canvas Background */}
+      <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto px-4 sm:px-0 py-8">
+        {/* Brand Header */}
+        <div className="mb-8 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-1.5 mb-2">
+            <span className="text-2xl font-black tracking-wider text-black dark:text-white leading-none">
+              RILFREIGHT
+            </span>
+            <span className="text-2xl font-black text-[#BA1C20] leading-none">.</span>
+          </div>
+          <h1 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Operations Admin Console
+          </h1>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              Operator Email
+            </label>
+            <input
+              type="email"
+              required
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="operator@rilfreight.com"
+              className="w-full font-mono px-4 py-3.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/40 border-0"
+            />
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Operator Email
-              </label>
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              Security Password
+            </label>
+            <div className="relative">
               <input
-                type="email"
+                type={showPassword ? "text" : "password"}
                 required
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="operator@rilfreight.com"
-                className="w-full font-mono px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                className="w-full font-mono px-4 py-3.5 pr-12 rounded-2xl bg-slate-100/90 dark:bg-slate-900 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/40 border-0"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Security Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-full font-mono px-4 py-3 pr-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  title={showPassword ? "Hide password" : "Show password"}
-                  aria-pressed={showPassword}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-black dark:hover:text-white transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 dark:text-slate-400">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 accent-[#BA1C20] rounded"
-                />
-                Remember this terminal
-              </label>
-              <span className="text-slate-400">Access Controlled</span>
-            </div>
-
-            {errorMessage && (
-              <p
-                role="alert"
-                className="text-xs font-medium text-[#BA1C20] leading-relaxed"
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-black dark:hover:text-white transition-colors"
               >
-                {errorMessage}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 rounded-2xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-sm font-bold uppercase tracking-wider transition-colors active:scale-[0.98] disabled:opacity-50"
-            >
-              {isLoading ? "Authenticating..." : "Sign In"}
-            </button>
-          </form>
-
-          {/* Access Notice */}
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-400 font-mono">
-              Access restricted to authorised operations personnel.
-            </p>
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
+
+          <div className="flex items-center justify-between text-xs pt-1">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 dark:text-slate-400">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 accent-[#0F313A] rounded"
+              />
+              Remember this terminal
+            </label>
+            <span className="text-slate-400">Access Controlled</span>
+          </div>
+
+          {errorMessage && (
+            <p
+              role="alert"
+              className="text-xs font-medium text-[#BA1C20] leading-relaxed"
+            >
+              {errorMessage}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3.5 rounded-2xl bg-[#0F313A] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity active:scale-[0.99] disabled:opacity-50"
+          >
+            {isLoading ? "Authenticating..." : "Sign In"}
+          </button>
+        </form>
+
+        {/* Access Notice */}
+        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-900 text-center">
+          <p className="text-xs text-slate-400 font-mono">
+            Access restricted to authorised operations personnel.
+          </p>
         </div>
       </div>
 

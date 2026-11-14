@@ -8,6 +8,9 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
+  arrayUnion,
+  arrayRemove,
   onSnapshot,
   query,
   where,
@@ -23,6 +26,7 @@ import type {
   Unsubscribe,
 } from "firebase/firestore";
 import type { Shipment } from "@/shared/types";
+import type { PlatformUser } from "@/features/admin/types";
 import { generatePublicTrackingCode } from "@/server/routing/identifiers";
 
 /**
@@ -421,4 +425,206 @@ export async function getMonthlyModeBreakdown(): Promise<MonthlyModeBreakdown> {
 export async function getPlatformUserCount(): Promise<number> {
   const snapshot = await getCountFromServer(collection(db, "users"));
   return snapshot.data().count;
+}
+
+/**
+ * Creates a new client/platform user in Firestore without password requirements.
+ */
+export async function createPlatformUserRecord(
+  userData: Omit<PlatformUser, "id" | "createdAt">
+): Promise<PlatformUser> {
+  const userRef = doc(collection(db, "users"));
+  const newUser: PlatformUser = {
+    ...userData,
+    id: userRef.id,
+    connectionStatus: userData.connectionStatus || "pending",
+    emailUpdatesEnabled: userData.emailUpdatesEnabled ?? true,
+    linkedShipmentIds: userData.linkedShipmentIds || [],
+    status: userData.status || "active",
+    createdAt: new Date().toISOString(),
+  };
+
+  await setDoc(userRef, newUser);
+  return newUser;
+}
+
+/**
+ * Updates specific fields of an existing platform user.
+ */
+export async function updatePlatformUserRecord(
+  id: string,
+  updates: Partial<PlatformUser>
+): Promise<void> {
+  const userRef = doc(db, "users", id);
+  await updateDoc(userRef, {
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Fetches a single platform user record by ID.
+ */
+export async function getPlatformUserRecord(id: string): Promise<PlatformUser | null> {
+  const userRef = doc(db, "users", id);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return null;
+  return snap.data() as PlatformUser;
+}
+
+/**
+ * Real-time listener for a single platform user document.
+ */
+export function listenToPlatformUserRecord(
+  id: string,
+  callback: (user: PlatformUser | null) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  const userRef = doc(db, "users", id);
+  return onSnapshot(
+    userRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.data() as PlatformUser);
+      } else {
+        callback(null);
+      }
+    },
+    (error) => {
+      console.error(`Firestore subscription error on user ${id}:`, error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/**
+ * Deletes a platform user record from Firestore.
+ */
+export async function deletePlatformUserRecord(id: string): Promise<void> {
+  const userRef = doc(db, "users", id);
+  await deleteDoc(userRef);
+}
+
+/**
+ * Retrieves a list of platform users, newest first.
+ */
+export async function listPlatformUsers(limitCount: number = 100): Promise<PlatformUser[]> {
+  const usersCollection = collection(db, "users");
+  const q = query(usersCollection, orderBy("createdAt", "desc"), limit(limitCount));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((docSnap) => docSnap.data() as PlatformUser);
+}
+
+/**
+ * Real-time listener for the platform users collection.
+ */
+export function listenToPlatformUsers(
+  callback: (users: PlatformUser[]) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  const usersCollection = collection(db, "users");
+  const q = query(usersCollection, orderBy("createdAt", "desc"), limit(100));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      callback(snapshot.docs.map((docSnap) => docSnap.data() as PlatformUser));
+    },
+    (error) => {
+      console.error("Firestore subscription error on users:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/**
+ * Links a shipment tracking ID to a user, and updates the shipment's linkedUserIds.
+ */
+export async function linkShipmentToUser(userId: string, shipmentId: string): Promise<void> {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
+    linkedShipmentIds: arrayUnion(shipmentId),
+  });
+
+  try {
+    const shipmentRef = doc(db, "shipments", shipmentId);
+    const snap = await getDoc(shipmentRef);
+    if (snap.exists()) {
+      await updateDoc(shipmentRef, {
+        linkedUserIds: arrayUnion(userId),
+      });
+    }
+  } catch (err) {
+    console.warn("Could not sync linkedUserIds on shipment document:", err);
+  }
+}
+
+/**
+ * Unlinks a shipment tracking ID from a user, and updates the shipment's linkedUserIds.
+ */
+export async function unlinkShipmentFromUser(userId: string, shipmentId: string): Promise<void> {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
+    linkedShipmentIds: arrayRemove(shipmentId),
+  });
+
+  try {
+    const shipmentRef = doc(db, "shipments", shipmentId);
+    const snap = await getDoc(shipmentRef);
+    if (snap.exists()) {
+      await updateDoc(shipmentRef, {
+        linkedUserIds: arrayRemove(userId),
+      });
+    }
+  } catch (err) {
+    console.warn("Could not remove linkedUserIds on shipment document:", err);
+  }
+}
+
+/**
+ * Deletes a shipment from Firestore and cascades removal across all linked users.
+ */
+export async function deleteShipmentRecord(shipmentId: string): Promise<void> {
+  // 1. Cascade wipe: Remove this shipment ID from every user who has it linked
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    const updatePromises: Promise<any>[] = [];
+
+    for (const userDoc of usersSnap.docs) {
+      const uData = userDoc.data() as PlatformUser;
+      if (uData.linkedShipmentIds && uData.linkedShipmentIds.includes(shipmentId)) {
+        updatePromises.push(
+          updateDoc(doc(db, "users", userDoc.id), {
+            linkedShipmentIds: arrayRemove(shipmentId),
+          })
+        );
+      }
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+  } catch (err) {
+    console.warn("Error cascading shipment unlink across users:", err);
+  }
+
+  // 2. Delete the shipment document itself
+  const shipmentRef = doc(db, "shipments", shipmentId);
+  await deleteDoc(shipmentRef);
+}
+
+/**
+ * Marks a user as connected (verified active) when they visit their tracking link.
+ */
+export async function markUserConnected(userId: string): Promise<void> {
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    const data = snap.data() as PlatformUser;
+    await updateDoc(userRef, {
+      connectionStatus: "connected",
+      firstConnectedAt: data.firstConnectedAt || new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    });
+  }
 }
