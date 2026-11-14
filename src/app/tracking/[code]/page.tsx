@@ -295,27 +295,28 @@ function TrackingDetailContent() {
   const etaDate = shipment.actualDeliveryDate || shipment.estimatedDeliveryDate;
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Navigation Breadcrumbs & Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/tracking"
-              className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-black dark:hover:text-white transition-colors"
-            >
-              ← Search Portal
-            </Link>
-            <span className="text-slate-300 dark:text-slate-700">/</span>
-            <span className="text-xs font-mono font-semibold text-slate-400">
-              Live Transit Monitor
-            </span>
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-12">
+      {/* Full-Width Edge-to-Edge Telemetry Status Header (No border radius, extends to screen edges) */}
+      <section className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 rounded-none">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Navigation Breadcrumbs & Header */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/tracking"
+                className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+              >
+                ← Search Portal
+              </Link>
+              <span className="text-slate-300 dark:text-slate-700">/</span>
+              <span className="text-xs font-mono font-semibold text-slate-400">
+                Live Transit Monitor
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Telemetry Status Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6">
+          {/* Telemetry Status Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800/80">
             <div>
               <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-black dark:text-white block">
                 {shipment.trackingCode}
@@ -364,8 +365,10 @@ function TrackingDetailContent() {
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Bento Grid: 2/3 Map and 1/3 Manifest & Milestones */}
+      {/* Main Page Content (Bento Grid: Map, Manifest & Milestones) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Main Map Card */}
           <div className="lg:col-span-8">
