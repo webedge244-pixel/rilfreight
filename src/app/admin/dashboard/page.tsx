@@ -230,7 +230,6 @@ export default function DashboardPage() {
                 <span className="text-sm font-bold uppercase tracking-wider text-slate-400">
                   Platform Users
                 </span>
-                <Users className="w-5 h-5 text-slate-400" />
               </div>
               <div>
                 <span className="text-5xl sm:text-6xl font-black text-black dark:text-white block font-mono my-2">
