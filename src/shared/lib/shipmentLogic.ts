@@ -421,3 +421,85 @@ export function approveMilestoneHold(
     updatedAt: new Date(nowMs).toISOString(),
   };
 }
+
+/**
+ * Immediately completes an active milestone, starts the next milestone at the current time,
+ * and shifts all subsequent future milestones forward preserving original planned duration intervals.
+ */
+export function advanceMilestoneImmediately(
+  shipment: Shipment,
+  milestoneId: string,
+  now: number | Date = Date.now()
+): Shipment {
+  const nowMs = typeof now === "number" ? now : new Date(now).getTime();
+  const depMs = new Date(shipment.departureDate).getTime();
+
+  const milestones = [...(shipment.milestones || [])];
+  const targetIndex = milestones.findIndex((m) => m.id === milestoneId);
+  if (targetIndex === -1) return shipment;
+
+  // 1. Mark target milestone and any preceding milestones completed immediately
+  for (let i = 0; i <= targetIndex; i++) {
+    milestones[i] = {
+      ...milestones[i],
+      isCompleted: true,
+      isHoldGate: false,
+    };
+  }
+
+  // 2. Measure original relative intervals between subsequent milestones
+  const intervals: number[] = [];
+  for (let i = targetIndex + 1; i < milestones.length; i++) {
+    const prevMs = new Date(milestones[i - 1].timestamp).getTime();
+    const currMs = new Date(milestones[i].timestamp).getTime();
+    intervals.push(!Number.isNaN(currMs) && !Number.isNaN(prevMs) ? Math.max(0, currMs - prevMs) : 3600000);
+  }
+
+  // 3. Start next milestone immediately at nowMs and recalculate subsequent dates
+  if (targetIndex < milestones.length - 1) {
+    let cursorMs = nowMs;
+    milestones[targetIndex + 1] = {
+      ...milestones[targetIndex + 1],
+      timestamp: new Date(cursorMs).toISOString(),
+      isCompleted: false,
+    };
+
+    for (let j = 1; j < intervals.length; j++) {
+      const idx = targetIndex + 1 + j;
+      cursorMs += intervals[j];
+      milestones[idx] = {
+        ...milestones[idx],
+        timestamp: new Date(cursorMs).toISOString(),
+        isCompleted: false,
+      };
+    }
+  }
+
+  // 4. Update estimatedDeliveryDate to match the final milestone's new timestamp
+  const finalMilestone = milestones[milestones.length - 1];
+  const newDelMs = finalMilestone
+    ? new Date(finalMilestone.timestamp).getTime()
+    : Math.max(nowMs + 24 * 3600 * 1000, new Date(shipment.estimatedDeliveryDate).getTime());
+
+  const allCompleted = milestones.every((m) => m.isCompleted);
+  const progressRatio = newDelMs > depMs ? Math.min(1, Math.max(0, (nowMs - depMs) / (newDelMs - depMs))) : 0;
+  const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
+    const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
+    return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
+  });
+
+  return {
+    ...shipment,
+    isPaused: false,
+    pausedReason: null,
+    pausedLocationName: null,
+    pausedAtTimestamp: null,
+    pausedCoordinates: null,
+    status: allCompleted ? "delivered" : "in_transit",
+    estimatedDeliveryDate: new Date(newDelMs).toISOString(),
+    actualDeliveryDate: allCompleted ? new Date(nowMs).toISOString() : shipment.actualDeliveryDate,
+    milestones,
+    waypoints: updatedWaypoints,
+    updatedAt: new Date(nowMs).toISOString(),
+  };
+}

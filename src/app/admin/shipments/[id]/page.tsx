@@ -20,6 +20,7 @@ import {
   regulateMilestones,
   synchronizeWaypoints,
   approveMilestoneHold,
+  advanceMilestoneImmediately,
   toLocalDatetimeInput as toLocalInput,
   fromLocalDatetimeInput as fromLocalInput,
   computeProgressPercent,
@@ -35,6 +36,7 @@ import {
   PlayCircle,
   AlertTriangle,
   CheckCircle2,
+  ArrowDown,
   X,
   Pencil,
   Plus,
@@ -201,6 +203,28 @@ function ShipmentDetailContent() {
     } catch (error) {
       console.error("Failed to approve milestone hold:", error);
       setActionError("Could not release hold on milestone. Please try again.");
+    } finally {
+      setIsActionPending(false);
+    }
+  };
+
+  const handleAdvanceMilestone = async (milestoneId: string) => {
+    if (!shipment) return;
+
+    setIsActionPending(true);
+    setActionError(null);
+
+    try {
+      const updated = advanceMilestoneImmediately(shipment, milestoneId);
+      await replaceShipmentRecord(shipment.id, updated);
+      setShipment(updated);
+      setToastMessage({
+        text: "Checkpoint completed! Next checkpoint started & timeline recalculated.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to advance milestone:", error);
+      setActionError("Could not advance milestone. Please try again.");
     } finally {
       setIsActionPending(false);
     }
@@ -1484,107 +1508,135 @@ function ShipmentDetailContent() {
                 Milestones
               </h2>
               <div className="space-y-0">
-                {shipment.milestones.map((ms, i) => {
-                  const isPendingHold = ms.isHoldGate && !ms.isCompleted;
+                {(() => {
+                  const nowMs = Date.now();
+                  const activeMilestoneIndex = shipment.milestones.findIndex((m) => !m.isCompleted);
 
-                  return (
-                    <div
-                      key={ms.id}
-                      className={cn(
-                        "flex gap-4 p-3 transition-colors rounded-none border-0 shadow-none",
-                        isPendingHold ? "bg-amber-500/10 dark:bg-amber-950/30" : ""
-                      )}
-                    >
-                      {/* Timeline Indicator */}
-                      <div className="flex flex-col items-center">
-                        <div
-                          className={cn(
-                            "w-3 h-3 rounded-full shrink-0 mt-1",
-                            ms.isCompleted
-                              ? "bg-[#0F313A] dark:bg-white"
-                              : isPendingHold
-                              ? "bg-amber-500"
-                              : "bg-slate-300 dark:bg-slate-600"
-                          )}
-                        />
-                        {i < shipment.milestones.length - 1 && (
-                          <div className="w-px flex-1 bg-slate-200 dark:bg-slate-700 my-1" />
+                  return shipment.milestones.map((ms, i) => {
+                    const mTime = new Date(ms.timestamp).getTime();
+                    const hasReachedTime = !isNaN(mTime) && mTime <= nowMs;
+                    // Only show amber design and approval button if hold gate is flagged, milestone is not completed, AND its scheduled time has arrived (or shipment is paused)
+                    const isPendingHold = Boolean(ms.isHoldGate) && !ms.isCompleted && (hasReachedTime || Boolean(shipment.isPaused));
+                    // Active playing milestone: must be the first uncompleted milestone, NOT waiting on hold gate approval, shipment not paused, and shipment not delivered
+                    const isActivePlaying = i === activeMilestoneIndex && !isPendingHold && !shipment.isPaused && shipment.status !== "delivered";
+
+                    return (
+                      <div
+                        key={ms.id}
+                        className={cn(
+                          "flex gap-4 p-3 transition-colors rounded-none border-0 shadow-none",
+                          isPendingHold ? "bg-amber-500/10 dark:bg-amber-950/30" : ""
                         )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="pb-3 flex-1">
-                        <div className="flex items-baseline gap-2">
-                          <span
+                      >
+                        {/* Timeline Indicator */}
+                        <div className="flex flex-col items-center">
+                          <div
                             className={cn(
-                              "font-mono text-xs font-bold uppercase tracking-wider",
+                              "w-3 h-3 rounded-full shrink-0 mt-1",
                               ms.isCompleted
-                                ? "text-[#0F313A] dark:text-white"
+                                ? "bg-[#0F313A] dark:bg-white"
                                 : isPendingHold
-                                ? "text-amber-700 dark:text-amber-400"
-                                : "text-slate-400"
+                                ? "bg-amber-500"
+                                : "bg-slate-300 dark:bg-slate-600"
                             )}
-                          >
-                            {ms.code}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-sm font-semibold",
-                              ms.isCompleted
-                                ? "text-black dark:text-white"
-                                : isPendingHold
-                                ? "text-amber-900 dark:text-amber-200"
-                                : "text-slate-400"
-                            )}
-                          >
-                            {ms.title}
-                          </span>
+                          />
+                          {i < shipment.milestones.length - 1 && (
+                            <div className="w-px flex-1 bg-slate-200 dark:bg-slate-700 my-1" />
+                          )}
                         </div>
-                        <p
-                          className={cn(
-                            "text-xs mt-0.5",
-                            isPendingHold
-                              ? "text-amber-800/80 dark:text-amber-300/80"
-                              : "text-slate-400"
-                          )}
-                        >
-                          {ms.description}
-                        </p>
-                        <p
-                          className={cn(
-                            "text-xs mt-0.5",
-                            isPendingHold
-                              ? "text-amber-800/70 dark:text-amber-300/70"
-                              : "text-slate-400"
-                          )}
-                        >
-                          {ms.locationName} ·{" "}
-                          {new Date(ms.timestamp).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
 
-                        {/* Action Button for Admin Hold Gate Approval */}
-                        {isPendingHold && (
-                          <div className="mt-2.5">
-                            <button
-                              type="button"
-                              onClick={() => handleApproveMilestone(ms.id)}
-                              disabled={isActionPending}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                        {/* Content */}
+                        <div className="pb-3 flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <span
+                              className={cn(
+                                "font-mono text-xs font-bold uppercase tracking-wider",
+                                ms.isCompleted
+                                  ? "text-[#0F313A] dark:text-white"
+                                  : isPendingHold
+                                  ? "text-amber-700 dark:text-amber-400"
+                                  : "text-slate-400"
+                              )}
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Approve &amp; Continue</span>
-                            </button>
+                              {ms.code}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-sm font-semibold",
+                                ms.isCompleted
+                                  ? "text-black dark:text-white"
+                                  : isPendingHold
+                                  ? "text-amber-900 dark:text-amber-200"
+                                  : "text-slate-400"
+                              )}
+                            >
+                              {ms.title}
+                            </span>
                           </div>
-                        )}
+                          <p
+                            className={cn(
+                              "text-xs mt-0.5",
+                              isPendingHold
+                                ? "text-amber-800/80 dark:text-amber-300/80"
+                                : "text-slate-400"
+                            )}
+                          >
+                            {ms.description}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-xs mt-0.5",
+                              isPendingHold
+                                ? "text-amber-800/70 dark:text-amber-300/70"
+                                : "text-slate-400"
+                            )}
+                          >
+                            {ms.locationName} ·{" "}
+                            {new Date(ms.timestamp).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+
+                          {/* Action Button for Admin Hold Gate Approval */}
+                          {isPendingHold && (
+                            <div className="mt-2.5">
+                              <button
+                                type="button"
+                                onClick={() => handleApproveMilestone(ms.id)}
+                                disabled={isActionPending}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Approve &amp; Continue</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Circular Arrow-Down Fast-Forward Button for Active Timeline */}
+                          {isActivePlaying && (
+                            <div className="mt-2.5 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleAdvanceMilestone(ms.id)}
+                                disabled={isActionPending}
+                                className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-[#0F313A] dark:hover:border-white flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#0F313A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                                title="Complete checkpoint & start playing next on list"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                Fast-forward to next checkpoint
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
 

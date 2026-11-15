@@ -46,6 +46,7 @@ const {
   regulateMilestones,
   synchronizeWaypoints,
   approveMilestoneHold,
+  advanceMilestoneImmediately,
   toLocalDatetimeInput,
   fromLocalDatetimeInput,
   computeProgressPercent,
@@ -386,6 +387,45 @@ async function runShipmentLogicVerification() {
   const approvedFinal = approveMilestoneHold(finalMilestoneShipment, "m-2", T_DEL + 1000);
   assert(approvedFinal.milestones[1].isCompleted === true, "Final milestone approved completes immediately");
   assert(approvedFinal.status === "delivered", "Approving final milestone transitions status to delivered");
+
+  // 3.4e advanceMilestoneImmediately: fast-forwards active milestone and shifts future timeline
+  const activeShipment = {
+    id: "TEST-ACTIVE-1",
+    trackingCode: "TEST-ACTIVE-1",
+    departureDate: new Date(T_DEP).toISOString(),
+    estimatedDeliveryDate: new Date(T_DEP + 10 * 3600000).toISOString(),
+    status: "in_transit",
+    isPaused: false,
+    milestones: [
+      { id: "m-1", code: "DEP", title: "Departed", timestamp: new Date(T_DEP).toISOString(), isCompleted: true },
+      { id: "m-2", code: "TRANSIT", title: "Active Transit Leg", timestamp: new Date(T_DEP + 2 * 3600000).toISOString(), isCompleted: false },
+      { id: "m-3", code: "CUSTOMS", title: "Upcoming Customs", timestamp: new Date(T_DEP + 6 * 3600000).toISOString(), isCompleted: false },
+      { id: "m-4", code: "DELV", title: "Final Delivery", timestamp: new Date(T_DEP + 10 * 3600000).toISOString(), isCompleted: false },
+    ],
+    waypoints: [{ id: "wp-1", name: "Waypoint 1", isCompleted: false }],
+  };
+
+  const advanceNow = T_DEP + 3 * 3600000; // Fast-forwarded 1 hour into m-2
+  const advancedShipment = advanceMilestoneImmediately(activeShipment, "m-2", advanceNow);
+
+  assert(advancedShipment.milestones[1].isCompleted === true, "advanceMilestoneImmediately marks active milestone completed");
+  assert(
+    new Date(advancedShipment.milestones[2].timestamp).getTime() === advanceNow,
+    "Next milestone (m-3) starts immediately at advanceNow"
+  );
+  assert(
+    new Date(advancedShipment.milestones[3].timestamp).getTime() === advanceNow + 4 * 3600000,
+    "Subsequent milestone (m-4) shifts preserving its 4-hour interval from m-3"
+  );
+  assert(
+    new Date(advancedShipment.estimatedDeliveryDate).getTime() === advanceNow + 4 * 3600000,
+    "estimatedDeliveryDate shifts forward to match new final delivery milestone"
+  );
+
+  // Advancing the final milestone completes delivery
+  const advanceFinalShipment = advanceMilestoneImmediately(activeShipment, "m-4", advanceNow + 1000);
+  assert(advanceFinalShipment.milestones[3].isCompleted === true, "Advancing final milestone marks it completed");
+  assert(advanceFinalShipment.status === "delivered", "Advancing final milestone transitions shipment status to delivered");
 
   // 3.5 Single milestone handling
   const single = regulateMilestones(
