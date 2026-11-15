@@ -85,6 +85,54 @@ function currentLocationLabel(shipment: Shipment): string {
   return last?.name || shipment.originName || "In transit";
 }
 
+/** Converts an ISO/UTC timestamp to local YYYY-MM-DDTHH:mm for datetime-local inputs */
+function toLocalInput(isoOrDate: string | Date | null | undefined): string {
+  if (!isoOrDate) return "";
+  if (typeof isoOrDate === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(isoOrDate)) {
+    return isoOrDate;
+  }
+  const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
+  if (Number.isNaN(d.getTime())) return "";
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+}
+
+/** Converts datetime-local input string back to ISO 8601 UTC string for Firestore */
+function fromLocalInput(localStr: string | null | undefined): string | null {
+  if (!localStr || !localStr.trim()) return null;
+  const d = new Date(localStr);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+/** Auto-adjusts milestone timestamps and completion status to fit between departure and estimated delivery */
+function autoRegulateMilestoneTimestamps(
+  milestones: TrackingMilestone[],
+  departureLocalStr: string,
+  deliveryLocalStr: string
+): TrackingMilestone[] {
+  if (!milestones || milestones.length === 0) return [];
+  const depMs = new Date(departureLocalStr).getTime();
+  const delMs = new Date(deliveryLocalStr).getTime();
+  if (isNaN(depMs) || isNaN(delMs) || delMs <= depMs) return milestones;
+
+  const total = milestones.length;
+  const now = Date.now();
+
+  return milestones.map((m, idx) => {
+    const ratio = total > 1 ? idx / (total - 1) : 0;
+    const targetMs = Math.round(depMs + ratio * (delMs - depMs));
+    const isPast = targetMs <= now;
+    const isCompleted = isPast && !m.isHoldGate;
+
+    return {
+      ...m,
+      timestamp: toLocalInput(new Date(targetMs)),
+      isCompleted,
+    };
+  });
+}
+
 export default function ShipmentDetailPage() {
   return (
     <React.Suspense fallback={<div className="p-8 text-sm text-slate-400">Loading shipment...</div>}>
@@ -119,13 +167,7 @@ function ShipmentDetailContent() {
       shipmentId,
       (live) => {
         if (live) {
-          const { updatedShipment, hasChanged } = evaluateShipmentProgression(live);
-          if (hasChanged) {
-            void updateShipmentRecord(updatedShipment.id, {
-              milestones: updatedShipment.milestones,
-              status: updatedShipment.status,
-            });
-          }
+          const { updatedShipment } = evaluateShipmentProgression(live);
           setShipment(updatedShipment);
         } else {
           setShipment(null);
@@ -313,15 +355,9 @@ function ShipmentDetailContent() {
     setEditFormData({
       mode: shipment.mode,
       status: shipment.status,
-      departureDate: shipment.departureDate
-        ? new Date(shipment.departureDate).toISOString().slice(0, 16)
-        : "",
-      estimatedDeliveryDate: shipment.estimatedDeliveryDate
-        ? new Date(shipment.estimatedDeliveryDate).toISOString().slice(0, 16)
-        : "",
-      actualDeliveryDate: shipment.actualDeliveryDate
-        ? new Date(shipment.actualDeliveryDate).toISOString().slice(0, 16)
-        : "",
+      departureDate: toLocalInput(shipment.departureDate),
+      estimatedDeliveryDate: toLocalInput(shipment.estimatedDeliveryDate),
+      actualDeliveryDate: toLocalInput(shipment.actualDeliveryDate),
       isPaused: shipment.isPaused || false,
       pausedReason: shipment.pausedReason || "",
       pausedLocationName: shipment.pausedLocationName || "",
@@ -347,9 +383,7 @@ function ShipmentDetailContent() {
     setEditMilestones(
       (shipment.milestones || []).map((m) => ({
         ...m,
-        timestamp: m.timestamp
-          ? new Date(m.timestamp).toISOString().slice(0, 16)
-          : new Date().toISOString().slice(0, 16),
+        timestamp: toLocalInput(m.timestamp),
       }))
     );
     setEditMessage("");
@@ -394,10 +428,37 @@ function ShipmentDetailContent() {
     setActionError(null);
 
     try {
-      const formattedMilestones: TrackingMilestone[] = editMilestones.map((m) => ({
-        ...m,
-        timestamp: m.timestamp ? new Date(m.timestamp).toISOString() : new Date().toISOString(),
-      }));
+      const now = new Date();
+      const depDate = new Date(fromLocalInput(editFormData.departureDate) || shipment.departureDate);
+      const estDelDate = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || shipment.estimatedDeliveryDate);
+      const depMs = depDate.getTime();
+      const delMs = estDelDate.getTime();
+      const nowMs = now.getTime();
+
+      // Determine status from schedule like /new (unless actively paused on hold)
+      let determinedStatus: ShipmentStatus = editFormData.status;
+      if (!editFormData.isPaused) {
+        if (delMs <= nowMs) {
+          determinedStatus = "delivered";
+        } else if (depMs <= nowMs) {
+          determinedStatus = "in_transit";
+        } else {
+          determinedStatus = "pending";
+        }
+      }
+
+      // Timeline checkpoints: timestamps that have passed are marked completed
+      const formattedMilestones: TrackingMilestone[] = editMilestones.map((m) => {
+        const rawTime = fromLocalInput(m.timestamp) || m.timestamp;
+        const mTime = new Date(rawTime).getTime();
+        const hasPassed = !isNaN(mTime) && mTime <= nowMs;
+        return {
+          ...m,
+          timestamp: rawTime,
+          isCompleted: hasPassed && !m.isHoldGate,
+          isHoldGate: Boolean(m.isHoldGate),
+        };
+      });
 
       // If an operational edit message was entered, record as a status update milestone
       if (editMessage.trim()) {
@@ -416,19 +477,19 @@ function ShipmentDetailContent() {
         });
       }
 
+      const progressRatio = delMs > depMs ? Math.min(1, Math.max(0, (nowMs - depMs) / (delMs - depMs))) : 0;
+      const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
+        const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
+        return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
+      });
+
       const updatedShipment: Shipment = {
         ...shipment,
         mode: editFormData.mode,
-        status: editFormData.status,
-        departureDate: editFormData.departureDate
-          ? new Date(editFormData.departureDate).toISOString()
-          : shipment.departureDate,
-        estimatedDeliveryDate: editFormData.estimatedDeliveryDate
-          ? new Date(editFormData.estimatedDeliveryDate).toISOString()
-          : shipment.estimatedDeliveryDate,
-        actualDeliveryDate: editFormData.actualDeliveryDate
-          ? new Date(editFormData.actualDeliveryDate).toISOString()
-          : null,
+        status: determinedStatus,
+        departureDate: depDate.toISOString(),
+        estimatedDeliveryDate: estDelDate.toISOString(),
+        actualDeliveryDate: determinedStatus === "delivered" ? (fromLocalInput(editFormData.actualDeliveryDate) || new Date().toISOString()) : null,
         isPaused: editFormData.isPaused,
         pausedReason: editFormData.isPaused ? editFormData.pausedReason.trim() || null : null,
         pausedLocationName: editFormData.isPaused ? editFormData.pausedLocationName.trim() || null : null,
@@ -451,61 +512,48 @@ function ShipmentDetailContent() {
         volumeCbm: editFormData.volumeCbm ? Number(editFormData.volumeCbm) : null,
         goodsDescription: editFormData.goodsDescription,
         clientName: editFormData.clientName?.trim() || null,
+        waypoints: updatedWaypoints,
         milestones: formattedMilestones,
         updatedAt: new Date().toISOString(),
       };
 
-      // 1. Write to Firestore
+      // Save to Firestore using existing tracking code & ID
       await replaceShipmentRecord(shipment.id, updatedShipment);
       setShipment(updatedShipment);
 
-      // 2. Dispatch email notification if toggled
-      let emailSent = false;
+      // Fire-and-forget email dispatch in background so saving never hangs
       if (sendNotificationEmail && recipientEmail.trim()) {
-        try {
-          const emailSubject = `Shipment Update: ${shipment.trackingCode} (${formatStatus(
-            updatedShipment.status
-          )})`;
-          const emailBody = editMessage.trim()
-            ? `Dear Client,\n\nAn operational update has been recorded for your shipment ${shipment.trackingCode}:\n\n"${editMessage.trim()}"\n\nCurrent Status: ${formatStatus(
-                updatedShipment.status
-              )}\nOrigin: ${updatedShipment.originName} (${updatedShipment.originCode})\nDestination: ${
-                updatedShipment.destinationName
-              } (${updatedShipment.destinationCode})\nEstimated Delivery: ${new Date(
-                updatedShipment.estimatedDeliveryDate
-              ).toLocaleDateString()}\n\nYou may view full real-time tracking anytime on your client portal.\n\nBest regards,\nRIL Freight Operations Team`
-            : `Dear Client,\n\nYour shipment ${shipment.trackingCode} details have been updated in our system.\n\nCurrent Status: ${formatStatus(
-                updatedShipment.status
-              )}\nEstimated Delivery: ${new Date(
-                updatedShipment.estimatedDeliveryDate
-              ).toLocaleDateString()}\n\nBest regards,\nRIL Freight Operations Team`;
+        const emailSubject = `Shipment Update: ${shipment.trackingCode} (${formatStatus(
+          updatedShipment.status
+        )})`;
+        const emailBody = editMessage.trim()
+          ? `Dear Client,\n\nAn operational update has been recorded for your shipment ${shipment.trackingCode}:\n\n"${editMessage.trim()}"\n\nCurrent Status: ${formatStatus(
+              updatedShipment.status
+            )}\nOrigin: ${updatedShipment.originName} (${updatedShipment.originCode})\nDestination: ${
+              updatedShipment.destinationName
+            } (${updatedShipment.destinationCode})\nEstimated Delivery: ${new Date(
+              updatedShipment.estimatedDeliveryDate
+            ).toLocaleDateString()}\n\nYou may view full real-time tracking anytime on your client portal.\n\nBest regards,\nRIL Freight Operations Team`
+          : `Dear Client,\n\nYour shipment ${shipment.trackingCode} details have been updated in our system.\n\nCurrent Status: ${formatStatus(
+              updatedShipment.status
+            )}\nEstimated Delivery: ${new Date(
+              updatedShipment.estimatedDeliveryDate
+            ).toLocaleDateString()}\n\nBest regards,\nRIL Freight Operations Team`;
 
-          const emailRes = await fetch("/api/admin/email/send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: recipientEmail.trim(),
-              subject: emailSubject,
-              body: emailBody,
-            }),
-          });
-
-          if (emailRes.ok) {
-            emailSent = true;
-          } else {
-            console.warn("Could not dispatch notification email:", await emailRes.text());
-          }
-        } catch (emailErr) {
-          console.warn("Failed to dispatch email:", emailErr);
-        }
+        void fetch("/api/admin/email/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: recipientEmail.trim(),
+            subject: emailSubject,
+            body: emailBody,
+          }),
+        }).catch((emailErr) => {
+          console.warn("Background email notification error:", emailErr);
+        });
       }
 
-      showToast(
-        emailSent
-          ? `Shipment updated & notification sent to ${recipientEmail}!`
-          : "Shipment updated successfully!",
-        "success"
-      );
+      showToast("Shipment updated successfully!", "success");
       setIsEditing(false);
     } catch (err: unknown) {
       console.error("Failed to update shipment:", err);
@@ -816,12 +864,26 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.departureDate}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        departureDate: e.target.value,
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const delMs = new Date(editFormData.estimatedDeliveryDate).getTime();
+                      const isFutureDelivery = !isNaN(delMs) && delMs > Date.now();
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        departureDate: val,
+                        status: isFutureDelivery && prev.status === "delivered" ? "in_transit" : prev.status,
+                        actualDeliveryDate: isFutureDelivery ? "" : prev.actualDeliveryDate,
+                      }));
+                      if (val && editFormData.estimatedDeliveryDate) {
+                        setEditMilestones((prev) =>
+                          autoRegulateMilestoneTimestamps(
+                            prev,
+                            val,
+                            editFormData.estimatedDeliveryDate
+                          )
+                        );
+                      }
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
@@ -832,12 +894,26 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.estimatedDeliveryDate}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        estimatedDeliveryDate: e.target.value,
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const newDeliveryMs = new Date(val).getTime();
+                      const isFuture = !isNaN(newDeliveryMs) && newDeliveryMs > Date.now();
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        estimatedDeliveryDate: val,
+                        status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
+                        actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
+                      }));
+                      if (val && editFormData.departureDate) {
+                        setEditMilestones((prev) =>
+                          autoRegulateMilestoneTimestamps(
+                            prev,
+                            editFormData.departureDate,
+                            val
+                          )
+                        );
+                      }
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
@@ -1514,6 +1590,39 @@ function ShipmentDetailContent() {
                 )}
                 {shipment.sealNumber && (
                   <ManifestRow label="Seal" value={shipment.sealNumber} mono />
+                )}
+                <div className="h-px bg-slate-200 dark:bg-slate-700" />
+                <ManifestRow
+                  label="Departure"
+                  value={new Date(shipment.departureDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                />
+                <ManifestRow
+                  label="Est. Delivery"
+                  value={new Date(shipment.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                />
+                {shipment.actualDeliveryDate && (
+                  <ManifestRow
+                    label="Actual Delivery"
+                    value={new Date(shipment.actualDeliveryDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  />
                 )}
                 <div className="h-px bg-slate-200 dark:bg-slate-700" />
                 <ManifestRow label="Pieces" value={`${shipment.totalPieces}`} />

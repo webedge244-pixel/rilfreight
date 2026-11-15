@@ -237,27 +237,45 @@ export function evaluateShipmentProgression(
   let hasChanged = false;
 
   const updatedMilestones = shipment.milestones.map((m) => {
-    if (m.isCompleted) return m;
-
     // Do not auto-advance hold gate checkpoints without operator release
     if (m.isHoldGate) return m;
 
     const milestoneTime = new Date(m.timestamp).getTime();
-    if (!isNaN(milestoneTime) && milestoneTime <= now) {
+    if (isNaN(milestoneTime)) return m;
+
+    const shouldBeCompleted = milestoneTime <= now;
+    if (m.isCompleted !== shouldBeCompleted) {
       hasChanged = true;
-      return { ...m, isCompleted: true };
+      return { ...m, isCompleted: shouldBeCompleted };
     }
     return m;
   });
 
+  const start = new Date(shipment.departureDate).getTime();
+  const end = new Date(shipment.estimatedDeliveryDate).getTime();
+  const progressRatio = end > start ? Math.min(1, Math.max(0, (now - start) / (end - start))) : 0;
+
+  // Synchronize waypoints along the route
+  const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
+    const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
+    const shouldBeCompleted = progressRatio >= wpRatio && progressRatio > 0;
+    if (wp.isCompleted !== shouldBeCompleted) {
+      hasChanged = true;
+      return { ...wp, isCompleted: shouldBeCompleted };
+    }
+    return wp;
+  });
+
   let updatedStatus = shipment.status;
   const allCompleted = updatedMilestones.every((m) => m.isCompleted);
-  if (allCompleted && updatedStatus !== "delivered") {
+  if (allCompleted && now >= end && updatedStatus !== "delivered") {
     updatedStatus = "delivered";
     hasChanged = true;
+  } else if (!allCompleted && updatedStatus === "delivered") {
+    updatedStatus = now >= start ? "in_transit" : "pending";
+    hasChanged = true;
   } else if (!allCompleted && (updatedStatus === "pending" || updatedStatus === "draft")) {
-    const departureTime = new Date(shipment.departureDate).getTime();
-    if (!isNaN(departureTime) && departureTime <= now) {
+    if (now >= start) {
       updatedStatus = "in_transit";
       hasChanged = true;
     }
@@ -267,6 +285,7 @@ export function evaluateShipmentProgression(
     updatedShipment: {
       ...shipment,
       milestones: updatedMilestones,
+      waypoints: updatedWaypoints,
       status: updatedStatus,
     },
     hasChanged,
