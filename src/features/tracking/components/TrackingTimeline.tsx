@@ -27,23 +27,36 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
     return firstUncompleted === -1 ? milestones.length - 1 : firstUncompleted;
   }, [milestones, shipment.isPaused]);
 
-  // Hybrid milestone filtering:
-  // Show all completed milestones + ONLY the single immediate next uncompleted milestone.
-  // Far-future milestones beyond that are completely hidden.
+  // Filter visible milestones:
+  // 1. Completed checkpoints always display
+  // 2. Unapproved hold gates NEVER show before admin approval
+  // 3. Currently active milestone shows once its scheduled time has arrived
+  // 4. Next future timelines do not show at all until their time to show reaches
   const visibleMilestones = React.useMemo(() => {
-    const firstUncompletedIndex = milestones.findIndex((m) => !m.isCompleted);
-    if (firstUncompletedIndex === -1) {
-      return milestones; // All are completed
-    }
-    return milestones.slice(0, firstUncompletedIndex + 1);
-  }, [milestones]);
+    const nowMs = Date.now();
+    return milestones.filter((m, idx) => {
+      if (m.isCompleted) return true;
 
-  const getMilestoneTitle = (m: TrackingMilestone, isCompleted: boolean) => {
-    if (isCompleted) return m.title;
-    if (m.code === "DEPA" || m.title.toLowerCase().includes("depart")) {
-      return "Awaiting Departure";
-    }
-    return `Awaiting: ${m.title}`;
+      // Unapproved hold gates must NEVER show before admin approval
+      if (m.isHoldGate) return false;
+
+      // If shipment has not departed yet, do not show uncompleted milestones
+      if (new Date(shipment.departureDate).getTime() > nowMs) return false;
+
+      // Currently active milestone shows once its scheduled time has arrived
+      const firstUncompletedIndex = milestones.findIndex((item) => !item.isCompleted);
+      if (idx === firstUncompletedIndex) {
+        const mTime = new Date(m.timestamp).getTime();
+        return !isNaN(mTime) && mTime <= nowMs;
+      }
+
+      // Future timelines remain hidden until their time arrives
+      return false;
+    });
+  }, [milestones, shipment.departureDate]);
+
+  const getMilestoneTitle = (m: TrackingMilestone) => {
+    return m.title;
   };
 
   if (milestones.length === 0) {
@@ -62,7 +75,7 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
           Transit Checkpoints & Milestones
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Sequential route progression and customs dwell monitoring
+          Sequential route progression and transit checkpoints
         </p>
       </div>
 
@@ -112,7 +125,7 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
               </div>
 
               {/* Milestone Details */}
-              <div className={cn("relative transition-all", !isCompleted && "opacity-75 blur-[0.6px] select-none")}>
+              <div className="relative transition-all">
                 {/* Title and Date */}
                 <div className="flex items-start justify-between gap-2">
                   <h4
@@ -123,27 +136,18 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                         : "text-slate-400 dark:text-slate-500"
                     )}
                   >
-                    {getMilestoneTitle(m, isCompleted)}
+                    {getMilestoneTitle(m)}
                   </h4>
                   <span className="whitespace-nowrap font-mono text-[11px] text-slate-400 dark:text-slate-500">
-                    {dateStr ? (!isCompleted ? `Est. ${dateStr}` : dateStr) : "Scheduled"}
+                    {dateStr}
                   </span>
                 </div>
 
-                {/* Technical Metadata Row (Dwell, Code, Location Code) */}
+                {/* Technical Metadata Row (Code, Location Code) */}
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] font-mono">
                   <span className="font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     {m.code}
                   </span>
-
-                  {m.dwellHours && m.dwellHours > 0 ? (
-                    <>
-                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {m.dwellHours}h dwell
-                      </span>
-                    </>
-                  ) : null}
 
                   {m.locationCode ? (
                     <>
