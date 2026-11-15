@@ -21,6 +21,8 @@ import {
   synchronizeWaypoints,
   approveMilestoneHold,
   advanceMilestoneImmediately,
+  cascadeMilestoneGaps,
+  swapMilestonesWithTimestampInheritance,
   toLocalDatetimeInput as toLocalInput,
   fromLocalDatetimeInput as fromLocalInput,
   computeProgressPercent,
@@ -36,7 +38,9 @@ import {
   PlayCircle,
   AlertTriangle,
   CheckCircle2,
+  Check,
   ArrowDown,
+  ArrowUp,
   X,
   Pencil,
   Plus,
@@ -309,6 +313,10 @@ function ShipmentDetailContent() {
   });
 
   const [editMilestones, setEditMilestones] = React.useState<TrackingMilestone[]>([]);
+  const snapshotMilestonesRef = React.useRef<TrackingMilestone[]>([]);
+  const baselineMilestoneRef = React.useRef<{ index: number; value: string } | null>(null);
+  const baselineDepartureRef = React.useRef<string | null>(null);
+  const baselineDeliveryRef = React.useRef<string | null>(null);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMessage({ text, type });
@@ -346,12 +354,12 @@ function ShipmentDetailContent() {
       clientName: shipment.clientName || "",
     });
 
-    setEditMilestones(
-      (shipment.milestones || []).map((m) => ({
-        ...m,
-        timestamp: toLocalInput(m.timestamp),
-      }))
-    );
+    const initialMilestones = (shipment.milestones || []).map((m) => ({
+      ...m,
+      timestamp: toLocalInput(m.timestamp),
+    }));
+    setEditMilestones(initialMilestones);
+    snapshotMilestonesRef.current = initialMilestones;
     setIsEditing(true);
   };
 
@@ -367,22 +375,148 @@ function ShipmentDetailContent() {
     });
   };
 
+  const commitMilestoneTimestampShift = (index: number) => {
+    const currentStr = editMilestones[index]?.timestamp;
+    const baseline = baselineMilestoneRef.current;
+    const previousList = snapshotMilestonesRef.current.length === editMilestones.length
+      ? snapshotMilestonesRef.current
+      : editMilestones;
+    const prevStr = baseline && baseline.index === index ? baseline.value : previousList[index]?.timestamp;
+
+    if (!currentStr || currentStr === prevStr) {
+      baselineMilestoneRef.current = null;
+      return;
+    }
+
+    // Cascade dynamic adjacent time gaps to all downstream milestones
+    const updated = cascadeMilestoneGaps(previousList, index, currentStr, {
+      outputFormat: "local",
+    });
+
+    setEditMilestones(updated);
+    snapshotMilestonesRef.current = updated;
+
+    const lastMs = updated[updated.length - 1]?.timestamp;
+    if (lastMs) {
+      setEditFormData((fd) => ({
+        ...fd,
+        ...(index === 0 ? { departureDate: currentStr } : {}),
+        estimatedDeliveryDate: lastMs,
+      }));
+    }
+
+    baselineMilestoneRef.current = null;
+  };
+
+  const commitDepartureShift = () => {
+    const prevStr = baselineDepartureRef.current;
+    const newStr = editFormData.departureDate;
+    if (!newStr) {
+      baselineDepartureRef.current = null;
+      return;
+    }
+
+    const oldMs = new Date(fromLocalInput(prevStr || "") || prevStr || "").getTime();
+    const newMs = new Date(fromLocalInput(newStr) || newStr).getTime();
+
+    if (!Number.isNaN(newMs) && (Number.isNaN(oldMs) || newMs !== oldMs)) {
+      setEditMilestones((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const updated = cascadeMilestoneGaps(prev, 0, newStr, {
+          outputFormat: "local",
+        });
+        snapshotMilestonesRef.current = updated;
+        const lastMs = updated[updated.length - 1]?.timestamp;
+        if (lastMs) {
+          const isFuture = new Date(fromLocalInput(lastMs) || lastMs).getTime() > Date.now();
+          setEditFormData((fd) => ({
+            ...fd,
+            estimatedDeliveryDate: lastMs,
+            status: isFuture && fd.status === "delivered" ? "in_transit" : fd.status,
+            actualDeliveryDate: isFuture ? "" : fd.actualDeliveryDate,
+          }));
+        }
+        return updated;
+      });
+    }
+    baselineDepartureRef.current = null;
+  };
+
+  const commitDeliveryShift = () => {
+    const newStr = editFormData.estimatedDeliveryDate;
+    if (!newStr) {
+      baselineDeliveryRef.current = null;
+      return;
+    }
+
+    const depMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
+    const newDelMs = new Date(fromLocalInput(newStr) || newStr).getTime();
+
+    if (!Number.isNaN(depMs) && !Number.isNaN(newDelMs) && newDelMs > depMs) {
+      const isFuture = newDelMs > Date.now();
+      setEditFormData((fd) => ({
+        ...fd,
+        status: isFuture && fd.status === "delivered" ? "in_transit" : fd.status,
+        actualDeliveryDate: isFuture ? "" : fd.actualDeliveryDate,
+      }));
+      setEditMilestones((prev) => {
+        const regulated = autoRegulateMilestoneTimestamps(prev, editFormData.departureDate, newStr);
+        snapshotMilestonesRef.current = regulated;
+        return regulated;
+      });
+    }
+    baselineDeliveryRef.current = null;
+  };
+
   const handleAddMilestone = () => {
+    const prevList = editMilestones;
+    const lastItem = prevList[prevList.length - 1];
+    const lastMs = lastItem ? new Date(fromLocalInput(lastItem.timestamp) || lastItem.timestamp).getTime() : Date.now();
+    const fallbackMs = !Number.isNaN(lastMs) ? lastMs + 3600 * 1000 : Date.now();
+
     const newMs: TrackingMilestone = {
       id: `ms-manual-${Date.now()}`,
       code: "CHECKPOINT",
       title: "Transit Checkpoint",
       description: "Shipment reached an operational waypoint in the route schedule.",
       locationName: shipment?.destinationName || "Transit Hub",
-      timestamp: new Date().toISOString().slice(0, 16),
-      isCompleted: true,
+      timestamp: toLocalInput(new Date(fallbackMs)),
+      isCompleted: false,
       isHoldGate: false,
     };
-    setEditMilestones((prev) => [...prev, newMs]);
+    setEditMilestones((prev) => {
+      const updated = [...prev, newMs];
+      snapshotMilestonesRef.current = updated;
+      setEditFormData((fd) => ({
+        ...fd,
+        estimatedDeliveryDate: newMs.timestamp,
+      }));
+      return updated;
+    });
   };
 
   const handleRemoveMilestone = (index: number) => {
-    setEditMilestones((prev) => prev.filter((_, i) => i !== index));
+    setEditMilestones((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      snapshotMilestonesRef.current = updated;
+      const lastMs = updated[updated.length - 1]?.timestamp;
+      if (lastMs) {
+        setEditFormData((fd) => ({
+          ...fd,
+          estimatedDeliveryDate: lastMs,
+        }));
+      }
+      return updated;
+    });
+  };
+
+  const handleMoveMilestone = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= editMilestones.length || fromIndex === toIndex) return;
+    setEditMilestones((prev) => {
+      const updated = swapMilestonesWithTimestampInheritance(prev, fromIndex, toIndex);
+      snapshotMilestonesRef.current = updated;
+      return updated;
+    });
   };
 
   const handleSaveShipment = async () => {
@@ -809,26 +943,16 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.departureDate}
+                    onFocus={() => {
+                      baselineDepartureRef.current = editFormData.departureDate;
+                    }}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      const delMs = new Date(editFormData.estimatedDeliveryDate).getTime();
-                      const isFutureDelivery = !isNaN(delMs) && delMs > Date.now();
                       setEditFormData((prev) => ({
                         ...prev,
-                        departureDate: val,
-                        status: isFutureDelivery && prev.status === "delivered" ? "in_transit" : prev.status,
-                        actualDeliveryDate: isFutureDelivery ? "" : prev.actualDeliveryDate,
+                        departureDate: e.target.value,
                       }));
-                      if (val && editFormData.estimatedDeliveryDate) {
-                        setEditMilestones((prev) =>
-                          autoRegulateMilestoneTimestamps(
-                            prev,
-                            val,
-                            editFormData.estimatedDeliveryDate
-                          )
-                        );
-                      }
                     }}
+                    onBlur={commitDepartureShift}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
@@ -839,26 +963,16 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.estimatedDeliveryDate}
+                    onFocus={() => {
+                      baselineDeliveryRef.current = editFormData.estimatedDeliveryDate;
+                    }}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      const newDeliveryMs = new Date(val).getTime();
-                      const isFuture = !isNaN(newDeliveryMs) && newDeliveryMs > Date.now();
                       setEditFormData((prev) => ({
                         ...prev,
-                        estimatedDeliveryDate: val,
-                        status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
-                        actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
+                        estimatedDeliveryDate: e.target.value,
                       }));
-                      if (val && editFormData.departureDate) {
-                        setEditMilestones((prev) =>
-                          autoRegulateMilestoneTimestamps(
-                            prev,
-                            editFormData.departureDate,
-                            val
-                          )
-                        );
-                      }
                     }}
+                    onBlur={commitDeliveryShift}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
@@ -1153,26 +1267,32 @@ function ShipmentDetailContent() {
                   className="p-5 rounded-2xl bg-white dark:bg-slate-800 space-y-4"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-400">
-                      Checkpoint #{index + 1}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-slate-400">
+                        Checkpoint #{index + 1}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => handleMoveMilestone(index, index - 1)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                          title="Move milestone up"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === editMilestones.length - 1}
+                          onClick={() => handleMoveMilestone(index, index + 1)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                          title="Move milestone down"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-3">
-                      <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={ms.isCompleted}
-                          onChange={(e) =>
-                            handleMilestoneChange(
-                              index,
-                              "isCompleted",
-                              e.target.checked
-                            )
-                          }
-                          className="w-3.5 h-3.5 rounded text-[#0F313A]"
-                        />
-                        <span className="font-semibold">Completed</span>
-                      </label>
-
                       <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1254,6 +1374,9 @@ function ShipmentDetailContent() {
                       <input
                         type="datetime-local"
                         value={ms.timestamp}
+                        onFocus={() => {
+                          baselineMilestoneRef.current = { index, value: ms.timestamp };
+                        }}
                         onChange={(e) =>
                           handleMilestoneChange(
                             index,
@@ -1261,6 +1384,7 @@ function ShipmentDetailContent() {
                             e.target.value
                           )
                         }
+                        onBlur={() => commitMilestoneTimestampShift(index)}
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                       />
                     </div>
@@ -1285,6 +1409,18 @@ function ShipmentDetailContent() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Bottom-left Add Milestone Button */}
+            <div className="flex items-center justify-start pt-1">
+              <button
+                type="button"
+                onClick={handleAddMilestone}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-black dark:text-white transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Milestone</span>
+              </button>
             </div>
 
             {/* Bottom Actions Bar */}
@@ -1629,7 +1765,7 @@ function ShipmentDetailContent() {
                             </div>
                           )}
 
-                          {/* Circular Arrow-Down Fast-Forward Button for Active Timeline */}
+                          {/* Action Button for the Next In-Line Milestone to be Completed */}
                           {isActivePlaying && (
                             <div className="mt-2.5 flex items-center gap-2">
                               <button
@@ -1637,12 +1773,12 @@ function ShipmentDetailContent() {
                                 onClick={() => handleAdvanceMilestone(ms.id)}
                                 disabled={isActionPending}
                                 className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-[#0F313A] dark:hover:border-white flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#0F313A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                                title="Complete checkpoint & start playing next on list"
+                                title="Mark checkpoint complete & move to next"
                               >
-                                <ArrowDown className="w-3.5 h-3.5" />
+                                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                               </button>
                               <span className="text-[11px] text-slate-400 font-medium">
-                                Fast-forward to next checkpoint
+                                Mark complete &amp; proceed to next
                               </span>
                             </div>
                           )}

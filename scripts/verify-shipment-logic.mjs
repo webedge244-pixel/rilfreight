@@ -47,6 +47,8 @@ const {
   synchronizeWaypoints,
   approveMilestoneHold,
   advanceMilestoneImmediately,
+  cascadeMilestoneGaps,
+  swapMilestonesWithTimestampInheritance,
   toLocalDatetimeInput,
   fromLocalDatetimeInput,
   computeProgressPercent,
@@ -326,9 +328,9 @@ async function runShipmentLogicVerification() {
   assert(regulatedAfter[1].isCompleted === true, "After delivery: hold gate ms-2 completed");
   assert(regulatedAfter[2].isCompleted === true, "After delivery: ms-3 completed");
 
-  // 3.4b approveMilestoneHold: Case 1 — Remaining Playtime > 0
-  // Milestone 2 scheduled at T_DEP + 1h, next at T_DEP + 5h (planned playtime = 4h).
-  // Approved at T_DEP + 2h (elapsed = 1h, remaining = 3h).
+  // 3.4b approveMilestoneHold: Case 1 — Milestone Approval before scheduled next
+  // Milestone 2 scheduled at T_DEP + 1h, next at T_DEP + 5h (planned interval = 4h).
+  // Approved at T_DEP + 2h.
   const sampleShipmentPlaytime = {
     id: "TEST-SHIPMENT-1",
     trackingCode: "TEST-SHIPMENT-1",
@@ -343,27 +345,27 @@ async function runShipmentLogicVerification() {
     ],
     waypoints: [{ id: "wp-1", name: "Waypoint 1", isCompleted: false }],
   };
-  const approvalTimePlaytime = T_DEP + 2 * 3600000; // 1 hour into 4-hour duration
+  const approvalTimePlaytime = T_DEP + 2 * 3600000;
   const approvedWithPlaytime = approveMilestoneHold(sampleShipmentPlaytime, "m-2", approvalTimePlaytime);
-  assert(approvedWithPlaytime.isPaused === false, "approveMilestoneHold (playtime remaining) unpauses shipment");
-  assert(approvedWithPlaytime.status === "in_transit", "approveMilestoneHold (playtime remaining) resumes in_transit");
-  assert(approvedWithPlaytime.milestones[1].isCompleted === false, "Milestone with remaining playtime remains active (isCompleted === false)");
+  assert(approvedWithPlaytime.isPaused === false, "approveMilestoneHold unpauses shipment");
+  assert(approvedWithPlaytime.status === "in_transit", "approveMilestoneHold resumes in_transit");
+  assert(approvedWithPlaytime.milestones[1].isCompleted === true, "Approved milestone marks completed immediately");
   assert(approvedWithPlaytime.milestones[1].isHoldGate === false, "approveMilestoneHold clears isHoldGate flag");
   assert(
-    new Date(approvedWithPlaytime.milestones[2].timestamp).getTime() === approvalTimePlaytime + 3 * 3600000,
-    "Next milestone starts after remaining playtime finishes (approvalTime + remainingPlaytime)"
+    new Date(approvedWithPlaytime.milestones[2].timestamp).getTime() === T_DEP + 5 * 3600000,
+    "Next milestone preserves future schedule if approval happened before scheduled time"
   );
 
-  // 3.4c approveMilestoneHold: Case 2 — Playtime Exhausted (remainingPlaytime <= 0)
-  // Planned playtime = 4h (1h to 5h). Approved at T_DEP + 7h (elapsed = 6h, exhausted).
+  // 3.4c approveMilestoneHold: Case 2 — Approval after scheduled duration (elapsed)
+  // Planned interval = 4h (1h to 5h). Approved at T_DEP + 7h (elapsed past original next schedule).
   const approvalTimeExhausted = T_DEP + 7 * 3600000;
   const approvedExhausted = approveMilestoneHold(sampleShipmentPlaytime, "m-2", approvalTimeExhausted);
-  assert(approvedExhausted.isPaused === false, "approveMilestoneHold (playtime exhausted) unpauses shipment");
-  assert(approvedExhausted.milestones[1].isCompleted === true, "Exhausted milestone marks completed immediately");
-  assert(approvedExhausted.milestones[1].isHoldGate === false, "Exhausted milestone clears isHoldGate flag");
+  assert(approvedExhausted.isPaused === false, "approveMilestoneHold (elapsed) unpauses shipment");
+  assert(approvedExhausted.milestones[1].isCompleted === true, "Elapsed milestone marks completed immediately");
+  assert(approvedExhausted.milestones[1].isHoldGate === false, "Elapsed milestone clears isHoldGate flag");
   assert(
     new Date(approvedExhausted.milestones[2].timestamp).getTime() === approvalTimeExhausted,
-    "Next milestone starts immediately at approvalTime when playtime was exhausted"
+    "Next milestone starts immediately at approvalTime when pause time exceeded schedule"
   );
   assert(
     new Date(approvedExhausted.estimatedDeliveryDate).getTime() === approvalTimeExhausted,
@@ -410,15 +412,15 @@ async function runShipmentLogicVerification() {
 
   assert(advancedShipment.milestones[1].isCompleted === true, "advanceMilestoneImmediately marks active milestone completed");
   assert(
-    new Date(advancedShipment.milestones[2].timestamp).getTime() === advanceNow,
-    "Next milestone (m-3) starts immediately at advanceNow"
+    new Date(advancedShipment.milestones[2].timestamp).getTime() === advanceNow + 4 * 3600000,
+    "Next milestone (m-3) retains the original 4-hour gap from active milestone (advanceNow + 4h, no identical dates)"
   );
   assert(
-    new Date(advancedShipment.milestones[3].timestamp).getTime() === advanceNow + 4 * 3600000,
-    "Subsequent milestone (m-4) shifts preserving its 4-hour interval from m-3"
+    new Date(advancedShipment.milestones[3].timestamp).getTime() === advanceNow + 8 * 3600000,
+    "Subsequent milestone (m-4) shifts preserving its 4-hour interval from m-3 (advanceNow + 8h)"
   );
   assert(
-    new Date(advancedShipment.estimatedDeliveryDate).getTime() === advanceNow + 4 * 3600000,
+    new Date(advancedShipment.estimatedDeliveryDate).getTime() === advanceNow + 8 * 3600000,
     "estimatedDeliveryDate shifts forward to match new final delivery milestone"
   );
 
@@ -573,6 +575,112 @@ async function runShipmentLogicVerification() {
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(sched.departure) &&
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(sched.delivery),
     "createDefaultSchedule formats in local datetime-local format"
+  );
+
+  // =============================================================================
+  // Suite 6: Dynamic Adjacent Time-Gap Retention & Milestone Swap
+  // =============================================================================
+  header("Suite 6: Dynamic Adjacent Time-Gap Retention & Milestone Swap");
+
+  // 6.1 Test user exact scenario: A (10:00), B (11:30 = +1h30m), C (12:00 = +30m)
+  const baseTimeline = [
+    { id: "A", title: "Milestone A", timestamp: "2026-11-15T10:00" },
+    { id: "B", title: "Milestone B", timestamp: "2026-11-15T11:30" },
+    { id: "C", title: "Milestone C", timestamp: "2026-11-15T12:00" },
+  ];
+
+  const cascadedTimeline = cascadeMilestoneGaps(baseTimeline, 0, "2026-11-15T14:00", {
+    outputFormat: "local",
+  });
+
+  assert(
+    cascadedTimeline[0].timestamp === "2026-11-15T14:00",
+    "Milestone A updated to new timestamp 14:00"
+  );
+  assert(
+    cascadedTimeline[1].timestamp === "2026-11-15T15:30",
+    "Milestone B retains exact 1h 30m gap from A (14:00 + 90m = 15:30)"
+  );
+  assert(
+    cascadedTimeline[2].timestamp === "2026-11-15T16:00",
+    "Milestone C retains exact 30m gap from B (15:30 + 30m = 16:00)"
+  );
+
+  // 6.2 Test editing an intermediate milestone: B edited from 11:30 to 13:00
+  const cascadedMid = cascadeMilestoneGaps(baseTimeline, 1, "2026-11-15T13:00", {
+    outputFormat: "local",
+  });
+  assert(
+    cascadedMid[0].timestamp === "2026-11-15T10:00",
+    "Milestone A before index 1 remains untouched at 10:00"
+  );
+  assert(
+    cascadedMid[1].timestamp === "2026-11-15T13:00",
+    "Milestone B updated to 13:00"
+  );
+  assert(
+    cascadedMid[2].timestamp === "2026-11-15T13:30",
+    "Milestone C retains exact 30m gap from B (13:00 + 30m = 13:30)"
+  );
+
+  // 6.3 Test advanceMilestoneImmediately eliminates identical dates bug
+  const advanceShipment = {
+    id: "SHIP-ADV-1",
+    departureDate: "2026-11-15T10:00:00.000Z",
+    estimatedDeliveryDate: "2026-11-15T14:00:00.000Z",
+    milestones: [
+      { id: "M1", title: "Departure", timestamp: "2026-11-15T10:00:00.000Z", isCompleted: true },
+      { id: "M2", title: "Customs Gate", timestamp: "2026-11-15T11:30:00.000Z", isCompleted: false },
+      { id: "M3", title: "Destination Port", timestamp: "2026-11-15T12:00:00.000Z", isCompleted: false },
+    ],
+    waypoints: [],
+  };
+
+  const advanceNowMs = new Date("2026-11-15T10:45:00.000Z").getTime();
+  const advanced = advanceMilestoneImmediately(advanceShipment, "M2", advanceNowMs);
+
+  assert(
+    advanced.milestones[1].isCompleted === true,
+    "Fast-forwarded milestone M2 marked completed"
+  );
+  assert(
+    new Date(advanced.milestones[1].timestamp).getTime() === advanceNowMs,
+    "Fast-forwarded milestone M2 timestamp set to nowMs"
+  );
+  assert(
+    new Date(advanced.milestones[2].timestamp).getTime() > advanceNowMs,
+    "Next milestone M3 timestamp is strictly ahead of nowMs (no identical timestamps)"
+  );
+  const m2Tom3Gap = new Date(advanced.milestones[2].timestamp).getTime() - advanceNowMs;
+  assert(
+    m2Tom3Gap === 30 * 60 * 1000,
+    "Next milestone M3 preserves the exact 30-minute original gap from M2"
+  );
+  assert(
+    advanced.estimatedDeliveryDate === advanced.milestones[2].timestamp,
+    "estimatedDeliveryDate automatically matches the new final milestone timestamp"
+  );
+
+  // 6.4 Test swapMilestonesWithTimestampInheritance
+  const swapList = [
+    { id: "A", title: "Step A", timestamp: "2026-11-15T10:00" },
+    { id: "B", title: "Step B", timestamp: "2026-11-15T11:30" },
+    { id: "C", title: "Step C", timestamp: "2026-11-15T14:00" },
+  ];
+
+  // Move B up to index 0 (swap index 1 and index 0)
+  const swappedUp = swapMilestonesWithTimestampInheritance(swapList, 1, 0);
+  assert(
+    swappedUp[0].id === "B" && swappedUp[0].timestamp === "2026-11-15T10:00",
+    "B moved up to index 0 and inherited time 10:00 from A going down"
+  );
+  assert(
+    swappedUp[1].id === "A" && swappedUp[1].timestamp === "2026-11-15T11:30",
+    "A moved down to index 1 and inherited time 11:30 from B going up"
+  );
+  assert(
+    swappedUp[2].id === "C" && swappedUp[2].timestamp === "2026-11-15T14:00",
+    "Milestone C at index 2 remained untouched"
   );
 
   // Verification Summary

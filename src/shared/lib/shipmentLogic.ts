@@ -320,81 +320,26 @@ export function approveMilestoneHold(
   if (targetIndex === -1) return shipment;
 
   const targetMilestone = milestones[targetIndex];
-  const targetStartMs = new Date(targetMilestone.timestamp).getTime();
 
-  // Planned playtime (duration) for this milestone until the next milestone starts
-  let plannedDurationMs = 0;
+  // Mark the held milestone completed and clear the hold gate flag
+  milestones[targetIndex] = {
+    ...targetMilestone,
+    isCompleted: true,
+    isHoldGate: false,
+  };
+
+  // If next milestone exists, ensure it and subsequent milestones maintain their gaps from nowMs or existing schedule
+  let cascadedMilestones = milestones;
   if (targetIndex < milestones.length - 1) {
-    const nextStartMs = new Date(milestones[targetIndex + 1].timestamp).getTime();
-    if (!Number.isNaN(nextStartMs) && !Number.isNaN(targetStartMs)) {
-      plannedDurationMs = Math.max(0, nextStartMs - targetStartMs);
-    }
-  }
-
-  // Elapsed time since this milestone was scheduled to start
-  const elapsedMs = Math.max(0, nowMs - targetStartMs);
-  const remainingPlaytimeMs = plannedDurationMs - elapsedMs;
-
-  // Measure original intervals between all subsequent milestones
-  const intervals: number[] = [];
-  for (let i = targetIndex + 1; i < milestones.length; i++) {
-    const prevMs = new Date(milestones[i - 1].timestamp).getTime();
-    const currMs = new Date(milestones[i].timestamp).getTime();
-    intervals.push(!Number.isNaN(currMs) && !Number.isNaN(prevMs) ? Math.max(0, currMs - prevMs) : 3600000);
-  }
-
-  let nextMilestoneStartMs: number;
-
-  if (targetIndex === milestones.length - 1) {
-    // Target is the final milestone in the shipment
-    milestones[targetIndex] = {
-      ...targetMilestone,
-      timestamp: new Date(nowMs).toISOString(),
-      isCompleted: true,
-      isHoldGate: false,
-    };
-    nextMilestoneStartMs = nowMs;
-  } else if (remainingPlaytimeMs > 0) {
-    // Case 1: Playtime remains. Milestone plays remaining time before moving to next.
-    milestones[targetIndex] = {
-      ...targetMilestone,
-      isCompleted: false,
-      isHoldGate: false,
-    };
-    nextMilestoneStartMs = nowMs + remainingPlaytimeMs;
-  } else {
-    // Case 2: Playtime exhausted. Milestone completes immediately and next starts now.
-    milestones[targetIndex] = {
-      ...targetMilestone,
-      timestamp: new Date(nowMs).toISOString(),
-      isCompleted: true,
-      isHoldGate: false,
-    };
-    nextMilestoneStartMs = nowMs;
-  }
-
-  // Recalculate timestamps for all future milestones shifted from nextMilestoneStartMs
-  if (targetIndex < milestones.length - 1) {
-    let cursorMs = nextMilestoneStartMs;
-    milestones[targetIndex + 1] = {
-      ...milestones[targetIndex + 1],
-      timestamp: new Date(cursorMs).toISOString(),
-      isCompleted: false,
-    };
-
-    for (let j = 1; j < intervals.length; j++) {
-      const idx = targetIndex + 1 + j;
-      cursorMs += intervals[j];
-      milestones[idx] = {
-        ...milestones[idx],
-        timestamp: new Date(cursorMs).toISOString(),
-        isCompleted: false,
-      };
-    }
+    const nextOriginalMs = new Date(milestones[targetIndex + 1].timestamp).getTime();
+    const nextStartMs = !Number.isNaN(nextOriginalMs) ? Math.max(nowMs, nextOriginalMs) : nowMs;
+    cascadedMilestones = cascadeMilestoneGaps(milestones, targetIndex + 1, nextStartMs, {
+      outputFormat: "iso",
+    });
   }
 
   // Update estimated delivery date to match the final milestone's recalculated timestamp
-  const finalMilestone = milestones[milestones.length - 1];
+  const finalMilestone = cascadedMilestones[cascadedMilestones.length - 1];
   const newDelMs = finalMilestone
     ? new Date(finalMilestone.timestamp).getTime()
     : Math.max(nowMs + 24 * 3600 * 1000, new Date(shipment.estimatedDeliveryDate).getTime());
@@ -405,7 +350,7 @@ export function approveMilestoneHold(
     return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
   });
 
-  const allCompleted = milestones.every((m) => m.isCompleted);
+  const allCompleted = cascadedMilestones.every((m) => m.isCompleted);
 
   return {
     ...shipment,
@@ -416,15 +361,122 @@ export function approveMilestoneHold(
     pausedCoordinates: null,
     status: allCompleted ? "delivered" : "in_transit",
     estimatedDeliveryDate: new Date(newDelMs).toISOString(),
-    milestones,
+    milestones: cascadedMilestones,
     waypoints: updatedWaypoints,
     updatedAt: new Date(nowMs).toISOString(),
   };
 }
 
 /**
- * Immediately completes an active milestone, starts the next milestone at the current time,
- * and shifts all subsequent future milestones forward preserving original planned duration intervals.
+ * Cascades time gaps sequentially down a milestone list starting from a given index.
+ * Dynamically computes original adjacent time gaps:
+ *   Δ_k = Time(orig[k]) - Time(orig[k-1])
+ * And applies them sequentially:
+ *   Time(next[k]) = Time(next[k-1]) + Δ_k
+ * 
+ * Never stores gaps in database; calculated dynamically on changes.
+ */
+export function cascadeMilestoneGaps<T extends { timestamp: string }>(
+  milestones: T[],
+  startIndex: number,
+  newStartTime: string | number | Date,
+  options?: {
+    outputFormat?: "iso" | "local";
+    minGapMs?: number;
+  }
+): T[] {
+  if (!milestones || milestones.length === 0 || startIndex < 0 || startIndex >= milestones.length) {
+    return milestones;
+  }
+
+  const minGapMs = options?.minGapMs ?? 30 * 60 * 1000; // 30 min minimum fallback
+  const isLocalOutput =
+    options?.outputFormat === "local" ||
+    (typeof newStartTime === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(newStartTime));
+
+  const formatTimestamp = (ms: number): string => {
+    return isLocalOutput ? toLocalDatetimeInput(ms) : new Date(ms).toISOString();
+  };
+
+  const parseMs = (val: string | number | Date | undefined | null): number => {
+    if (val === null || val === undefined) return NaN;
+    if (typeof val === "number") return val;
+    if (val instanceof Date) return val.getTime();
+    const str = String(val);
+    const converted = fromLocalDatetimeInput(str);
+    const ms = new Date(converted || str).getTime();
+    return Number.isFinite(ms) ? ms : NaN;
+  };
+
+  const newStartMs = parseMs(newStartTime);
+  if (Number.isNaN(newStartMs)) return milestones;
+
+  // 1. Measure dynamic relative gaps between adjacent milestones from original array
+  const adjacentGaps: number[] = [];
+  for (let k = startIndex + 1; k < milestones.length; k++) {
+    const prevOrigMs = parseMs(milestones[k - 1].timestamp);
+    const currOrigMs = parseMs(milestones[k].timestamp);
+    const rawGap = !Number.isNaN(currOrigMs) && !Number.isNaN(prevOrigMs) ? currOrigMs - prevOrigMs : minGapMs;
+    adjacentGaps.push(rawGap > 0 ? rawGap : minGapMs);
+  }
+
+  // 2. Clone and update milestones sequentially
+  const updated = [...milestones];
+  updated[startIndex] = {
+    ...updated[startIndex],
+    timestamp: formatTimestamp(newStartMs),
+  };
+
+  let cursorMs = newStartMs;
+  for (let i = 0; i < adjacentGaps.length; i++) {
+    const nextIdx = startIndex + 1 + i;
+    cursorMs += adjacentGaps[i];
+    updated[nextIdx] = {
+      ...updated[nextIdx],
+      timestamp: formatTimestamp(cursorMs),
+    };
+  }
+
+  return updated;
+}
+
+/**
+ * Swaps two adjacent milestones in an array while swapping their timestamps:
+ * The milestone moving up inherits the timestamp of the milestone going down,
+ * and the milestone going down inherits the timestamp of the milestone going up.
+ */
+export function swapMilestonesWithTimestampInheritance<T extends { timestamp: string }>(
+  milestones: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] {
+  if (
+    !milestones ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= milestones.length ||
+    toIndex >= milestones.length ||
+    fromIndex === toIndex
+  ) {
+    return milestones;
+  }
+
+  const next = [...milestones];
+  const fromTime = next[fromIndex].timestamp;
+  const toTime = next[toIndex].timestamp;
+
+  const itemFrom = { ...next[fromIndex], timestamp: toTime };
+  const itemTo = { ...next[toIndex], timestamp: fromTime };
+
+  next[fromIndex] = itemTo;
+  next[toIndex] = itemFrom;
+  return next;
+}
+
+/**
+ * Fast-forwards milestone progression:
+ * Immediately completes the active milestone at nowMs, and cascades all subsequent milestones
+ * forward preserving the dynamic original time gap between each adjacent pair of checkpoints.
  */
 export function advanceMilestoneImmediately(
   shipment: Shipment,
@@ -434,54 +486,37 @@ export function advanceMilestoneImmediately(
   const nowMs = typeof now === "number" ? now : new Date(now).getTime();
   const depMs = new Date(shipment.departureDate).getTime();
 
-  const milestones = [...(shipment.milestones || [])];
-  const targetIndex = milestones.findIndex((m) => m.id === milestoneId);
+  const originalMilestones = shipment.milestones || [];
+  const targetIndex = originalMilestones.findIndex((m) => m.id === milestoneId);
   if (targetIndex === -1) return shipment;
 
-  // 1. Mark target milestone and any preceding milestones completed immediately
-  for (let i = 0; i <= targetIndex; i++) {
-    milestones[i] = {
-      ...milestones[i],
-      isCompleted: true,
-      isHoldGate: false,
-    };
-  }
+  // 1. Cascade all downstream milestone gaps starting from targetIndex at nowMs
+  const cascaded = cascadeMilestoneGaps(originalMilestones, targetIndex, nowMs, {
+    outputFormat: "iso",
+  });
 
-  // 2. Measure original relative intervals between subsequent milestones
-  const intervals: number[] = [];
-  for (let i = targetIndex + 1; i < milestones.length; i++) {
-    const prevMs = new Date(milestones[i - 1].timestamp).getTime();
-    const currMs = new Date(milestones[i].timestamp).getTime();
-    intervals.push(!Number.isNaN(currMs) && !Number.isNaN(prevMs) ? Math.max(0, currMs - prevMs) : 3600000);
-  }
-
-  // 3. Start next milestone immediately at nowMs and recalculate subsequent dates
-  if (targetIndex < milestones.length - 1) {
-    let cursorMs = nowMs;
-    milestones[targetIndex + 1] = {
-      ...milestones[targetIndex + 1],
-      timestamp: new Date(cursorMs).toISOString(),
-      isCompleted: false,
-    };
-
-    for (let j = 1; j < intervals.length; j++) {
-      const idx = targetIndex + 1 + j;
-      cursorMs += intervals[j];
-      milestones[idx] = {
-        ...milestones[idx],
-        timestamp: new Date(cursorMs).toISOString(),
-        isCompleted: false,
+  // 2. Mark target milestone and any preceding milestones completed immediately
+  const updatedMilestones = cascaded.map((m, idx) => {
+    if (idx <= targetIndex) {
+      return {
+        ...m,
+        isCompleted: true,
+        isHoldGate: false,
       };
     }
-  }
+    return {
+      ...m,
+      isCompleted: false,
+    };
+  });
 
-  // 4. Update estimatedDeliveryDate to match the final milestone's new timestamp
-  const finalMilestone = milestones[milestones.length - 1];
+  // 3. Update estimatedDeliveryDate to match the final milestone's new timestamp
+  const finalMilestone = updatedMilestones[updatedMilestones.length - 1];
   const newDelMs = finalMilestone
     ? new Date(finalMilestone.timestamp).getTime()
     : Math.max(nowMs + 24 * 3600 * 1000, new Date(shipment.estimatedDeliveryDate).getTime());
 
-  const allCompleted = milestones.every((m) => m.isCompleted);
+  const allCompleted = updatedMilestones.every((m) => m.isCompleted);
   const progressRatio = newDelMs > depMs ? Math.min(1, Math.max(0, (nowMs - depMs) / (newDelMs - depMs))) : 0;
   const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
     const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
@@ -498,7 +533,7 @@ export function advanceMilestoneImmediately(
     status: allCompleted ? "delivered" : "in_transit",
     estimatedDeliveryDate: new Date(newDelMs).toISOString(),
     actualDeliveryDate: allCompleted ? new Date(nowMs).toISOString() : shipment.actualDeliveryDate,
-    milestones,
+    milestones: updatedMilestones,
     waypoints: updatedWaypoints,
     updatedAt: new Date(nowMs).toISOString(),
   };

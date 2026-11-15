@@ -29,16 +29,12 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
 
   // Filter visible milestones:
   // 1. Completed checkpoints always display
-  // 2. Unapproved hold gates NEVER show before admin approval
-  // 3. Currently active milestone shows once its scheduled time has arrived
-  // 4. Next future timelines do not show at all until their time to show reaches
+  // 2. Currently active checkpoint (including held gates) shows once its scheduled time has arrived
+  // 3. Next future timelines do not show at all until their time to show reaches
   const visibleMilestones = React.useMemo(() => {
     const nowMs = Date.now();
     return milestones.filter((m, idx) => {
       if (m.isCompleted) return true;
-
-      // Unapproved hold gates must NEVER show before admin approval
-      if (m.isHoldGate) return false;
 
       // If shipment has not departed yet, do not show uncompleted milestones
       if (new Date(shipment.departureDate).getTime() > nowMs) return false;
@@ -83,8 +79,8 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
       <div className="relative pl-7 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">
         {visibleMilestones.map((m: TrackingMilestone, idx: number) => {
           const isCompleted = m.isCompleted;
-          const isActive = idx === activeMilestoneIndex && !isCompleted;
-          const isPausedHere = isActive && shipment.isPaused;
+          const isActive = m.id === milestones[activeMilestoneIndex]?.id && !isCompleted;
+          const isPausedHere = isActive && (shipment.isPaused || Boolean(m.isHoldGate));
           const last = idx === visibleMilestones.length - 1;
 
           const dateStr = m.timestamp

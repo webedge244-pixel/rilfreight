@@ -25,6 +25,8 @@ import {
   deriveShipmentStatus,
   synchronizeWaypoints,
   createDefaultSchedule,
+  cascadeMilestoneGaps,
+  swapMilestonesWithTimestampInheritance,
 } from "@/shared/lib/shipmentLogic";
 import { Select } from "@/shared/components/select";
 import { Button } from "@/shared/components/button";
@@ -230,6 +232,30 @@ export default function NewShipmentPage() {
     setMilestones((prev) => {
       let next = prev.map((m, i) => (i === index ? { ...m, ...patch } : m));
 
+      // If timestamp changed, cascade adjacent gaps sequentially to all downstream milestones
+      if (patch.timestamp && patch.timestamp !== prev[index]?.timestamp) {
+        next = cascadeMilestoneGaps(prev, index, patch.timestamp, {
+          outputFormat: "iso",
+        });
+
+        // Synchronize departureDate if milestone #0 timestamp changed
+        if (index === 0) {
+          setFormState((fs) => ({
+            ...fs,
+            departureDate: patch.timestamp!,
+          }));
+        }
+
+        // Synchronize estimatedDeliveryDate to match the final milestone's new timestamp
+        const finalMs = next[next.length - 1]?.timestamp;
+        if (finalMs) {
+          setFormState((fs) => ({
+            ...fs,
+            estimatedDeliveryDate: finalMs,
+          }));
+        }
+      }
+
       if (patch.locationCode) {
         const { list, moved } = reconcileLocationOrder(
           next,
@@ -239,21 +265,18 @@ export default function NewShipmentPage() {
         next = moved ? reassignTimestamps(list) : list;
       }
 
-      return normalizeMilestones(next, { departureMs, deliveryMs });
+      return next;
     });
   };
 
   /**
-   * Moves a checkpoint to a new slot in the timeline. The existing time slots
-   * are re-assigned in order so the sequence always stays chronological.
+   * Moves a checkpoint up or down in the timeline. The milestone moving up inherits
+   * the timestamp of the milestone going down, and the milestone going down inherits
+   * the timestamp of the milestone going up (a pure timestamp swap).
    */
   const handleReorderMilestone = (fromIndex: number, toIndex: number) => {
     setMilestones((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(fromIndex, 1);
-      if (!moved) return prev;
-      next.splice(toIndex, 0, moved);
-      return normalizeMilestones(reassignTimestamps(next), { departureMs, deliveryMs });
+      return swapMilestonesWithTimestampInheritance(prev, fromIndex, toIndex);
     });
   };
 
