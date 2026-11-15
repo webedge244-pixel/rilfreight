@@ -1548,8 +1548,8 @@ function ShipmentDetailContent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
 
             {/* Route Progress */}
-            <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-900/50 rounded-3xl overflow-hidden flex flex-col justify-between">
-              <div className="p-6">
+            <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-900/50 rounded-3xl overflow-hidden flex flex-col">
+              <div className="p-6 pb-3">
                 <h2 className="text-sm font-semibold text-black dark:text-white mb-4">
                   Route Progress
                 </h2>
@@ -1566,11 +1566,11 @@ function ShipmentDetailContent() {
                 </div>
               </div>
 
-              {/* Live Route Map (Edge-to-edge flush with container) */}
-              <div className="w-full">
+              {/* Live Route Map (Snug under progress bar and flexes to fill container height) */}
+              <div className="w-full flex-1 min-h-[380px]">
                 <LiveTrackingMap
                   shipment={shipment}
-                  height="380px"
+                  height="100%"
                   className="rounded-3xl border-0"
                 />
               </div>

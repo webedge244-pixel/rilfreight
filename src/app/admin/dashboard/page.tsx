@@ -6,6 +6,7 @@ import { Ship, Plane, Train, Truck, ArrowUpRight, Users } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
   listenToShipments,
+  listenToPausedShipments,
   getShipmentCounts,
   getMonthlyModeBreakdown,
   getPlatformUserCount,
@@ -42,6 +43,7 @@ export default function DashboardPage() {
     total: 0,
   });
   const [recentShipments, setRecentShipments] = React.useState<Shipment[]>([]);
+  const [pausedShipments, setPausedShipments] = React.useState<Shipment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
@@ -65,7 +67,7 @@ export default function DashboardPage() {
         console.error("Failed to load dashboard metrics:", error);
         if (cancelled) return;
         setLoadError(
-          "Unable to reach the shipment database. Check the connection and try again."
+          "Unable to reach the shipment database. Check the connection and try again.",
         );
       }
     };
@@ -83,10 +85,21 @@ export default function DashboardPage() {
         console.error("Dashboard subscription error:", error);
         if (cancelled) return;
         setLoadError(
-          "Unable to reach the shipment database. Check the connection and try again."
+          "Unable to reach the shipment database. Check the connection and try again.",
         );
         setIsLoading(false);
-      }
+      },
+    );
+
+    const unsubscribePaused = listenToPausedShipments(
+      5,
+      (shipments) => {
+        if (cancelled) return;
+        setPausedShipments(shipments);
+      },
+      (error) => {
+        console.error("Dashboard paused shipments subscription error:", error);
+      },
     );
 
     void refreshMetrics();
@@ -94,6 +107,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
       unsubscribe();
+      unsubscribePaused();
     };
   }, []);
 
@@ -116,11 +130,16 @@ export default function DashboardPage() {
 
   const modeIcon = (mode: string) => {
     switch (mode) {
-      case "ocean": return <Ship className="w-3.5 h-3.5" />;
-      case "air": return <Plane className="w-3.5 h-3.5" />;
-      case "rail": return <Train className="w-3.5 h-3.5" />;
-      case "road": return <Truck className="w-3.5 h-3.5" />;
-      default: return null;
+      case "ocean":
+        return <Ship className="w-3.5 h-3.5" />;
+      case "air":
+        return <Plane className="w-3.5 h-3.5" />;
+      case "rail":
+        return <Train className="w-3.5 h-3.5" />;
+      case "road":
+        return <Truck className="w-3.5 h-3.5" />;
+      default:
+        return null;
     }
   };
 
@@ -159,16 +178,14 @@ export default function DashboardPage() {
 
       {/* 4-Component Bento Grid Architecture */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 items-stretch">
-
         {/* Left Column Stack (Span 2) */}
         <div className="lg:col-span-2 flex flex-col gap-4 lg:gap-5">
-
-          {/* Component 1: Active Operations (Strictly 3 stats) */}
+          {/* Component 1: Active Operations */}
           <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8">
-            <h2 className="text-sm font-semibold text-black dark:text-white mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6">
               Active Operations
             </h2>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-black dark:text-white block">
                   {counts.total.toLocaleString()}
@@ -193,13 +210,22 @@ export default function DashboardPage() {
                   In Transit
                 </span>
               </div>
+              {/* On mobile: Platform Users joins Active Operations */}
+              <div className="sm:hidden">
+                <span className="text-3xl font-black text-black dark:text-white block font-mono">
+                  {userCount.toLocaleString()}
+                </span>
+                <span className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">
+                  Platform Users
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Two Sub-Cards Underneath */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 flex-1">
-            {/* Component 2: Platform Users (Enlarged prominent typography) */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 flex flex-col justify-between">
+            {/* Component 2: Platform Users (Enlarged prominent typography, hidden on mobile since it joins above) */}
+            <div className="hidden sm:flex bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8 flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-bold uppercase tracking-wider text-slate-400">
                   Platform Users
@@ -216,17 +242,74 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Component 3: Empty Placeholder Card (Hidden on mobile, visible on desktop) */}
-            <div className="hidden sm:block bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8" />
-          </div>
+            {/* Component 3: Paused Operations / Needs Attention Card */}
+            <div className="bg-amber-500/10 dark:bg-amber-950/30 rounded-2xl p-6 lg:p-8 flex flex-col justify-between relative overflow-hidden border-0">
+              {/* Decorative Concentric Rings & Crafty Circles on the left */}
+              <div className="absolute -left-10 -bottom-10 w-44 h-44 rounded-full border border-amber-500/20 dark:border-white/10 pointer-events-none" />
+              <div className="absolute -left-16 -bottom-16 w-56 h-56 rounded-full border border-amber-500/15 dark:border-white/5 pointer-events-none" />
+              <div className="absolute -left-20 -bottom-20 w-68 h-68 rounded-full border border-amber-500/10 dark:border-white/5 pointer-events-none" />
+              <div className="absolute -left-6 -bottom-6 w-32 h-32 rounded-full bg-amber-500/10 dark:bg-white/5 pointer-events-none" />
 
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <span className="text-sm font-bold uppercase tracking-wider text-amber-900/80 dark:text-amber-300">
+                  Needs Attention
+                </span>
+              </div>
+
+              {/* Main Content Area */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 relative z-10">
+                {/* Left: Large Prominent Number */}
+                <div>
+                  <span className="text-5xl sm:text-6xl font-black text-amber-950 dark:text-amber-100 block font-mono leading-none">
+                    {counts.onHold || 0}
+                  </span>
+                  <span className="text-xs text-amber-900/70 dark:text-amber-300/70 mt-1.5 block font-medium">
+                    {counts.onHold === 1
+                      ? "Shipment paused on hold"
+                      : "Shipments paused on hold"}
+                  </span>
+                </div>
+
+                {/* Right: Quick Links to Up to 5 Paused Shipments */}
+                <div className="flex flex-col items-start sm:items-end gap-1.5 min-w-0">
+                  {pausedShipments.length > 0 ? (
+                    <>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900/60 dark:text-amber-300/60">
+                        Quick Links ({Math.min(5, pausedShipments.length)})
+                      </span>
+                      <div className="flex flex-wrap sm:justify-end gap-1.5 max-w-[200px]">
+                        {pausedShipments.slice(0, 5).map((s) => (
+                          <Link
+                            key={s.id}
+                            href={`/admin/shipments/${s.id}`}
+                            title={`Open shipment ${s.trackingCode}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 text-amber-950 dark:text-amber-200 text-xs font-mono font-bold tracking-tight shadow-sm transition-all hover:scale-105 border-0"
+                          >
+                            <span className="truncate max-w-[100px]">
+                              {s.trackingCode}
+                            </span>
+                            <ArrowUpRight className="w-3 h-3 shrink-0 opacity-60" />
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-xs text-amber-900/60 dark:text-amber-300/60 italic font-medium">
+                      All shipments running smoothly
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Component 4: Created This Month (Stretched Full Height with Dial Gauge) */}
         <div className="lg:col-span-1 bg-[#0F313A] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-white">
           {/* Header Row */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white/95">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-white/70">
               Created This Month
             </h2>
             <Link
@@ -327,7 +410,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 lg:p-8">
           <div className="flex items-baseline justify-between mb-6">
             <div>
-              <h2 className="text-sm font-semibold text-black dark:text-white">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
                 Recent Dispatches
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -345,7 +428,8 @@ export default function DashboardPage() {
 
           {!isLoading && recentShipments.length === 0 && (
             <p className="py-10 text-center text-sm text-slate-400">
-              No dispatches logged yet. Create the first shipment to populate the console.
+              No dispatches logged yet. Create the first shipment to populate
+              the console.
             </p>
           )}
 
@@ -373,7 +457,7 @@ export default function DashboardPage() {
                   <span
                     className={cn(
                       "inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider",
-                      statusColor(shipment.status)
+                      statusColor(shipment.status),
                     )}
                   >
                     {formatStatus(shipment.status)}
@@ -382,15 +466,21 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Route</span>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                      Route
+                    </span>
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
                       {shipment.originCode} → {shipment.destinationCode}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">ETA</span>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                      ETA
+                    </span>
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
-                      {new Date(shipment.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                      {new Date(
+                        shipment.estimatedDeliveryDate,
+                      ).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                       })}
@@ -406,11 +496,21 @@ export default function DashboardPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Tracking Code</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Mode</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden sm:table-cell">Route</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">Status</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">ETA</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">
+                    Tracking Code
+                  </th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">
+                    Mode
+                  </th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4 hidden sm:table-cell">
+                    Route
+                  </th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">
+                    Status
+                  </th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    ETA
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -439,16 +539,20 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td className="py-3.5 pr-4">
-                      <span className={cn(
-                        "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-                        statusColor(shipment.status)
-                      )}>
+                      <span
+                        className={cn(
+                          "inline-block px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                          statusColor(shipment.status),
+                        )}
+                      >
                         {formatStatus(shipment.status)}
                       </span>
                     </td>
                     <td className="py-3.5">
                       <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {new Date(shipment.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                        {new Date(
+                          shipment.estimatedDeliveryDate,
+                        ).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                         })}
@@ -460,7 +564,6 @@ export default function DashboardPage() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

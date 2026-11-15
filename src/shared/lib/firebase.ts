@@ -342,6 +342,33 @@ export function listenToShipments(
 }
 
 /**
+ * Real-time listener for paused shipments that need admin attention.
+ * Returns an unsubscribe function to remove the listener.
+ */
+export function listenToPausedShipments(
+  limitCount: number = 5,
+  callback: (shipments: Shipment[]) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  const q = query(
+    shipmentsCollection,
+    where("isPaused", "==", true),
+    limit(limitCount)
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      callback(snapshot.docs.map((docSnap) => decodeShipment(docSnap.data())));
+    },
+    (error) => {
+      console.error("Firestore subscription error on paused shipments:", error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/**
  * Aggregate counters for the operations dashboard.
  */
 export interface ShipmentCounts {
