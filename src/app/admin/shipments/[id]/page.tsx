@@ -546,81 +546,110 @@ function ShipmentDetailContent() {
         </div>
       )}
 
-      {/* Top Navigation Row: Back Link on Left, Destructive Delete on Right */}
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <Link
-          href="/admin/shipments"
-          className="inline-block text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-black dark:hover:text-white transition-colors"
-        >
-          ← Back to Shipments
-        </Link>
+      {/* Unified Top Header Card */}
+      <div
+        className={cn(
+          "rounded-3xl p-6 mb-6 border-0 shadow-none transition-colors",
+          shipment.isPaused
+            ? "bg-amber-500/10 dark:bg-amber-950/30"
+            : "bg-slate-50 dark:bg-slate-900/50"
+        )}
+      >
+        {/* Top Navigation Row: Back Link on Left, Destructive Delete on Right */}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <Link
+            href="/admin/shipments"
+            className="inline-block text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-black dark:hover:text-white transition-colors"
+          >
+            ← Back to Shipments
+          </Link>
 
-        <button
-          type="button"
-          onClick={() => setShowDeleteModal(true)}
-          className="p-2 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white transition-colors border-0 shadow-sm"
-          title="Delete Shipment"
-          aria-label="Delete Shipment"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="p-2 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white transition-colors border-0 shadow-sm"
+            title="Delete Shipment"
+            aria-label="Delete Shipment"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-black dark:text-white font-mono">
-            {shipment.trackingCode}
-          </h1>
-          <div className="flex items-center gap-3 mt-2">
-            <span className={cn(
-              "inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-              statusColor(shipment.status)
-            )}>
-              {formatStatus(shipment.status)}
-            </span>
-            <span className="text-sm text-slate-400 capitalize">{shipment.mode} freight</span>
+        {/* Header Details & Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-black dark:text-white font-mono">
+              {shipment.trackingCode}
+            </h1>
+            <div className="flex items-center gap-3 mt-2">
+              {/* Red customs_hold tag removed per user requirement */}
+              {!shipment.isPaused && shipment.status !== "customs_hold" && (
+                <span
+                  className={cn(
+                    "inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+                    statusColor(shipment.status)
+                  )}
+                >
+                  {formatStatus(shipment.status)}
+                </span>
+              )}
+              <span className="text-sm text-slate-400 capitalize">
+                {shipment.mode} freight
+              </span>
+            </div>
+          </div>
+
+          {/* Actions Bar */}
+          <div className="flex items-center gap-2">
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={handleStartEdit}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#0F313A] dark:bg-white text-white dark:text-black hover:opacity-90 text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                title="Edit Shipment & Milestones"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Shipment</span>
+              </button>
+            )}
+
+            {shipment.status !== "delivered" && (
+              shipment.isPaused ? (
+                <button
+                  type="button"
+                  onClick={handleResume}
+                  disabled={isActionPending}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  <span>{isActionPending ? "Resuming..." : "Resume Tracking"}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowExceptionForm((open) => !open)}
+                  disabled={isActionPending}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Pause / Hold Gate</span>
+                </button>
+              )
+            )}
           </div>
         </div>
 
-        {/* Actions Bar */}
-        <div className="flex items-center gap-2">
-          {!isEditing && (
-            <button
-              type="button"
-              onClick={handleStartEdit}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#0F313A] dark:bg-white text-white dark:text-black hover:opacity-90 text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
-              title="Edit Shipment & Milestones"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              <span>Edit Shipment</span>
-            </button>
-          )}
-
-          {shipment.status !== "delivered" && (
-            shipment.isPaused ? (
-              <button
-                type="button"
-                onClick={handleResume}
-                disabled={isActionPending}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
-              >
-                <PlayCircle className="w-4 h-4" />
-                <span>{isActionPending ? "Resuming..." : "Resume Tracking"}</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowExceptionForm((open) => !open)}
-                disabled={isActionPending}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                <span>Pause / Hold Gate</span>
-              </button>
-            )
-          )}
-        </div>
+        {/* Integrated On Hold Section (No separate card, no borders) */}
+        {shipment.isPaused && (
+          <div className="mt-4 pt-4 border-t border-amber-500/20 dark:border-amber-500/10">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              On Hold
+            </span>
+            <p className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">
+              A milestone requires administrative approval before shipment progression can continue. Scroll down to the milestones section below to review and approve.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Action Error */}
@@ -1376,21 +1405,6 @@ function ShipmentDetailContent() {
                   {isActionPending ? "Applying..." : "Confirm & Place On Hold"}
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Paused Banner */}
-          {shipment.isPaused && shipment.pausedReason && (
-            <div className="bg-[#F9BC15]/15 border border-[#F9BC15]/30 rounded-2xl px-5 py-4 mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#BA1C20]">On Hold</span>
-              <p className="text-sm text-black dark:text-white mt-1">
-                {shipment.pausedReason}
-              </p>
-              {shipment.pausedLocationName && (
-                <p className="text-xs text-slate-400 mt-1">
-                  Location: {shipment.pausedLocationName}
-                </p>
-              )}
             </div>
           )}
 
