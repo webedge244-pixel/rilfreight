@@ -77,6 +77,7 @@ console.log(`${colors.dim}Project Root: ${projectRoot}${colors.reset}\n`);
 
 // Critical File Paths
 const ADMIN_MATRIX_PAGE = path.join(projectRoot, 'src', 'app', 'admin', 'shipments', 'page.tsx');
+const SHIPMENT_DETAIL_PAGE = path.join(projectRoot, 'src', 'app', 'admin', 'shipments', '[id]', 'page.tsx');
 const TRACKING_PORTAL_PAGE = path.join(projectRoot, 'src', 'app', 'tracking', '[code]', 'page.tsx');
 const TRACKING_SERVICE_PATH = path.join(projectRoot, 'src', 'features', 'tracking', 'services', 'trackingService.ts');
 const TYPES_PATH = path.join(projectRoot, 'src', 'shared', 'types', 'index.ts');
@@ -118,15 +119,18 @@ async function runPhase4Verification() {
     );
 
     // 1.4 Quick Action: "Release Gate"
+    const detailContent = fs.existsSync(SHIPMENT_DETAIL_PAGE) ? fs.readFileSync(SHIPMENT_DETAIL_PAGE, 'utf-8') : '';
     const hasReleaseGateAction =
       pageContent.includes('Release Gate') ||
       pageContent.includes('releaseGate') ||
       pageContent.includes('Release Hold') ||
       pageContent.includes('resumeTracking') ||
-      pageContent.includes('isPaused: false');
+      pageContent.includes('isPaused: false') ||
+      detailContent.includes('releaseShipmentGate') ||
+      detailContent.includes('releaseGate');
     assert(
       hasReleaseGateAction,
-      `Admin matrix provides "Release Gate" quick action control`
+      `Admin console provides "Release Gate" quick action control (in matrix or detail view)`
     );
 
     // 1.5 Quick Action: "Trigger Exception"

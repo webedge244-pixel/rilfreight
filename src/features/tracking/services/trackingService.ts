@@ -234,11 +234,33 @@ export function evaluateShipmentProgression(
     return { updatedShipment: shipment, hasChanged: false };
   }
 
+  // Check if we hit an active uncompleted hold gate whose scheduled time has arrived
+  const activeHoldGate = shipment.milestones.find(
+    (m) => m.isHoldGate && !m.isCompleted && new Date(m.timestamp).getTime() <= now
+  );
+
+  if (activeHoldGate) {
+    const coords = activeHoldGate.coordinates || getLiveShipmentCoordinates(shipment, now);
+    return {
+      updatedShipment: {
+        ...shipment,
+        isPaused: true,
+        status: "customs_hold",
+        pausedReason: activeHoldGate.description || "Awaiting administrative clearance",
+        pausedLocationName: activeHoldGate.locationName || null,
+        pausedCoordinates: coords || null,
+        pausedAtTimestamp: new Date(now).toISOString(),
+        updatedAt: new Date(now).toISOString(),
+      },
+      hasChanged: true,
+    };
+  }
+
   let hasChanged = false;
 
   const updatedMilestones = shipment.milestones.map((m) => {
-    // Do not auto-advance hold gate checkpoints without operator release
-    if (m.isHoldGate) return m;
+    // An unapproved hold gate must NEVER auto-complete on refresh or progression
+    if (m.isHoldGate && !m.isCompleted) return m;
 
     const milestoneTime = new Date(m.timestamp).getTime();
     if (isNaN(milestoneTime)) return m;

@@ -8,22 +8,28 @@ import { cn } from "@/shared/lib/utils";
 import {
   listenToShipmentRecord,
   replaceShipmentRecord,
-  updateShipmentRecord,
   deleteShipmentRecord,
-  listPlatformUsers,
 } from "@/shared/lib/firebase";
 import {
   releaseShipmentGate,
   triggerShipmentException,
   evaluateShipmentProgression,
 } from "@/features/tracking/services/trackingService";
+import {
+  deriveShipmentStatus,
+  regulateMilestones,
+  synchronizeWaypoints,
+  approveMilestoneHold,
+  toLocalDatetimeInput as toLocalInput,
+  fromLocalDatetimeInput as fromLocalInput,
+  computeProgressPercent,
+} from "@/shared/lib/shipmentLogic";
 import type {
   Shipment,
   ShipmentStatus,
   TransportMode,
   TrackingMilestone,
 } from "@/shared/types";
-import type { PlatformUser } from "@/features/admin/types";
 import {
   Trash2,
   PlayCircle,
@@ -34,7 +40,6 @@ import {
   Plus,
   Trash,
   Save,
-  ArrowLeft,
 } from "lucide-react";
 
 // SSR-safe dynamic import for the MapLibre GL vector map
@@ -64,19 +69,6 @@ const EXCEPTION_PRESETS = [
 ];
 
 /**
- * Computes progress along the scheduled window.
- * Kept outside the component so the clock read is not evaluated during render.
- */
-function computeProgressPercent(shipment: Shipment): number {
-  const start = new Date(shipment.departureDate).getTime();
-  const end = new Date(shipment.estimatedDeliveryDate).getTime();
-  const now = Date.now();
-  if (now <= start) return 0;
-  if (now >= end) return 100;
-  return Math.round(((now - start) / (end - start)) * 100);
-}
-
-/**
  * Human readable label for where a shipment currently sits.
  */
 function currentLocationLabel(shipment: Shipment): string {
@@ -85,51 +77,14 @@ function currentLocationLabel(shipment: Shipment): string {
   return last?.name || shipment.originName || "In transit";
 }
 
-/** Converts an ISO/UTC timestamp to local YYYY-MM-DDTHH:mm for datetime-local inputs */
-function toLocalInput(isoOrDate: string | Date | null | undefined): string {
-  if (!isoOrDate) return "";
-  if (typeof isoOrDate === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(isoOrDate)) {
-    return isoOrDate;
-  }
-  const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
-  if (Number.isNaN(d.getTime())) return "";
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-}
-
-/** Converts datetime-local input string back to ISO 8601 UTC string for Firestore */
-function fromLocalInput(localStr: string | null | undefined): string | null {
-  if (!localStr || !localStr.trim()) return null;
-  const d = new Date(localStr);
-  return Number.isNaN(d.getTime()) ? null : d.toISOString();
-}
-
 /** Auto-adjusts milestone timestamps and completion status to fit between departure and estimated delivery */
 function autoRegulateMilestoneTimestamps(
   milestones: TrackingMilestone[],
   departureLocalStr: string,
   deliveryLocalStr: string
 ): TrackingMilestone[] {
-  if (!milestones || milestones.length === 0) return [];
-  const depMs = new Date(departureLocalStr).getTime();
-  const delMs = new Date(deliveryLocalStr).getTime();
-  if (isNaN(depMs) || isNaN(delMs) || delMs <= depMs) return milestones;
-
-  const total = milestones.length;
-  const now = Date.now();
-
-  return milestones.map((m, idx) => {
-    const ratio = total > 1 ? idx / (total - 1) : 0;
-    const targetMs = Math.round(depMs + ratio * (delMs - depMs));
-    const isPast = targetMs <= now;
-    const isCompleted = isPast && !m.isHoldGate;
-
-    return {
-      ...m,
-      timestamp: toLocalInput(new Date(targetMs)),
-      isCompleted,
-    };
+  return regulateMilestones(milestones, departureLocalStr, deliveryLocalStr, {
+    outputFormat: "local",
   });
 }
 
@@ -229,6 +184,28 @@ function ShipmentDetailContent() {
     }
   };
 
+  const handleApproveMilestone = async (milestoneId: string) => {
+    if (!shipment) return;
+
+    setIsActionPending(true);
+    setActionError(null);
+
+    try {
+      const updated = approveMilestoneHold(shipment, milestoneId);
+      await replaceShipmentRecord(shipment.id, updated);
+      setShipment(updated);
+      setToastMessage({
+        text: "Milestone cleared! Remaining timeline recalculated.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to approve milestone hold:", error);
+      setActionError("Could not release hold on milestone. Please try again.");
+    } finally {
+      setIsActionPending(false);
+    }
+  };
+
   const handlePause = async () => {
     if (!shipment) return;
 
@@ -308,17 +285,6 @@ function ShipmentDetailContent() {
   });
 
   const [editMilestones, setEditMilestones] = React.useState<TrackingMilestone[]>([]);
-  const [editMessage, setEditMessage] = React.useState<string>("");
-  const [sendNotificationEmail, setSendNotificationEmail] = React.useState<boolean>(false);
-  const [recipientEmail, setRecipientEmail] = React.useState<string>("");
-  const [registeredUsers, setRegisteredUsers] = React.useState<PlatformUser[]>([]);
-
-  // Load registered users for client matching
-  React.useEffect(() => {
-    listPlatformUsers(100)
-      .then((users) => setRegisteredUsers(users))
-      .catch((err) => console.warn("Failed to load registered users:", err));
-  }, []);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMessage({ text, type });
@@ -327,30 +293,6 @@ function ShipmentDetailContent() {
 
   const handleStartEdit = () => {
     if (!shipment) return;
-
-    // Match client email
-    let defaultEmail = "";
-    if (shipment.linkedUserIds && shipment.linkedUserIds.length > 0) {
-      const match = registeredUsers.find((u) => shipment.linkedUserIds?.includes(u.id));
-      if (match?.email) defaultEmail = match.email;
-    }
-    if (!defaultEmail && shipment.clientName) {
-      const match = registeredUsers.find(
-        (u) =>
-          u.name.toLowerCase() === shipment.clientName?.toLowerCase() ||
-          u.company?.toLowerCase() === shipment.clientName?.toLowerCase()
-      );
-      if (match?.email) defaultEmail = match.email;
-    }
-    if (!defaultEmail) {
-      const match = registeredUsers.find(
-        (u) =>
-          u.linkedShipmentIds &&
-          (u.linkedShipmentIds.includes(shipment.id) ||
-            u.linkedShipmentIds.includes(shipment.trackingCode))
-      );
-      if (match?.email) defaultEmail = match.email;
-    }
 
     setEditFormData({
       mode: shipment.mode,
@@ -386,16 +328,13 @@ function ShipmentDetailContent() {
         timestamp: toLocalInput(m.timestamp),
       }))
     );
-    setEditMessage("");
-    setSendNotificationEmail(Boolean(defaultEmail));
-    setRecipientEmail(defaultEmail);
     setIsEditing(true);
   };
 
   const handleMilestoneChange = (
     index: number,
     field: keyof TrackingMilestone,
-    value: any
+    value: TrackingMilestone[keyof TrackingMilestone]
   ) => {
     setEditMilestones((prev) => {
       const copy = [...prev];
@@ -431,57 +370,42 @@ function ShipmentDetailContent() {
       const now = new Date();
       const depDate = new Date(fromLocalInput(editFormData.departureDate) || shipment.departureDate);
       const estDelDate = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || shipment.estimatedDeliveryDate);
-      const depMs = depDate.getTime();
-      const delMs = estDelDate.getTime();
       const nowMs = now.getTime();
 
       // Determine status from schedule like /new (unless actively paused on hold)
-      let determinedStatus: ShipmentStatus = editFormData.status;
-      if (!editFormData.isPaused) {
-        if (delMs <= nowMs) {
-          determinedStatus = "delivered";
-        } else if (depMs <= nowMs) {
-          determinedStatus = "in_transit";
-        } else {
-          determinedStatus = "pending";
+      const determinedStatus = deriveShipmentStatus(
+        depDate,
+        estDelDate,
+        {
+          isPaused: editFormData.isPaused,
+          currentStatus: editFormData.status,
+          now: nowMs,
         }
-      }
+      );
 
-      // Timeline checkpoints: timestamps that have passed are marked completed
+      // Timeline checkpoints: "The one that has passed has passed"
+      // If a milestone's timestamp is in the past, it marks completed immediately with no hold gate.
+      // If it is in the future, it preserves the admin's hold gate flag.
       const formattedMilestones: TrackingMilestone[] = editMilestones.map((m) => {
         const rawTime = fromLocalInput(m.timestamp) || m.timestamp;
         const mTime = new Date(rawTime).getTime();
         const hasPassed = !isNaN(mTime) && mTime <= nowMs;
+        const isCompleted = hasPassed;
+        const isHoldGate = hasPassed ? false : Boolean(m.isHoldGate);
         return {
           ...m,
           timestamp: rawTime,
-          isCompleted: hasPassed && !m.isHoldGate,
-          isHoldGate: Boolean(m.isHoldGate),
+          isCompleted,
+          isHoldGate,
         };
       });
 
-      // If an operational edit message was entered, record as a status update milestone
-      if (editMessage.trim()) {
-        formattedMilestones.push({
-          id: `ms-update-${Date.now()}`,
-          code: "OPS_NOTICE",
-          title: "Operational Status Notice",
-          description: editMessage.trim(),
-          locationName:
-            editFormData.pausedLocationName ||
-            editFormData.destinationName ||
-            "Operations Control",
-          timestamp: new Date().toISOString(),
-          isCompleted: true,
-          isHoldGate: editFormData.isPaused,
-        });
-      }
-
-      const progressRatio = delMs > depMs ? Math.min(1, Math.max(0, (nowMs - depMs) / (delMs - depMs))) : 0;
-      const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
-        const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
-        return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
-      });
+      const updatedWaypoints = synchronizeWaypoints(
+        shipment.waypoints || [],
+        depDate,
+        estDelDate,
+        { now: nowMs }
+      );
 
       const updatedShipment: Shipment = {
         ...shipment,
@@ -520,38 +444,6 @@ function ShipmentDetailContent() {
       // Save to Firestore using existing tracking code & ID
       await replaceShipmentRecord(shipment.id, updatedShipment);
       setShipment(updatedShipment);
-
-      // Fire-and-forget email dispatch in background so saving never hangs
-      if (sendNotificationEmail && recipientEmail.trim()) {
-        const emailSubject = `Shipment Update: ${shipment.trackingCode} (${formatStatus(
-          updatedShipment.status
-        )})`;
-        const emailBody = editMessage.trim()
-          ? `Dear Client,\n\nAn operational update has been recorded for your shipment ${shipment.trackingCode}:\n\n"${editMessage.trim()}"\n\nCurrent Status: ${formatStatus(
-              updatedShipment.status
-            )}\nOrigin: ${updatedShipment.originName} (${updatedShipment.originCode})\nDestination: ${
-              updatedShipment.destinationName
-            } (${updatedShipment.destinationCode})\nEstimated Delivery: ${new Date(
-              updatedShipment.estimatedDeliveryDate
-            ).toLocaleDateString()}\n\nYou may view full real-time tracking anytime on your client portal.\n\nBest regards,\nRIL Freight Operations Team`
-          : `Dear Client,\n\nYour shipment ${shipment.trackingCode} details have been updated in our system.\n\nCurrent Status: ${formatStatus(
-              updatedShipment.status
-            )}\nEstimated Delivery: ${new Date(
-              updatedShipment.estimatedDeliveryDate
-            ).toLocaleDateString()}\n\nBest regards,\nRIL Freight Operations Team`;
-
-        void fetch("/api/admin/email/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: recipientEmail.trim(),
-            subject: emailSubject,
-            body: emailBody,
-          }),
-        }).catch((emailErr) => {
-          console.warn("Background email notification error:", emailErr);
-        });
-      }
 
       showToast("Shipment updated successfully!", "success");
       setIsEditing(false);
@@ -1101,7 +993,7 @@ function ShipmentDetailContent() {
             </div>
 
             {/* Card 3: Route Corridor */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 space-y-6">
+            <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 space-y-6">
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-[#0F313A] dark:text-white">
                 Origin &amp; Destination
               </h2>
@@ -1175,67 +1067,6 @@ function ShipmentDetailContent() {
                       className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                     />
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: Client Notification Message */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-extrabold uppercase tracking-wider text-[#0F313A] dark:text-white">
-                  Client Notification
-                </h2>
-                <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                  Via support@rilfreight.com
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                    Operational Update Message (Optional)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={editMessage}
-                    onChange={(e) => setEditMessage(e.target.value)}
-                    placeholder="e.g. Customs inspection cleared. Shipment scheduled for dispatch to destination port..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 resize-none"
-                  />
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-semibold text-black dark:text-white block">
-                        Email Client Update
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        Dispatch email update to linked client via Resend
-                      </span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={sendNotificationEmail}
-                      onChange={(e) => setSendNotificationEmail(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#0F313A] focus:ring-[#0F313A]"
-                    />
-                  </div>
-
-                  {sendNotificationEmail && (
-                    <div className="pt-2">
-                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                        Client Recipient Email
-                      </label>
-                      <input
-                        type="email"
-                        value={recipientEmail}
-                        onChange={(e) => setRecipientEmail(e.target.value)}
-                        placeholder="client@company.com"
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-mono text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1653,47 +1484,107 @@ function ShipmentDetailContent() {
                 Milestones
               </h2>
               <div className="space-y-0">
-                {shipment.milestones.map((ms, i) => (
-                  <div key={ms.id} className="flex gap-4">
-                    {/* Timeline Indicator */}
-                    <div className="flex flex-col items-center">
-                      <div className={cn(
-                        "w-3 h-3 rounded-full shrink-0 mt-1",
-                        ms.isCompleted ? "bg-[#0F313A] dark:bg-white" : "bg-slate-300 dark:bg-slate-600"
-                      )} />
-                      {i < shipment.milestones.length - 1 && (
-                        <div className="w-px flex-1 bg-slate-200 dark:bg-slate-700 my-1" />
-                      )}
-                    </div>
+                {shipment.milestones.map((ms, i) => {
+                  const isPendingHold = ms.isHoldGate && !ms.isCompleted;
 
-                    {/* Content */}
-                    <div className="pb-5">
-                      <div className="flex items-baseline gap-2">
-                        <span className={cn(
-                          "font-mono text-xs font-bold uppercase tracking-wider",
-                          ms.isCompleted ? "text-[#0F313A] dark:text-white" : "text-slate-400"
-                        )}>
-                          {ms.code}
-                        </span>
-                        <span className={cn(
-                          "text-sm font-semibold",
-                          ms.isCompleted ? "text-black dark:text-white" : "text-slate-400"
-                        )}>
-                          {ms.title}
-                        </span>
+                  return (
+                    <div
+                      key={ms.id}
+                      className={cn(
+                        "flex gap-4 p-3 transition-colors rounded-none border-0 shadow-none",
+                        isPendingHold ? "bg-amber-500/10 dark:bg-amber-950/30" : ""
+                      )}
+                    >
+                      {/* Timeline Indicator */}
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={cn(
+                            "w-3 h-3 rounded-full shrink-0 mt-1",
+                            ms.isCompleted
+                              ? "bg-[#0F313A] dark:bg-white"
+                              : isPendingHold
+                              ? "bg-amber-500"
+                              : "bg-slate-300 dark:bg-slate-600"
+                          )}
+                        />
+                        {i < shipment.milestones.length - 1 && (
+                          <div className="w-px flex-1 bg-slate-200 dark:bg-slate-700 my-1" />
+                        )}
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">{ms.description}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {ms.locationName} · {new Date(ms.timestamp).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+
+                      {/* Content */}
+                      <div className="pb-3 flex-1">
+                        <div className="flex items-baseline gap-2">
+                          <span
+                            className={cn(
+                              "font-mono text-xs font-bold uppercase tracking-wider",
+                              ms.isCompleted
+                                ? "text-[#0F313A] dark:text-white"
+                                : isPendingHold
+                                ? "text-amber-700 dark:text-amber-400"
+                                : "text-slate-400"
+                            )}
+                          >
+                            {ms.code}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-sm font-semibold",
+                              ms.isCompleted
+                                ? "text-black dark:text-white"
+                                : isPendingHold
+                                ? "text-amber-900 dark:text-amber-200"
+                                : "text-slate-400"
+                            )}
+                          >
+                            {ms.title}
+                          </span>
+                        </div>
+                        <p
+                          className={cn(
+                            "text-xs mt-0.5",
+                            isPendingHold
+                              ? "text-amber-800/80 dark:text-amber-300/80"
+                              : "text-slate-400"
+                          )}
+                        >
+                          {ms.description}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-xs mt-0.5",
+                            isPendingHold
+                              ? "text-amber-800/70 dark:text-amber-300/70"
+                              : "text-slate-400"
+                          )}
+                        >
+                          {ms.locationName} ·{" "}
+                          {new Date(ms.timestamp).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+
+                        {/* Action Button for Admin Hold Gate Approval */}
+                        {isPendingHold && (
+                          <div className="mt-2.5">
+                            <button
+                              type="button"
+                              onClick={() => handleApproveMilestone(ms.id)}
+                              disabled={isActionPending}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Approve &amp; Continue</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

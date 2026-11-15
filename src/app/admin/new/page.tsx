@@ -21,6 +21,11 @@ import {
   reconcileLocationOrder,
   reassignTimestamps,
 } from "@/features/routing/lib/milestoneGuards";
+import {
+  deriveShipmentStatus,
+  synchronizeWaypoints,
+  createDefaultSchedule,
+} from "@/shared/lib/shipmentLogic";
 import { Select } from "@/shared/components/select";
 import { Button } from "@/shared/components/button";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
@@ -38,16 +43,9 @@ const RouteMiniMap = dynamic(
   }
 );
 
-// Default schedule: departure tomorrow, delivery +14 days.
+// Default schedule: departure tomorrow, delivery +15 days.
 // Kept outside the component so the clock read is not evaluated during render.
-function defaultSchedule(): { departure: string; delivery: string } {
-  const departure = new Date(Date.now() + 24 * 3600 * 1000);
-  const delivery = new Date(Date.now() + 15 * 24 * 3600 * 1000);
-  return {
-    departure: departure.toISOString().slice(0, 16),
-    delivery: delivery.toISOString().slice(0, 16),
-  };
-}
+const defaultSchedule = createDefaultSchedule;
 
 export default function NewShipmentPage() {
   const [mode, setMode] = React.useState<TransportMode>("ocean");
@@ -330,9 +328,11 @@ export default function NewShipmentPage() {
 
       // Route is now in sync with the route inputs — downstream stage unlocked.
       setHasValidRoute(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Route calculation error:", err);
-      setErrorMessage(err.message || "Route calculation error");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Route calculation error"
+      );
     } finally {
       setIsCalculatingRoute(false);
     }
@@ -377,8 +377,12 @@ export default function NewShipmentPage() {
       const depDate = new Date(formState.departureDate);
       const estDelDate = new Date(formState.estimatedDeliveryDate);
 
-      // Determine initial status based on departure date
-      const initialStatus = depDate <= now ? "in_transit" : "pending";
+      // Determine initial status based on schedule
+      const initialStatus = deriveShipmentStatus(
+        formState.departureDate,
+        formState.estimatedDeliveryDate,
+        { now }
+      );
 
       // Polyline coordinates fallback
       const finalCoords =
@@ -429,8 +433,21 @@ export default function NewShipmentPage() {
         clientName: formState.clientName.trim() || null,
 
         routeCoordinates: finalCoords,
-        waypoints: waypoints,
-        milestones: milestones,
+        waypoints: synchronizeWaypoints(
+          waypoints,
+          formState.departureDate,
+          formState.estimatedDeliveryDate,
+          { now }
+        ),
+        milestones: milestones.map((m) => {
+          const mTime = new Date(m.timestamp).getTime();
+          const hasPassed = !Number.isNaN(mTime) && mTime <= now.getTime();
+          return {
+            ...m,
+            isCompleted: hasPassed,
+            isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
+          };
+        }),
 
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

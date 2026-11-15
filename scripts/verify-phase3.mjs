@@ -76,7 +76,7 @@ console.log(`${colors.bold}RILFREIGHT Milestone 3: Phase 3 Verification Engine${
 console.log(`${colors.dim}Project Root: ${projectRoot}${colors.reset}\n`);
 
 // Critical File Paths
-const PAGE_PATH = path.join(projectRoot, 'src', 'app', 'admin', 'shipments', 'new', 'page.tsx');
+const PAGE_PATH = path.join(projectRoot, 'src', 'app', 'admin', 'new', 'page.tsx');
 const API_PATH = path.join(projectRoot, 'src', 'app', 'api', 'route', 'calculate', 'route.ts');
 const MAP_PATH = path.join(projectRoot, 'src', 'features', 'routing', 'components', 'RouteMiniMap.tsx');
 const STEPPER_PATH = path.join(projectRoot, 'src', 'features', 'routing', 'components', 'CheckpointStepper.tsx');
@@ -95,7 +95,7 @@ async function runPhase3Verification() {
   // =============================================================================
   header('Suite 1: UI File Integrity & Static Code Analysis (page.tsx)');
 
-  assert(fs.existsSync(PAGE_PATH), `Route Studio page exists: src/app/admin/shipments/new/page.tsx`);
+  assert(fs.existsSync(PAGE_PATH), `Route Studio page exists: src/app/admin/new/page.tsx`);
   assert(fs.existsSync(API_PATH), `Route calculation API exists: src/app/api/route/calculate/route.ts`);
   assert(fs.existsSync(MAP_PATH), `RouteMiniMap component exists: src/features/routing/components/RouteMiniMap.tsx`);
   assert(fs.existsSync(STEPPER_PATH), `CheckpointStepper component exists: src/features/routing/components/CheckpointStepper.tsx`);

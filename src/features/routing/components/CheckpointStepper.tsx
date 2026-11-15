@@ -7,6 +7,10 @@ import { cn } from "@/shared/lib/utils";
 import AddressAutocomplete from "@/features/routing/components/AddressAutocomplete";
 import { AddMilestoneButton } from "@/shared/components/addMilestoneButton";
 import type { MilestoneIssue } from "@/features/routing/lib/milestoneGuards";
+import {
+  toLocalDatetimeInput as toLocalInput,
+  fromLocalDatetimeInput,
+} from "@/shared/lib/shipmentLogic";
 
 export interface CheckpointStepperProps {
   milestones: TrackingMilestone[];
@@ -33,19 +37,8 @@ const FIELD_LABEL =
 const ICON_BTN =
   "inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-[#0F313A]/10 hover:text-[#0F313A] disabled:pointer-events-none disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-white";
 
-/** ISO timestamp → value for a `datetime-local` input (local time). */
-function toLocalInput(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-}
-
-/** `datetime-local` value (local time) → ISO timestamp. */
 function fromLocalInput(value: string): string {
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toISOString();
+  return fromLocalDatetimeInput(value) || value;
 }
 
 export default function CheckpointStepper({

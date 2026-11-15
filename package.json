@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --no-warnings scripts/verify-shipment-logic.mjs",
     "verify:auth": "node --no-warnings scripts/verify-admin-auth.mjs",
-    "verify:shipments": "node --no-warnings scripts/verify-shipments.mjs",
     "verify:e2e": "node --no-warnings scripts/verify-e2e.mjs"
   },
   "dependencies": {
