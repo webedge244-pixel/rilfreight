@@ -212,6 +212,15 @@ export default function NewShipmentPage() {
   };
 
   /**
+   * Removes a checkpoint from the timeline.
+   */
+  const handleDeleteMilestone = (index: number) => {
+    setMilestones((prev) => {
+      return prev.filter((_, idx) => idx !== index);
+    });
+  };
+
+  /**
    * Restores a previously captured timeline — used to roll back an edit the
    * admin cancelled, including any reordering done while editing.
    */
@@ -879,6 +888,7 @@ export default function NewShipmentPage() {
               onReorder={handleReorderMilestone}
               onRestoreMilestones={handleRestoreMilestones}
               onAddMilestone={handleAddMilestone}
+              onDeleteMilestone={handleDeleteMilestone}
               mode={mode}
               issues={milestoneIssues}
             />

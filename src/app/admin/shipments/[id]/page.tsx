@@ -1347,10 +1347,11 @@ function ShipmentDetailContent() {
                       <button
                         type="button"
                         onClick={() => handleRemoveMilestone(index)}
-                        className="p-1 rounded-lg text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
-                        title="Remove milestone"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors flex items-center justify-center"
+                        title="Delete milestone"
+                        aria-label="Delete milestone"
                       >
-                        <Trash className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

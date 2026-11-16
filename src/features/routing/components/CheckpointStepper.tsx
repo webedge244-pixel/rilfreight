@@ -23,6 +23,8 @@ export interface CheckpointStepperProps {
   onRestoreMilestones?: (milestones: TrackingMilestone[]) => void;
   /** Appends a new milestone to the timeline. */
   onAddMilestone?: (milestone: TrackingMilestone) => void;
+  /** Removes a milestone from the timeline. */
+  onDeleteMilestone?: (index: number) => void;
   /** Transport mode — scopes the location lookup to the right hub pool. */
   mode?: TransportMode;
   /** Validation findings raised by the parent. */
@@ -48,6 +50,7 @@ export default function CheckpointStepper({
   onReorder,
   onRestoreMilestones,
   onAddMilestone,
+  onDeleteMilestone,
   mode = "ocean",
   issues = [],
   className = "",
@@ -345,14 +348,33 @@ export default function CheckpointStepper({
                           <span />
                         )}
 
-                        <button
-                          type="button"
-                          onClick={finishEdit}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F313A] px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:opacity-90"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                          Done
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {onDeleteMilestone && (
+                            <button
+                              type="button"
+                              aria-label="Delete checkpoint"
+                              title="Delete checkpoint"
+                              onClick={() => {
+                                finishEdit();
+                                onDeleteMilestone(idx);
+                              }}
+                              className={cn(
+                                ICON_BTN,
+                                "hover:bg-red-500/10 hover:text-[#BA1C20] dark:hover:bg-red-500/20 dark:hover:text-red-400"
+                              )}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={finishEdit}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F313A] px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Done
+                          </button>
+                        </div>
                       </div>
 
                       {editError && (
@@ -382,6 +404,20 @@ export default function CheckpointStepper({
                               className={cn(ICON_BTN, "ml-0.5")}
                             >
                               <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          {onDeleteMilestone && (
+                            <button
+                              type="button"
+                              aria-label={`Delete ${m.title}`}
+                              title="Delete checkpoint"
+                              onClick={() => onDeleteMilestone(idx)}
+                              className={cn(
+                                ICON_BTN,
+                                "hover:bg-red-500/10 hover:text-[#BA1C20] dark:hover:bg-red-500/20 dark:hover:text-red-400"
+                              )}
+                            >
+                              <X className="h-3.5 w-3.5" />
                             </button>
                           )}
                         </div>
