@@ -32,7 +32,7 @@ export function getPermittedEmails(): Set<string> {
   return new Set(
     raw
       .split(",")
-      .map((value) => value.trim().toLowerCase())
+      .map((value) => value.trim().toLowerCase().replace(/[.,;]+$/, ""))
       .filter((value) => value.length > 0)
   );
 }
