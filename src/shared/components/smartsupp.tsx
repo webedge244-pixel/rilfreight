@@ -38,6 +38,14 @@ function initSmartsupp(key: string) {
 }
 
 export function SmartsuppChat() {
+  return (
+    <React.Suspense fallback={null}>
+      <SmartsuppChatInner />
+    </React.Suspense>
+  );
+}
+
+function SmartsuppChatInner() {
   const pathname = usePathname();
   const smartsuppKey = process.env.NEXT_PUBLIC_SMARTSUPP_KEY;
 
