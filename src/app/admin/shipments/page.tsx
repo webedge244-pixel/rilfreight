@@ -23,6 +23,8 @@ import {
   ChevronDown,
   ChevronRight,
   Trash2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 
@@ -37,6 +39,16 @@ export default function ShipmentsPage() {
   const [activeTab, setActiveTab] = React.useState<TabStatus>("all");
   const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
+
+  const handleCopyCode = (code: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setToastMessage({ text: `Tracking code ${code} copied to clipboard`, type: "success" });
+      setTimeout(() => setCopiedCode(null), 2000);
+    }
+  };
 
   // Filter Dropdown State
   const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
@@ -362,12 +374,30 @@ export default function ShipmentsPage() {
             {/* Top Row: Tracking Code + Mode Pill */}
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link
-                  href={`/admin/shipments/${s.id}`}
-                  className="font-mono font-bold text-base text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
-                >
-                  {s.trackingCode}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/admin/shipments/${s.id}`}
+                    className="font-mono font-bold text-base text-black dark:text-white hover:text-[#BA1C20] transition-colors"
+                  >
+                    {s.trackingCode}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyCode(s.trackingCode);
+                    }}
+                    className="p-1 rounded-md text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center"
+                    title="Copy Tracking Code"
+                    aria-label="Copy tracking code"
+                  >
+                    {copiedCode === s.trackingCode ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
                 {s.consignmentReference && (
                   <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[200px]">
                     {s.consignmentReference}
@@ -419,10 +449,10 @@ export default function ShipmentsPage() {
             </div>
 
             {/* Bottom Actions Row */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+            <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
               <Link
                 href={`/admin/shipments/${s.id}`}
-                className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
               >
                 <span>View Details</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -432,6 +462,7 @@ export default function ShipmentsPage() {
                 onClick={() => setShipmentToDelete(s)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
                 title="Delete Shipment"
+                aria-label="Delete Shipment"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -469,12 +500,30 @@ export default function ShipmentsPage() {
               >
                 {/* Tracking Code */}
                 <td className="py-3.5 pr-4">
-                  <Link
-                    href={`/admin/shipments/${s.id}`}
-                    className="font-mono font-semibold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors block"
-                  >
-                    {s.trackingCode}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/admin/shipments/${s.id}`}
+                      className="font-mono font-semibold text-sm text-black dark:text-white hover:text-[#BA1C20] transition-colors"
+                    >
+                      {s.trackingCode}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyCode(s.trackingCode);
+                      }}
+                      className="p-1 rounded-md text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center"
+                      title="Copy Tracking Code"
+                      aria-label="Copy tracking code"
+                    >
+                      {copiedCode === s.trackingCode ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                   {s.consignmentReference && (
                     <span className="text-[11px] font-mono text-slate-400 block truncate max-w-[140px]">
                       {s.consignmentReference}
@@ -523,18 +572,23 @@ export default function ShipmentsPage() {
                 {/* Actions */}
                 <td className="py-3.5 text-right">
                   <div className="flex items-center justify-end gap-2">
+                    {/* Compact View Details */}
                     <Link
                       href={`/admin/shipments/${s.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+                      title="View Details"
                     >
-                      <span>View Details</span>
+                      <span>Details</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
+
+                    {/* Dustbin (Delete) */}
                     <button
                       type="button"
                       onClick={() => setShipmentToDelete(s)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#BA1C20] hover:bg-[#BA1C20]/10 transition-colors"
                       title="Delete Shipment"
+                      aria-label="Delete Shipment"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

@@ -46,6 +46,7 @@ import {
   Plus,
   Trash,
   Save,
+  Copy,
 } from "lucide-react";
 
 // SSR-safe dynamic import for the MapLibre GL vector map
@@ -121,6 +122,16 @@ function ShipmentDetailContent() {
   const [exceptionReasonPreset, setExceptionReasonPreset] =
     React.useState<string>(EXCEPTION_PRESETS[0]);
   const [customExceptionReason, setCustomExceptionReason] = React.useState("");
+  const [copiedTrackingCode, setCopiedTrackingCode] = React.useState<boolean>(false);
+
+  const handleCopyTrackingCode = (code: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      setCopiedTrackingCode(true);
+      setToastMessage({ text: `Tracking code ${code} copied to clipboard`, type: "success" });
+      setTimeout(() => setCopiedTrackingCode(false), 2000);
+    }
+  };
 
   // Live listener — the record is pushed to the client whenever it changes.
   React.useEffect(() => {
@@ -712,9 +723,24 @@ function ShipmentDetailContent() {
         {/* Header Details & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-black dark:text-white font-mono">
-              {shipment.trackingCode}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-black dark:text-white font-mono">
+                {shipment.trackingCode}
+              </h1>
+              <button
+                type="button"
+                onClick={() => handleCopyTrackingCode(shipment.trackingCode)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center"
+                title="Copy Tracking Code"
+                aria-label="Copy tracking code"
+              >
+                {copiedTrackingCode ? (
+                  <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <Copy className="w-5 h-5" />
+                )}
+              </button>
+            </div>
             <div className="flex items-center gap-3 mt-2">
               {/* Red customs_hold tag removed per user requirement */}
               {!shipment.isPaused && shipment.status !== "customs_hold" && (
