@@ -628,8 +628,17 @@ function ShipmentDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="py-24 text-center text-sm text-slate-400">
-        Loading shipment record...
+      <div className="space-y-6 animate-pulse">
+        <div className="h-28 rounded-3xl bg-slate-100 dark:bg-slate-900" />
+        <div className="h-[280px] sm:h-[360px] rounded-2xl bg-slate-900 flex items-center justify-center">
+          <span className="text-sm text-slate-400 font-semibold font-mono">
+            Initializing Vector Route Map...
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-900 md:col-span-2" />
+          <div className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-900" />
+        </div>
       </div>
     );
   }

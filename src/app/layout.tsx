@@ -28,6 +28,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://tiles.openfreemap.org" />
         <script
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('rilfreight_theme');if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}`,

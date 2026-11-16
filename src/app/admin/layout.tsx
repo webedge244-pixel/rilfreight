@@ -10,6 +10,18 @@ import {
 } from "@/features/auth/AdminAuthProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  React.useEffect(() => {
+    // Preload map bundles during idle time so /admin/new and /admin/shipments/[id] mount instantly
+    if (typeof window !== "undefined") {
+      const schedule =
+        window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 300));
+      schedule(() => {
+        void import("@/features/tracking/components/LiveTrackingMapLibre");
+        void import("@/features/routing/components/RouteMiniMapLibre");
+      });
+    }
+  }, []);
+
   return (
     <React.Suspense fallback={<div className="min-h-screen bg-[#F0F2F5] dark:bg-[#07090A]" />}>
       <AdminLayoutInner>{children}</AdminLayoutInner>

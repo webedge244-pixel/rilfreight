@@ -23,6 +23,7 @@ export const ALTERNATE_MAP_STYLES = {
 // In-memory cache for transformed English vector style JSON
 let cachedEnglishStyle: StyleSpecification | null = null;
 let fetchingPromise: Promise<StyleSpecification> | null = null;
+const STYLE_CACHE_KEY = "rilfreight_english_map_style_v1";
 
 /**
  * Rewrites any vector style JSON so that all text labels strictly prioritize
@@ -56,13 +57,26 @@ export function enforceEnglishStyle(rawStyle: StyleSpecification): StyleSpecific
 
 /**
  * Loads the active vector style and applies the English language filter.
- * Results are cached in-memory for instant subsequent renders.
+ * Results are cached in localStorage and in-memory for instant 0ms renders.
  */
 export async function getEnglishMapStyle(
   styleUrl: string = DEFAULT_MAP_STYLE_URL
 ): Promise<StyleSpecification> {
   if (cachedEnglishStyle) {
     return cachedEnglishStyle;
+  }
+
+  // Check localStorage for instant 0ms startup
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STYLE_CACHE_KEY);
+      if (stored) {
+        cachedEnglishStyle = JSON.parse(stored) as StyleSpecification;
+        return cachedEnglishStyle;
+      }
+    } catch {
+      // Fall through to network fetch if storage is inaccessible
+    }
   }
 
   if (fetchingPromise) {
@@ -77,6 +91,13 @@ export async function getEnglishMapStyle(
       }
       const rawStyle = (await response.json()) as StyleSpecification;
       cachedEnglishStyle = enforceEnglishStyle(rawStyle);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(STYLE_CACHE_KEY, JSON.stringify(cachedEnglishStyle));
+        } catch {
+          // Ignore localStorage quota errors
+        }
+      }
       return cachedEnglishStyle;
     } catch (error) {
       console.warn("Could not transform vector map style, using direct URL fallback:", error);
