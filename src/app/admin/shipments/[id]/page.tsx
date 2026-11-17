@@ -12,7 +12,6 @@ import {
 } from "@/shared/lib/firebase";
 import {
   releaseShipmentGate,
-  triggerShipmentException,
   evaluateShipmentProgression,
 } from "@/features/tracking/services/trackingService";
 import {
@@ -64,26 +63,6 @@ const LiveTrackingMap = dynamic(
   }
 );
 
-/**
- * Preset operational reasons for a hold gate.
- */
-const EXCEPTION_PRESETS = [
-  "Customs Inspection Hold Gate",
-  "Port Congestion Dwell Hold",
-  "Severe Typhoon Warning — Vessel Anchored",
-  "Mechanical Conveyance Inspection",
-  "Border Transit Security Verification",
-];
-
-/**
- * Human readable label for where a shipment currently sits.
- */
-function currentLocationLabel(shipment: Shipment): string {
-  const completed = (shipment.waypoints || []).filter((w) => w.isCompleted);
-  const last = completed[completed.length - 1];
-  return last?.name || shipment.originName || "In transit";
-}
-
 /** Auto-adjusts milestone timestamps and completion status to fit between departure and estimated delivery */
 function autoRegulateMilestoneTimestamps(
   milestones: TrackingMilestone[],
@@ -114,14 +93,8 @@ function ShipmentDetailContent() {
 
   const [isActionPending, setIsActionPending] = React.useState<boolean>(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
-  const [showExceptionForm, setShowExceptionForm] = React.useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
   const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-  const [exceptionStatusType, setExceptionStatusType] =
-    React.useState<ShipmentStatus>("customs_hold");
-  const [exceptionReasonPreset, setExceptionReasonPreset] =
-    React.useState<string>(EXCEPTION_PRESETS[0]);
-  const [customExceptionReason, setCustomExceptionReason] = React.useState("");
   const [copiedTrackingCode, setCopiedTrackingCode] = React.useState<boolean>(false);
 
   const handleCopyTrackingCode = (code: string) => {
@@ -193,7 +166,6 @@ function ShipmentDetailContent() {
       const released = releaseShipmentGate(shipment);
       await replaceShipmentRecord(shipment.id, released);
       setShipment(released);
-      setShowExceptionForm(false);
     } catch (error) {
       console.error("Failed to release hold gate:", error);
       setActionError("Could not release the hold gate. Please try again.");
@@ -241,36 +213,6 @@ function ShipmentDetailContent() {
     } catch (error) {
       console.error("Failed to advance milestone:", error);
       setActionError("Could not advance milestone. Please try again.");
-    } finally {
-      setIsActionPending(false);
-    }
-  };
-
-  const handlePause = async () => {
-    if (!shipment) return;
-
-    setIsActionPending(true);
-    setActionError(null);
-
-    const reason = customExceptionReason.trim() || exceptionReasonPreset;
-
-    try {
-      const paused = triggerShipmentException(
-        shipment,
-        reason,
-        exceptionStatusType
-      );
-
-      await replaceShipmentRecord(shipment.id, {
-        ...paused,
-        pausedLocationName: currentLocationLabel(shipment),
-      });
-
-      setShowExceptionForm(false);
-      setCustomExceptionReason("");
-    } catch (error) {
-      console.error("Failed to trigger exception:", error);
-      setActionError("Could not place the shipment on hold. Please try again.");
     } finally {
       setIsActionPending(false);
     }
@@ -776,28 +718,16 @@ function ShipmentDetailContent() {
               </button>
             )}
 
-            {shipment.status !== "delivered" && (
-              shipment.isPaused ? (
-                <button
-                  type="button"
-                  onClick={handleResume}
-                  disabled={isActionPending}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
-                >
-                  <PlayCircle className="w-4 h-4" />
-                  <span>{isActionPending ? "Resuming..." : "Resume Tracking"}</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowExceptionForm((open) => !open)}
-                  disabled={isActionPending}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
-                >
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Pause / Hold Gate</span>
-                </button>
-              )
+            {shipment.status !== "delivered" && shipment.isPaused && (
+              <button
+                type="button"
+                onClick={handleResume}
+                disabled={isActionPending}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
+              >
+                <PlayCircle className="w-4 h-4" />
+                <span>{isActionPending ? "Resuming..." : "Resume Tracking"}</span>
+              </button>
             )}
           </div>
         </div>
@@ -1480,100 +1410,6 @@ function ShipmentDetailContent() {
            REGULAR SHIPMENT DETAIL VIEW
            ════════════════════════════════════════════════════════════ */
         <>
-          {/* Hold Gate Form */}
-          {showExceptionForm && !shipment.isPaused && (
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 mb-6 space-y-5">
-              <div>
-                <h2 className="text-sm font-semibold text-black dark:text-white">
-                  Place Shipment On Hold
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  The live position is frozen and the hold reason is published to the tracking timeline.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Exception Category
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setExceptionStatusType("customs_hold")}
-                    className={cn(
-                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-colors",
-                      exceptionStatusType === "customs_hold"
-                        ? "bg-[#0F313A] text-white"
-                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    )}
-                  >
-                    Customs Hold Gate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setExceptionStatusType("weather_delay")}
-                    className={cn(
-                      "p-3 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-colors",
-                      exceptionStatusType === "weather_delay"
-                        ? "bg-[#BA1C20] text-white"
-                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    )}
-                  >
-                    Weather / Route Delay
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Preset Reason
-                </label>
-                <select
-                  value={exceptionReasonPreset}
-                  onChange={(e) => setExceptionReasonPreset(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
-                >
-                  {EXCEPTION_PRESETS.map((preset) => (
-                    <option key={preset} value={preset}>
-                      {preset}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Custom Operational Note (Optional)
-                </label>
-                <textarea
-                  value={customExceptionReason}
-                  onChange={(e) => setCustomExceptionReason(e.target.value)}
-                  placeholder="Specify custom reason or operational instructions..."
-                  rows={2}
-                  className="w-full px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowExceptionForm(false)}
-                  className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePause}
-                  disabled={isActionPending}
-                  className="px-6 py-2.5 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
-                >
-                  {isActionPending ? "Applying..." : "Confirm & Place On Hold"}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Bento Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
 
@@ -1808,7 +1644,7 @@ function ShipmentDetailContent() {
                                 <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                               </button>
                               <span className="text-[11px] text-slate-400 font-medium">
-                                {ms.isHoldGate ? "Mark complete & hold" : "Mark complete & proceed to next"}
+                                {ms.isHoldGate ? "Mark complete & hold" : "Mark as Completed"}
                               </span>
                             </div>
                           )}
