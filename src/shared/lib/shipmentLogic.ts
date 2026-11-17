@@ -320,29 +320,44 @@ export function approveMilestoneHold(
   if (targetIndex === -1) return shipment;
 
   const targetMilestone = milestones[targetIndex];
+  const targetTimeMs = new Date(targetMilestone.timestamp).getTime();
 
-  // Mark the held milestone completed and clear the hold gate flag
+  // 1. Calculate the exact elapsed pause duration
+  const pausedAtMs = shipment.pausedAtTimestamp
+    ? new Date(shipment.pausedAtTimestamp).getTime()
+    : targetTimeMs;
+  const pausedDurationMs = Math.max(0, nowMs - pausedAtMs);
+
+  // 2. Mark the held milestone completed and clear the hold gate flag
   milestones[targetIndex] = {
     ...targetMilestone,
     isCompleted: true,
+    status: "completed",
     isHoldGate: false,
   };
 
-  // If next milestone exists, ensure it and subsequent milestones maintain their gaps from nowMs or existing schedule
-  let cascadedMilestones = milestones;
-  if (targetIndex < milestones.length - 1) {
-    const nextOriginalMs = new Date(milestones[targetIndex + 1].timestamp).getTime();
-    const nextStartMs = !Number.isNaN(nextOriginalMs) ? Math.max(nowMs, nextOriginalMs) : nowMs;
-    cascadedMilestones = cascadeMilestoneGaps(milestones, targetIndex + 1, nextStartMs, {
-      outputFormat: "iso",
-    });
-  }
+  // 3. Displace all subsequent uncompleted milestones forward by pausedDurationMs
+  const shiftedMilestones = milestones.map((m, idx) => {
+    if (idx <= targetIndex) {
+      return m; // Historical completed milestones remain untouched
+    }
+    const origMs = new Date(m.timestamp).getTime();
+    const newMs = !Number.isNaN(origMs) ? origMs + pausedDurationMs : origMs;
+    return {
+      ...m,
+      timestamp: new Date(newMs).toISOString(),
+      isCompleted: false,
+      status: "pending",
+    };
+  });
 
-  // Update estimated delivery date to match the final milestone's recalculated timestamp
-  const finalMilestone = cascadedMilestones[cascadedMilestones.length - 1];
-  const newDelMs = finalMilestone
-    ? new Date(finalMilestone.timestamp).getTime()
-    : Math.max(nowMs + 24 * 3600 * 1000, new Date(shipment.estimatedDeliveryDate).getTime());
+  // 4. Displace estimated delivery date by the same paused duration
+  const origDelMs = new Date(shipment.estimatedDeliveryDate).getTime();
+  const newDelMs = !Number.isNaN(origDelMs)
+    ? origDelMs + pausedDurationMs
+    : (shiftedMilestones[shiftedMilestones.length - 1]
+        ? new Date(shiftedMilestones[shiftedMilestones.length - 1].timestamp).getTime()
+        : nowMs);
 
   const progressRatio = newDelMs > depMs ? Math.min(1, Math.max(0, (nowMs - depMs) / (newDelMs - depMs))) : 0;
   const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
@@ -350,7 +365,8 @@ export function approveMilestoneHold(
     return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
   });
 
-  const allCompleted = cascadedMilestones.every((m) => m.isCompleted);
+  const allCompleted = shiftedMilestones.every((m) => m.isCompleted);
+  const accumulatedPausedMs = (shipment.totalPausedDurationMs || 0) + pausedDurationMs;
 
   return {
     ...shipment,
@@ -359,9 +375,10 @@ export function approveMilestoneHold(
     pausedLocationName: null,
     pausedAtTimestamp: null,
     pausedCoordinates: null,
+    totalPausedDurationMs: accumulatedPausedMs,
     status: allCompleted ? "delivered" : "in_transit",
     estimatedDeliveryDate: new Date(newDelMs).toISOString(),
-    milestones: cascadedMilestones,
+    milestones: shiftedMilestones,
     waypoints: updatedWaypoints,
     updatedAt: new Date(nowMs).toISOString(),
   };
@@ -490,23 +507,37 @@ export function advanceMilestoneImmediately(
   const targetIndex = originalMilestones.findIndex((m) => m.id === milestoneId);
   if (targetIndex === -1) return shipment;
 
+  const targetMilestone = originalMilestones[targetIndex];
+  const targetIsHoldGate = Boolean(targetMilestone?.isHoldGate);
+
   // 1. Cascade all downstream milestone gaps starting from targetIndex at nowMs
   const cascaded = cascadeMilestoneGaps(originalMilestones, targetIndex, nowMs, {
     outputFormat: "iso",
   });
 
-  // 2. Mark target milestone and any preceding milestones completed immediately
+  // 2. Mark preceding milestones completed.
+  // If the target milestone is a hold gate, it holds at nowMs until admin approves.
   const updatedMilestones = cascaded.map((m, idx) => {
-    if (idx <= targetIndex) {
+    if (idx < targetIndex) {
       return {
         ...m,
         isCompleted: true,
+        status: "completed",
         isHoldGate: false,
+      };
+    }
+    if (idx === targetIndex) {
+      return {
+        ...m,
+        isCompleted: targetIsHoldGate ? false : true,
+        status: targetIsHoldGate ? "pending" : "completed",
+        isHoldGate: targetIsHoldGate,
       };
     }
     return {
       ...m,
       isCompleted: false,
+      status: "pending",
     };
   });
 
@@ -522,6 +553,24 @@ export function advanceMilestoneImmediately(
     const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
     return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
   });
+
+  // If this target milestone was flagged as a hold gate, engage the hold gate at this checkpoint
+  if (targetIsHoldGate) {
+    return {
+      ...shipment,
+      isPaused: true,
+      status: "customs_hold",
+      pausedReason: targetMilestone.description || "Awaiting administrative clearance",
+      pausedLocationName: targetMilestone.locationName || null,
+      pausedCoordinates: targetMilestone.coordinates || null,
+      pausedAtTimestamp: new Date(nowMs).toISOString(),
+      estimatedDeliveryDate: new Date(newDelMs).toISOString(),
+      actualDeliveryDate: null,
+      milestones: updatedMilestones,
+      waypoints: updatedWaypoints,
+      updatedAt: new Date(nowMs).toISOString(),
+    };
+  }
 
   return {
     ...shipment,

@@ -192,6 +192,7 @@ function ShipmentDetailContent() {
     try {
       const released = releaseShipmentGate(shipment);
       await replaceShipmentRecord(shipment.id, released);
+      setShipment(released);
       setShowExceptionForm(false);
     } catch (error) {
       console.error("Failed to release hold gate:", error);
@@ -541,31 +542,24 @@ function ShipmentDetailContent() {
       const estDelDate = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || shipment.estimatedDeliveryDate);
       const nowMs = now.getTime();
 
-      // Determine status from schedule like /new (unless actively paused on hold)
+      // Determine status fresh from schedule like /new with zero stale past status
       const determinedStatus = deriveShipmentStatus(
         depDate,
         estDelDate,
-        {
-          isPaused: editFormData.isPaused,
-          currentStatus: editFormData.status,
-          now: nowMs,
-        }
+        { now: nowMs }
       );
 
-      // Timeline checkpoints: "The one that has passed has passed"
-      // If a milestone's timestamp is in the past, it marks completed immediately with no hold gate.
-      // If it is in the future, it preserves the admin's hold gate flag.
+      // Timeline checkpoints: Wipe out past completion and re-evaluate strictly from timestamps
       const formattedMilestones: TrackingMilestone[] = editMilestones.map((m) => {
         const rawTime = fromLocalInput(m.timestamp) || m.timestamp;
         const mTime = new Date(rawTime).getTime();
-        const hasPassed = !isNaN(mTime) && mTime <= nowMs;
-        const isCompleted = hasPassed;
-        const isHoldGate = hasPassed ? false : Boolean(m.isHoldGate);
+        const hasPassed = !Number.isNaN(mTime) && mTime <= nowMs;
         return {
           ...m,
           timestamp: rawTime,
-          isCompleted,
-          isHoldGate,
+          isCompleted: hasPassed,
+          status: hasPassed ? "completed" : "pending",
+          isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
         };
       });
 
@@ -582,12 +576,12 @@ function ShipmentDetailContent() {
         status: determinedStatus,
         departureDate: depDate.toISOString(),
         estimatedDeliveryDate: estDelDate.toISOString(),
-        actualDeliveryDate: determinedStatus === "delivered" ? (fromLocalInput(editFormData.actualDeliveryDate) || new Date().toISOString()) : null,
-        isPaused: editFormData.isPaused,
-        pausedReason: editFormData.isPaused ? editFormData.pausedReason.trim() || null : null,
-        pausedLocationName: editFormData.isPaused ? editFormData.pausedLocationName.trim() || null : null,
-        pausedAtTimestamp: editFormData.isPaused ? shipment.pausedAtTimestamp || new Date().toISOString() : null,
-        pausedCoordinates: editFormData.isPaused ? shipment.pausedCoordinates || null : null,
+        actualDeliveryDate: determinedStatus === "delivered" ? (fromLocalInput(editFormData.actualDeliveryDate) || now.toISOString()) : null,
+        isPaused: false,
+        pausedReason: null,
+        pausedLocationName: null,
+        pausedAtTimestamp: null,
+        pausedCoordinates: null,
         originName: editFormData.originName,
         originCode: editFormData.originCode,
         originCountry: editFormData.originCountry,
@@ -1809,12 +1803,12 @@ function ShipmentDetailContent() {
                                 onClick={() => handleAdvanceMilestone(ms.id)}
                                 disabled={isActionPending}
                                 className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-[#0F313A] dark:hover:border-white flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#0F313A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                                title="Mark checkpoint complete & move to next"
+                                title={ms.isHoldGate ? "Mark checkpoint complete & hold" : "Mark checkpoint complete & move to next"}
                               >
                                 <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                               </button>
                               <span className="text-[11px] text-slate-400 font-medium">
-                                Mark complete &amp; proceed to next
+                                {ms.isHoldGate ? "Mark complete & hold" : "Mark complete & proceed to next"}
                               </span>
                             </div>
                           )}

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { Shipment, TrackingMilestone } from "@/shared/types";
-import { Check, AlertCircle } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 export interface TrackingTimelineProps {
@@ -80,7 +80,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
         {visibleMilestones.map((m: TrackingMilestone, idx: number) => {
           const isCompleted = m.isCompleted;
           const isActive = m.id === milestones[activeMilestoneIndex]?.id && !isCompleted;
-          const isPausedHere = isActive && (shipment.isPaused || Boolean(m.isHoldGate));
           const last = idx === visibleMilestones.length - 1;
 
           const dateStr = m.timestamp
@@ -104,8 +103,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                   "absolute -left-7 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] font-bold transition-colors",
                   isCompleted
                     ? "border-emerald-500 bg-emerald-500 text-white"
-                    : isPausedHere
-                    ? "border-amber-500 bg-amber-500 text-white ring-2 ring-amber-400/30"
                     : isActive
                     ? "border-[#0F313A] bg-[#0F313A] text-white dark:border-white dark:bg-white dark:text-black ring-2 ring-sky-400/30"
                     : "border-slate-300 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500"
@@ -113,8 +110,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
               >
                 {isCompleted ? (
                   <Check className="h-3 w-3 stroke-[3]" />
-                ) : isPausedHere ? (
-                  <AlertCircle className="h-3 w-3 stroke-[2.5]" />
                 ) : (
                   <span className="w-1.5 h-1.5 rounded-full bg-current" />
                 )}
@@ -153,28 +148,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                       </span>
                     </>
                   ) : null}
-
-                  {m.isHoldGate && (
-                    <>
-                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
-                      <span
-                        className={cn(
-                          "px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider",
-                          isCompleted
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : isPausedHere
-                            ? "text-amber-600 dark:text-amber-400 font-extrabold"
-                            : "text-slate-400"
-                        )}
-                      >
-                        {isCompleted
-                          ? "Cleared"
-                          : isPausedHere
-                          ? "Held"
-                          : "Hold Gate"}
-                      </span>
-                    </>
-                  )}
                 </div>
 
                 {/* Location Name */}
@@ -189,19 +162,6 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                   <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                     {m.description}
                   </p>
-                )}
-
-                {/* Paused alert on active milestone */}
-                {isPausedHere && (
-                  <div className="mt-2.5 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-xs text-amber-900 dark:text-amber-200">
-                    <p className="font-bold flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                      Held at Customs / Checkpoint Hold
-                    </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300/90">
-                      {shipment.pausedReason || "Awaiting mandatory customs entry inspection and customs clearance release."}
-                    </p>
-                  </div>
                 )}
               </div>
             </div>

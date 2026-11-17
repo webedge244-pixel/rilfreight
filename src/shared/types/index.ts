@@ -164,6 +164,7 @@ export interface Shipment {
   pausedLocationName: string | null;
   pausedCoordinates: [number, number] | null;
   pausedReason: string | null;
+  totalPausedDurationMs?: number;
 
   // Cargo Specifications
   conveyanceName: string; // Vessel name, Flight No, or Train ID

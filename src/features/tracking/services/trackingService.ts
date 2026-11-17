@@ -1,4 +1,5 @@
 import type { Shipment, ShipmentStatus, TrackingMilestone } from "@/shared/types";
+import { approveMilestoneHold } from "@/shared/lib/shipmentLogic";
 
 export interface PolylinePartitionResult {
   completedPolyline: [number, number][];
@@ -172,30 +173,32 @@ export function partitionRoutePolyline(
 
 /**
  * Quick Action 1: "Release Gate"
- * Unpauses the shipment, resolves active hold gates to completed, sets status to 'in_transit',
- * and clears pause fields. Returns the clean updated Shipment object.
+ * Unpauses the shipment, resolves active hold gates to completed, displaces all subsequent
+ * milestones by the elapsed paused duration, sets status to 'in_transit', and clears pause fields.
+ * Returns the clean updated Shipment object.
  */
-export function releaseShipmentGate(shipment: Shipment): Shipment {
-  const updatedMilestones = (shipment.milestones || []).map((m) => {
-    if (m.isHoldGate && !m.isCompleted) {
-      return { ...m, isCompleted: true, status: "completed" };
-    }
-    return m;
-  });
+export function releaseShipmentGate(
+  shipment: Shipment,
+  now: number | Date = Date.now()
+): Shipment {
+  const nowMs = typeof now === "number" ? now : new Date(now).getTime();
+  const milestones = shipment.milestones || [];
+  const activeHoldIdx = milestones.findIndex((m) => m.isHoldGate && !m.isCompleted);
+  const targetIdx = activeHoldIdx !== -1 ? activeHoldIdx : milestones.findIndex((m) => !m.isCompleted);
 
-  const updated: Shipment = {
+  if (targetIdx !== -1) {
+    return approveMilestoneHold(shipment, milestones[targetIdx].id, nowMs);
+  }
+
+  return {
     ...shipment,
     isPaused: false,
-    status: "in_transit",
     pausedReason: null,
     pausedAtTimestamp: null,
     pausedCoordinates: null,
     pausedLocationName: null,
-    milestones: updatedMilestones,
-    updatedAt: new Date().toISOString(),
+    updatedAt: new Date(nowMs).toISOString(),
   };
-
-  return updated;
 }
 
 /**
