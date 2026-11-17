@@ -237,44 +237,45 @@ export function evaluateShipmentProgression(
     return { updatedShipment: shipment, hasChanged: false };
   }
 
-  // Check if we hit an active uncompleted hold gate whose scheduled time has arrived
-  const activeHoldGate = shipment.milestones.find(
-    (m) => m.isHoldGate && !m.isCompleted && new Date(m.timestamp).getTime() <= now
-  );
+  let hasChanged = false;
+  const updatedMilestones = [...shipment.milestones];
+  let hitHoldGate: TrackingMilestone | null = null;
 
-  if (activeHoldGate) {
-    const coords = activeHoldGate.coordinates || getLiveShipmentCoordinates(shipment, now);
+  for (let i = 0; i < updatedMilestones.length; i++) {
+    const m = updatedMilestones[i];
+    if (m.isCompleted) continue;
+
+    const mTime = new Date(m.timestamp).getTime();
+    if (isNaN(mTime) || mTime > now) {
+      break; // Sequential schedule: stop at the first milestone whose time has not arrived
+    }
+
+    if (m.isHoldGate) {
+      hitHoldGate = m;
+      break; // Hit active hold gate whose time arrived: pause pipeline here
+    }
+
+    updatedMilestones[i] = { ...m, isCompleted: true, status: "completed" };
+    hasChanged = true;
+  }
+
+  if (hitHoldGate) {
+    const coords = hitHoldGate.coordinates || getLiveShipmentCoordinates(shipment, now);
     return {
       updatedShipment: {
         ...shipment,
         isPaused: true,
         status: "customs_hold",
-        pausedReason: activeHoldGate.description || "Awaiting administrative clearance",
-        pausedLocationName: activeHoldGate.locationName || null,
+        pausedReason: hitHoldGate.description || "Awaiting administrative clearance",
+        pausedLocationName: hitHoldGate.locationName || null,
         pausedCoordinates: coords || null,
         pausedAtTimestamp: new Date(now).toISOString(),
         updatedAt: new Date(now).toISOString(),
+        milestones: updatedMilestones,
       },
       hasChanged: true,
     };
   }
-
-  let hasChanged = false;
-
-  const updatedMilestones = shipment.milestones.map((m) => {
-    // An unapproved hold gate must NEVER auto-complete on refresh or progression
-    if (m.isHoldGate && !m.isCompleted) return m;
-
-    const milestoneTime = new Date(m.timestamp).getTime();
-    if (isNaN(milestoneTime)) return m;
-
-    const shouldBeCompleted = milestoneTime <= now;
-    if (m.isCompleted !== shouldBeCompleted) {
-      hasChanged = true;
-      return { ...m, isCompleted: shouldBeCompleted };
-    }
-    return m;
-  });
 
   const start = new Date(shipment.departureDate).getTime();
   const end = new Date(shipment.estimatedDeliveryDate).getTime();

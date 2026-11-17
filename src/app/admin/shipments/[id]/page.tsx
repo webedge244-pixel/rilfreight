@@ -1531,10 +1531,11 @@ function ShipmentDetailContent() {
                   return shipment.milestones.map((ms, i) => {
                     const mTime = new Date(ms.timestamp).getTime();
                     const hasReachedTime = !isNaN(mTime) && mTime <= nowMs;
-                    // Only show amber design and approval button if hold gate is flagged, milestone is not completed, AND its scheduled time has arrived (or shipment is paused)
-                    const isPendingHold = Boolean(ms.isHoldGate) && !ms.isCompleted && (hasReachedTime || Boolean(shipment.isPaused));
-                    // Active playing milestone: must be the first uncompleted milestone, NOT waiting on hold gate approval, shipment not paused, and shipment not delivered
-                    const isActivePlaying = i === activeMilestoneIndex && !isPendingHold && !shipment.isPaused && shipment.status !== "delivered";
+                    const isCurrentActive = i === activeMilestoneIndex;
+                    // Hold gate is pending approval ONLY for the currently active milestone if it has reached its scheduled time or shipment is paused
+                    const isPendingHold = isCurrentActive && Boolean(ms.isHoldGate) && !ms.isCompleted && (hasReachedTime || Boolean(shipment.isPaused));
+                    // Active playing milestone: currently active, not held, shipment not paused, and not delivered
+                    const isActivePlaying = isCurrentActive && !isPendingHold && !shipment.isPaused && shipment.status !== "delivered";
 
                     return (
                       <div
