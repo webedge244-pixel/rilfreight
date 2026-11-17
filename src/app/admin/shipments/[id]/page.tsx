@@ -362,64 +362,89 @@ function ShipmentDetailContent() {
     baselineMilestoneRef.current = null;
   };
 
-  const commitDepartureShift = () => {
-    const prevStr = baselineDepartureRef.current;
-    const newStr = editFormData.departureDate;
-    if (!newStr) {
-      baselineDepartureRef.current = null;
+  // Reactive Delivery Date change: shifts Departure Date and refactors all milestones
+  const applyDeliveryShift = (newDeliveryStr: string) => {
+    if (!newDeliveryStr) {
+      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: newDeliveryStr }));
       return;
     }
 
-    const oldMs = new Date(fromLocalInput(prevStr || "") || prevStr || "").getTime();
-    const newMs = new Date(fromLocalInput(newStr) || newStr).getTime();
-
-    if (!Number.isNaN(newMs) && (Number.isNaN(oldMs) || newMs !== oldMs)) {
-      setEditMilestones((prev) => {
-        if (!prev || prev.length === 0) return prev;
-        const updated = cascadeMilestoneGaps(prev, 0, newStr, {
-          outputFormat: "local",
-        });
-        snapshotMilestonesRef.current = updated;
-        const lastMs = updated[updated.length - 1]?.timestamp;
-        if (lastMs) {
-          const isFuture = new Date(fromLocalInput(lastMs) || lastMs).getTime() > Date.now();
-          setEditFormData((fd) => ({
-            ...fd,
-            estimatedDeliveryDate: lastMs,
-            status: isFuture && fd.status === "delivered" ? "in_transit" : fd.status,
-            actualDeliveryDate: isFuture ? "" : fd.actualDeliveryDate,
-          }));
-        }
-        return updated;
-      });
+    const newDelMs = new Date(fromLocalInput(newDeliveryStr) || newDeliveryStr).getTime();
+    if (Number.isNaN(newDelMs)) {
+      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: newDeliveryStr }));
+      return;
     }
-    baselineDepartureRef.current = null;
+
+    const curDepMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
+    const curDelMs = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || editFormData.estimatedDeliveryDate).getTime();
+
+    let durationMs = 14 * 24 * 3600 * 1000;
+    if (!Number.isNaN(curDepMs) && !Number.isNaN(curDelMs) && curDelMs > curDepMs) {
+      durationMs = curDelMs - curDepMs;
+    }
+
+    const newDepMs = newDelMs - durationMs;
+    const newDepStr = toLocalInput(new Date(newDepMs));
+    const isFuture = newDelMs > Date.now();
+
+    setEditFormData((prev) => ({
+      ...prev,
+      estimatedDeliveryDate: newDeliveryStr,
+      departureDate: newDepStr,
+      status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
+      actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
+    }));
+
+    setEditMilestones((prev) => {
+      const regulated = autoRegulateMilestoneTimestamps(prev, newDepStr, newDeliveryStr);
+      snapshotMilestonesRef.current = regulated;
+      return regulated;
+    });
   };
 
-  const commitDeliveryShift = () => {
-    const newStr = editFormData.estimatedDeliveryDate;
-    if (!newStr) {
-      baselineDeliveryRef.current = null;
+  // Reactive Departure Date change: delivery date unchanged unless logic error (departure >= delivery)
+  const applyDepartureShift = (newDepartureStr: string) => {
+    if (!newDepartureStr) {
+      setEditFormData((prev) => ({ ...prev, departureDate: newDepartureStr }));
       return;
     }
 
-    const depMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
-    const newDelMs = new Date(fromLocalInput(newStr) || newStr).getTime();
-
-    if (!Number.isNaN(depMs) && !Number.isNaN(newDelMs) && newDelMs > depMs) {
-      const isFuture = newDelMs > Date.now();
-      setEditFormData((fd) => ({
-        ...fd,
-        status: isFuture && fd.status === "delivered" ? "in_transit" : fd.status,
-        actualDeliveryDate: isFuture ? "" : fd.actualDeliveryDate,
-      }));
-      setEditMilestones((prev) => {
-        const regulated = autoRegulateMilestoneTimestamps(prev, editFormData.departureDate, newStr);
-        snapshotMilestonesRef.current = regulated;
-        return regulated;
-      });
+    const newDepMs = new Date(fromLocalInput(newDepartureStr) || newDepartureStr).getTime();
+    if (Number.isNaN(newDepMs)) {
+      setEditFormData((prev) => ({ ...prev, departureDate: newDepartureStr }));
+      return;
     }
-    baselineDeliveryRef.current = null;
+
+    const curDelMs = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || editFormData.estimatedDeliveryDate).getTime();
+    let effectiveDelStr = editFormData.estimatedDeliveryDate;
+    let effectiveDelMs = curDelMs;
+
+    // Date logic self-correction: if departure >= delivery, push delivery forward
+    if (Number.isNaN(curDelMs) || newDepMs >= curDelMs) {
+      const curDepMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
+      let durationMs = 7 * 24 * 3600 * 1000;
+      if (!Number.isNaN(curDepMs) && !Number.isNaN(curDelMs) && curDelMs > curDepMs) {
+        durationMs = curDelMs - curDepMs;
+      }
+      effectiveDelMs = newDepMs + durationMs;
+      effectiveDelStr = toLocalInput(new Date(effectiveDelMs));
+    }
+
+    const isFuture = effectiveDelMs > Date.now();
+
+    setEditFormData((prev) => ({
+      ...prev,
+      departureDate: newDepartureStr,
+      estimatedDeliveryDate: effectiveDelStr,
+      status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
+      actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
+    }));
+
+    setEditMilestones((prev) => {
+      const regulated = autoRegulateMilestoneTimestamps(prev, newDepartureStr, effectiveDelStr);
+      snapshotMilestonesRef.current = regulated;
+      return regulated;
+    });
   };
 
   const handleAddMilestone = () => {
@@ -902,16 +927,18 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.departureDate}
-                    onFocus={() => {
-                      baselineDepartureRef.current = editFormData.departureDate;
-                    }}
                     onChange={(e) => {
-                      setEditFormData((prev) => ({
-                        ...prev,
-                        departureDate: e.target.value,
-                      }));
+                      const val = e.target.value;
+                      setEditFormData((prev) => ({ ...prev, departureDate: val }));
+                      if (val && !Number.isNaN(new Date(val).getTime())) {
+                        applyDepartureShift(val);
+                      }
                     }}
-                    onBlur={commitDepartureShift}
+                    onBlur={() => {
+                      if (editFormData.departureDate) {
+                        applyDepartureShift(editFormData.departureDate);
+                      }
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
@@ -922,16 +949,18 @@ function ShipmentDetailContent() {
                   <input
                     type="datetime-local"
                     value={editFormData.estimatedDeliveryDate}
-                    onFocus={() => {
-                      baselineDeliveryRef.current = editFormData.estimatedDeliveryDate;
-                    }}
                     onChange={(e) => {
-                      setEditFormData((prev) => ({
-                        ...prev,
-                        estimatedDeliveryDate: e.target.value,
-                      }));
+                      const val = e.target.value;
+                      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: val }));
+                      if (val && !Number.isNaN(new Date(val).getTime())) {
+                        applyDeliveryShift(val);
+                      }
                     }}
-                    onBlur={commitDeliveryShift}
+                    onBlur={() => {
+                      if (editFormData.estimatedDeliveryDate) {
+                        applyDeliveryShift(editFormData.estimatedDeliveryDate);
+                      }
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm font-mono text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                   />
                 </div>
