@@ -380,7 +380,6 @@ function NewShipmentContent() {
     setPendingChange(null);
 
     setIsCalculatingRoute(true);
-    setErrorMessage(null);
 
     // Keep existing custom milestones
     const existingCustomMilestones = milestones.filter(
@@ -504,7 +503,7 @@ function NewShipmentContent() {
       };
     } catch (err: unknown) {
       console.error("Route calculation error:", err);
-      setErrorMessage(
+      toast.destructive(
         err instanceof Error ? err.message : "Route calculation error"
       );
     } finally {
@@ -685,7 +684,6 @@ function NewShipmentContent() {
     }
 
     setIsCalculatingRoute(true);
-    setErrorMessage(null);
 
     try {
       const res = await fetch("/api/route/calculate", {
