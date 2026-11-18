@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/shared/context/ThemeContext";
 import { ToastProvider } from "@/shared/components/toast";
 import { SmartsuppChat } from "@/shared/components/smartsupp";
+import { FloatingWhatsApp } from "@/shared/components/floating-whatsapp";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ToastProvider>
             {children}
             <SmartsuppChat />
+            <FloatingWhatsApp />
           </ToastProvider>
         </ThemeProvider>
       </body>
