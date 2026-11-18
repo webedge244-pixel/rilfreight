@@ -7,7 +7,7 @@ export const siteConfig = {
     primary: "#0F313A",
     secondary: "#BA1C20",
   },
-  supportEmail: "operations@rilfreight.com",
+  supportEmail: "support@rilfreight.com",
   defaultOrigin: {
     name: "Port of Shanghai",
     code: "CNSHA",

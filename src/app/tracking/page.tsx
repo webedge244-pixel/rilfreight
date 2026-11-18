@@ -52,7 +52,7 @@ const FAQ_ITEMS = [
   {
     question: "Why is my tracking number not working?",
     answer:
-      "Please ensure you have entered the full tracking code including the prefix (e.g., RIL-). If your shipment was recently booked, allow up to 24 hours for the tracking system to activate. If the issue persists, contact our 24/7 dispatch center at +1 800 555-RILF for assistance.",
+      "Please ensure you have entered the full tracking code including the prefix (e.g., RIL-). If your shipment was recently booked, allow up to 24 hours for the tracking system to activate. If the issue persists, contact our 24/7 dispatch center at +1 (920) 417-3547 for assistance.",
   },
   {
     question: "Can I track multiple shipments at once?",

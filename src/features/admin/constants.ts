@@ -31,6 +31,6 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [
     id: "tpl-004",
     name: "General Notification",
     subject: "RILFREIGHT — Important Update",
-    body: "Dear {{recipientName}},\n\n{{messageBody}}\n\nIf you have any questions, please do not hesitate to contact us at operations@rilfreight.com.\n\nBest regards,\nRILFREIGHT Operations",
+    body: "Dear {{recipientName}},\n\n{{messageBody}}\n\nIf you have any questions, please do not hesitate to contact us at support@rilfreight.com.\n\nBest regards,\nRILFREIGHT Operations",
   },
 ];

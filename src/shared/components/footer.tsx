@@ -63,18 +63,14 @@ export function Footer({ embedded = false }: FooterProps) {
             <h3 className="text-base font-bold text-white mb-4">Contacts</h3>
             <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
               <p>RILFREIGHT, USA, New York – 1060 Str. First Avenue 1</p>
-              <div className="space-y-1">
+              <div>
                 <a
-                  href="tel:+13685678954"
+                  href="https://wa.me/19204173547"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block text-white hover:text-[#BA1C20] transition-colors underline underline-offset-2"
                 >
-                  +1 (368) 567 89 54
-                </a>
-                <a
-                  href="tel:+8003508431"
-                  className="block text-white hover:text-[#BA1C20] transition-colors underline underline-offset-2"
-                >
-                  +800 350 84 31
+                  +1 (920) 417-3547
                 </a>
               </div>
               <div>

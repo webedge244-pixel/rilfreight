@@ -263,9 +263,14 @@ export default function HomePage() {
                     <p className="text-slate-300 text-xs lg:text-sm mb-1">
                       24/7 Support
                     </p>
-                    <p className="text-white text-sm lg:text-base font-semibold">
-                      +1 800 555-LOGI
-                    </p>
+                    <a
+                      href="https://wa.me/19204173547"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white text-sm lg:text-base font-semibold hover:text-[#BA1C20] transition-colors"
+                    >
+                      +1 (920) 417-3547
+                    </a>
                   </div>
                   <div>
                     <h3 className="text-lg lg:text-xl font-bold text-white mb-1.5">
@@ -404,9 +409,14 @@ export default function HomePage() {
                   <p className="text-slate-300 text-xs sm:text-sm mb-1">
                     24/7 Support
                   </p>
-                  <p className="text-white text-base font-semibold">
-                    +1 800 555-LOGI
-                  </p>
+                  <a
+                    href="https://wa.me/19204173547"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white text-base font-semibold hover:text-[#BA1C20] transition-colors"
+                  >
+                    +1 (920) 417-3547
+                  </a>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white mb-1.5">
@@ -1243,13 +1253,15 @@ export default function HomePage() {
                     Do you have any questions?
                   </h4>
                   <p className="text-white/80 text-xs uppercase tracking-wider mb-2">
-                    Call us today
+                    Message us on WhatsApp
                   </p>
                   <a
-                    href="tel:8001006781095"
+                    href="https://wa.me/19204173547"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-2xl sm:text-3xl font-black text-white hover:text-white/90 transition-colors tracking-tight block font-mono"
                   >
-                    800 100 678 10 95
+                    +1 (920) 417-3547
                   </a>
                 </div>
               </div>
@@ -1545,9 +1557,14 @@ export default function HomePage() {
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
                   Have any questions?
                   <br />
-                  <span className="text-[#BA1C20]">
-                    Call us +1 800 555-RILF
-                  </span>
+                  <a
+                    href="https://wa.me/19204173547"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#BA1C20] hover:underline"
+                  >
+                    Message us on WhatsApp at +1 (920) 417-3547
+                  </a>
                 </h2>
               </div>
               <div className="shrink-0">

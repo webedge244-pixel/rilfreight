@@ -18,9 +18,14 @@ export function PageFooter() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
               Have any questions?
               <br />
-              <span className="text-[#BA1C20]">
-                Call us +1 800 555-RILF
-              </span>
+              <a
+                href="https://wa.me/19204173547"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#BA1C20] hover:underline"
+              >
+                Message us on WhatsApp at +1 (920) 417-3547
+              </a>
             </h2>
           </div>
           <div className="shrink-0">
