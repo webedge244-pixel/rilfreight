@@ -29,6 +29,7 @@ import { Button } from "@/shared/components/button";
 import { Input } from "@/shared/components/input";
 import { Badge } from "@/shared/components/badge";
 import { Select } from "@/shared/components/select";
+import { useToast } from "@/shared/components/toast";
 import { REVIEWS } from "@/config/reviews";
 
 // ==========================================
@@ -146,11 +147,34 @@ export default function HomePage() {
     packaging: false,
   });
   const [quoteSubmitted, setQuoteSubmitted] = React.useState(false);
+  const [isSubmittingQuote, setIsSubmittingQuote] = React.useState(false);
+  const toast = useToast();
 
-  const handleQuoteSubmit = (e: React.FormEvent) => {
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setQuoteSubmitted(true);
-    setTimeout(() => setQuoteSubmitted(false), 5000);
+    if (!quoteFormData.fullName.trim() || !quoteFormData.email.trim()) {
+      toast.destructive("Full name and email are required.");
+      return;
+    }
+    setIsSubmittingQuote(true);
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(quoteFormData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to submit quote request.");
+      }
+      setQuoteSubmitted(true);
+      toast.success("Quote request sent! Our dispatch team will reply shortly.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to submit quote request.";
+      toast.destructive(msg);
+    } finally {
+      setIsSubmittingQuote(false);
+    }
   };
 
   // ----------------------------------------------------
@@ -1222,9 +1246,10 @@ export default function HomePage() {
                     <div className="pt-4">
                       <button
                         type="submit"
-                        className="group inline-flex items-center gap-4 bg-white border border-slate-300 hover:border-[#BA1C20] rounded-2xl pl-6 pr-2 py-2 text-slate-900 font-bold text-sm transition-all cursor-pointer"
+                        disabled={isSubmittingQuote}
+                        className="group inline-flex items-center gap-4 bg-white border border-slate-300 hover:border-[#BA1C20] rounded-2xl pl-6 pr-2 py-2 text-slate-900 font-bold text-sm transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <span>Request a Quote</span>
+                        <span>{isSubmittingQuote ? "Submitting..." : "Request a Quote"}</span>
                         <span className="w-10 h-10 rounded-xl bg-[#BA1C20] text-white flex items-center justify-center group-hover:bg-[#9c171a] transition-all transform group-hover:rotate-45">
                           <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
                         </span>
