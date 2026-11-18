@@ -3,6 +3,7 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
 import { ArrowDown, PackagePlus, X } from "lucide-react";
 import type {
@@ -11,7 +12,7 @@ import type {
   RouteWaypoint,
   TrackingMilestone,
 } from "@/shared/types";
-import { createShipmentRecord } from "@/shared/lib/firebase";
+import { createShipmentRecord, getShipmentRecord } from "@/shared/lib/firebase";
 import AddressAutocomplete from "@/features/routing/components/AddressAutocomplete";
 import CheckpointStepper from "@/features/routing/components/CheckpointStepper";
 import {
@@ -27,10 +28,12 @@ import {
   createDefaultSchedule,
   cascadeMilestoneGaps,
   swapMilestonesWithTimestampInheritance,
+  toLocalDatetimeInput,
 } from "@/shared/lib/shipmentLogic";
 import { Select } from "@/shared/components/select";
 import { Button } from "@/shared/components/button";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
+import { useToast } from "@/shared/components/toast";
 
 // SSR-safe dynamic import for Vector RouteMiniMapLibre
 const RouteMiniMap = dynamic(
@@ -50,10 +53,28 @@ const RouteMiniMap = dynamic(
 const defaultSchedule = createDefaultSchedule;
 
 export default function NewShipmentPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="max-w-7xl mx-auto py-12 px-4 text-center text-slate-400 text-sm">
+          Loading shipment studio...
+        </div>
+      }
+    >
+      <NewShipmentContent />
+    </React.Suspense>
+  );
+}
+
+function NewShipmentContent() {
+  const searchParams = useSearchParams();
+  const cloneFromId = searchParams.get("cloneFrom");
+  const toast = useToast();
+  const [isLoadingClone, setIsLoadingClone] = React.useState(false);
+
   const [mode, setMode] = React.useState<TransportMode>("ocean");
   const [isCalculatingRoute, setIsCalculatingRoute] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [successShipment, setSuccessShipment] = React.useState<{
     id: string;
     trackingCode: string;
@@ -138,6 +159,139 @@ export default function NewShipmentPage() {
   const hasCustomMilestones = React.useMemo(() => {
     return milestones.some((m) => m.isCustom || m.id.startsWith("ms-manual-"));
   }, [milestones]);
+
+  // Effect to load source shipment if cloneFrom is present
+  React.useEffect(() => {
+    if (!cloneFromId) return;
+
+    let isMounted = true;
+    setIsLoadingClone(true);
+
+    getShipmentRecord(cloneFromId)
+      .then((cloned) => {
+        if (!isMounted || !cloned) return;
+
+        toast.success(
+          `Cloned from ${cloned.trackingCode} — corridor, cargo, and timeline loaded.`
+        );
+        if (cloned.mode) setMode(cloned.mode);
+
+        // Schedule dates: departure tomorrow, preserve original voyage duration
+        const sched = defaultSchedule();
+        const newDep = sched.departure;
+        const oldDepMs = Date.parse(cloned.departureDate);
+        const oldDelMs = Date.parse(cloned.estimatedDeliveryDate);
+        const originalDurationMs =
+          Number.isFinite(oldDepMs) && Number.isFinite(oldDelMs) && oldDelMs > oldDepMs
+            ? oldDelMs - oldDepMs
+            : 14 * 86400 * 1000;
+
+        const newDepMs = Date.parse(newDep);
+        const newDelMs = newDepMs + originalDurationMs;
+        const newDel = toLocalDatetimeInput(new Date(newDelMs));
+
+        setFormState((prev) => ({
+          ...prev,
+          originName: cloned.originName || prev.originName,
+          originCode: cloned.originCode || prev.originCode,
+          originCountry: cloned.originCountry || prev.originCountry,
+          originCountryCode: prev.originCountryCode || "CN",
+          originCoordinates: cloned.originCoordinates || prev.originCoordinates,
+
+          destinationName: cloned.destinationName || prev.destinationName,
+          destinationCode: cloned.destinationCode || prev.destinationCode,
+          destinationCountry: cloned.destinationCountry || prev.destinationCountry,
+          destinationCountryCode: prev.destinationCountryCode || "US",
+          destinationCoordinates: cloned.destinationCoordinates || prev.destinationCoordinates,
+
+          departureDate: newDep,
+          estimatedDeliveryDate: newDel,
+
+          conveyanceName: cloned.conveyanceName || "",
+          conveyanceIdentifier: cloned.conveyanceIdentifier || "",
+          voyageNumber: "",
+          consignmentReference: "",
+          containerNumber: "",
+          sealNumber: "",
+
+          totalPieces: cloned.totalPieces != null ? String(cloned.totalPieces) : "",
+          grossWeightKg: cloned.grossWeightKg != null ? String(cloned.grossWeightKg) : "",
+          volumeCbm: cloned.volumeCbm != null ? String(cloned.volumeCbm) : "",
+          goodsDescription: cloned.goodsDescription || "",
+          clientName: "", // Cleared per user requirement
+        }));
+
+        // Clone Milestones: retain all milestones, scale timestamps into new schedule, reset completion
+        if (cloned.milestones && cloned.milestones.length > 0) {
+          const scaledMilestones = cloned.milestones.map((m, idx) => {
+            const mMs = Date.parse(m.timestamp);
+            const fraction =
+              Number.isFinite(mMs) && Number.isFinite(oldDepMs) && originalDurationMs > 0
+                ? Math.min(Math.max((mMs - oldDepMs) / originalDurationMs, 0), 1)
+                : idx / Math.max(cloned.milestones.length - 1, 1);
+
+            const targetMs = newDepMs + fraction * originalDurationMs;
+            return {
+              ...m,
+              id: `ms-cloned-${idx}-${Date.now()}`,
+              timestamp: new Date(targetMs).toISOString(),
+              isCompleted: false,
+              status: "pending",
+              isCustom: true,
+            };
+          });
+
+          const normalized = normalizeMilestones(scaledMilestones, {
+            departureMs: newDepMs,
+            deliveryMs: newDelMs,
+          });
+
+          setMilestones(normalized);
+        }
+
+        // Corridor Map & Waypoints
+        if (cloned.routeCoordinates && cloned.routeCoordinates.length > 0) {
+          setRouteCoordinates(cloned.routeCoordinates);
+        }
+        if (cloned.waypoints && cloned.waypoints.length > 0) {
+          setWaypoints(cloned.waypoints);
+        }
+
+        setRouteSummary({
+          distanceKm: cloned.routeCoordinates?.length ? Math.round(cloned.routeCoordinates.length * 10) : 5000,
+          durationHours: Math.round(originalDurationMs / 3600000),
+        });
+
+        setHasValidRoute(true);
+
+        activeRouteSnapshot.current = {
+          originName: cloned.originName,
+          originCode: cloned.originCode,
+          originCountry: cloned.originCountry,
+          originCountryCode: "CN",
+          originCoordinates: cloned.originCoordinates,
+          destinationName: cloned.destinationName,
+          destinationCode: cloned.destinationCode,
+          destinationCountry: cloned.destinationCountry,
+          destinationCountryCode: "US",
+          destinationCoordinates: cloned.destinationCoordinates,
+          departureDate: newDep,
+          estimatedDeliveryDate: newDel,
+          mode: cloned.mode || "ocean",
+        };
+      })
+      .catch((err) => {
+        console.error("Failed to load cloned shipment:", err);
+        toast.destructive("Failed to load details from source shipment.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingClone(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cloneFromId]);
 
   /**
    * Fields whose change invalidates a previously computed route.
@@ -617,7 +771,7 @@ export default function NewShipmentPage() {
       };
     } catch (err: unknown) {
       console.error("Route calculation error:", err);
-      setErrorMessage(
+      toast.destructive(
         err instanceof Error ? err.message : "Route calculation error"
       );
     } finally {
@@ -628,7 +782,6 @@ export default function NewShipmentPage() {
   // Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
 
     const pieces = Number(formState.totalPieces);
     const weight = Number(formState.grossWeightKg);
@@ -636,19 +789,19 @@ export default function NewShipmentPage() {
     const conveyance = formState.conveyanceName.trim();
 
     if (!Number.isFinite(pieces) || pieces <= 0) {
-      setErrorMessage("Total pieces must be a positive number.");
+      toast.destructive("Total pieces must be a positive number.");
       return;
     }
     if (!Number.isFinite(weight) || weight <= 0) {
-      setErrorMessage("Gross weight must be a positive number.");
+      toast.destructive("Gross weight must be a positive number.");
       return;
     }
     if (!goods) {
-      setErrorMessage("A goods description is required.");
+      toast.destructive("A goods description is required.");
       return;
     }
     if (!conveyance) {
-      setErrorMessage(
+      toast.destructive(
         "A conveyance is required. Generate the route to populate one, or enter it manually."
       );
       return;
@@ -749,7 +902,7 @@ export default function NewShipmentPage() {
       });
     } catch (err) {
       console.error("Failed to create shipment:", err);
-      setErrorMessage(
+      toast.destructive(
         err instanceof Error
           ? err.message
           : "Failed to persist shipment record"
@@ -821,19 +974,6 @@ export default function NewShipmentPage() {
 
   return (
     <div className="max-w-7xl mx-auto pb-16">
-      {errorMessage && (
-        <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-sm flex items-center justify-between">
-          <span>⚠️ {errorMessage}</span>
-          <button
-            type="button"
-            onClick={() => setErrorMessage(null)}
-            className="text-xs font-bold uppercase"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
       {/* Main Studio Grid */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Controls (7 cols) */}

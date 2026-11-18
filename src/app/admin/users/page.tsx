@@ -11,6 +11,7 @@ import {
 } from "@/shared/lib/firebase";
 import type { PlatformUser } from "@/features/admin/types";
 import type { Shipment } from "@/shared/types";
+import { useToast } from "@/shared/components/toast";
 import {
   Search,
   Plus,
@@ -30,12 +31,12 @@ import {
 type StatusFilter = "all" | "connected" | "pending";
 
 export default function UsersPage() {
+  const toast = useToast();
   const [users, setUsers] = React.useState<PlatformUser[]>([]);
   const [shipments, setShipments] = React.useState<Shipment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
-  const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // Filter dropdown state
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -131,8 +132,11 @@ export default function UsersPage() {
 
   // Toast helper
   const showToast = (text: string, type: "success" | "error" = "success") => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 4000);
+    if (type === "error") {
+      toast.destructive(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   // Add User Handler
@@ -221,28 +225,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={cn(
-            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all border-0",
-            toastMessage.type === "success"
-              ? "bg-[#0D5C46] text-white"
-              : "bg-[#BA1C20] text-white"
-          )}
-        >
-          {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-          ) : (
-            <AlertTriangle className="w-4 h-4 text-white/90" />
-          )}
-          <span>{toastMessage.text}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Unified Action Toolbar: Search + Filter + Add Client */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">

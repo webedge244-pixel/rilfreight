@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/shared/context/ThemeContext";
+import { ToastProvider } from "@/shared/components/toast";
 import { SmartsuppChat } from "@/shared/components/smartsupp";
 
 const geistSans = Geist({
@@ -38,8 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          {children}
-          <SmartsuppChat />
+          <ToastProvider>
+            {children}
+            <SmartsuppChat />
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -14,6 +14,7 @@ import {
 } from "@/shared/lib/firebase";
 import type { PlatformUser } from "@/features/admin/types";
 import type { Shipment, TransportMode } from "@/shared/types";
+import { useToast } from "@/shared/components/toast";
 import {
   Search,
   Plus,
@@ -67,11 +68,11 @@ function UserDetailContent() {
   const params = useParams();
   const router = useRouter();
   const userId = params?.id as string;
+  const toast = useToast();
 
   const [user, setUser] = React.useState<PlatformUser | null>(null);
   const [shipments, setShipments] = React.useState<Shipment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // Link shipment state
   const [shipmentSearchQuery, setShipmentSearchQuery] = React.useState("");
@@ -86,8 +87,11 @@ function UserDetailContent() {
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 4000);
+    if (type === "error") {
+      toast.destructive(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   // 1. Subscribe to User record in Firestore
@@ -258,28 +262,6 @@ function UserDetailContent() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={cn(
-            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all border-0",
-            toastMessage.type === "success"
-              ? "bg-[#0D5C46] text-white"
-              : "bg-[#BA1C20] text-white"
-          )}
-        >
-          {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-          ) : (
-            <AlertTriangle className="w-4 h-4 text-white/90" />
-          )}
-          <span>{toastMessage.text}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Return Navigation */}
       <div>
         <Link

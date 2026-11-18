@@ -26,6 +26,7 @@ import {
   fromLocalDatetimeInput as fromLocalInput,
   computeProgressPercent,
 } from "@/shared/lib/shipmentLogic";
+import { useToast } from "@/shared/components/toast";
 import type {
   Shipment,
   ShipmentStatus,
@@ -46,6 +47,7 @@ import {
   Trash,
   Save,
   Copy,
+  CopyPlus,
 } from "lucide-react";
 
 // SSR-safe dynamic import for the MapLibre GL vector map
@@ -60,14 +62,14 @@ const LiveTrackingMap = dynamic(
         </span>
       </div>
     ),
-  }
+  },
 );
 
 /** Auto-adjusts milestone timestamps and completion status to fit between departure and estimated delivery */
 function autoRegulateMilestoneTimestamps(
   milestones: TrackingMilestone[],
   departureLocalStr: string,
-  deliveryLocalStr: string
+  deliveryLocalStr: string,
 ): TrackingMilestone[] {
   return regulateMilestones(milestones, departureLocalStr, deliveryLocalStr, {
     outputFormat: "local",
@@ -76,7 +78,11 @@ function autoRegulateMilestoneTimestamps(
 
 export default function ShipmentDetailPage() {
   return (
-    <React.Suspense fallback={<div className="p-8 text-sm text-slate-400">Loading shipment...</div>}>
+    <React.Suspense
+      fallback={
+        <div className="p-8 text-sm text-slate-400">Loading shipment...</div>
+      }
+    >
       <ShipmentDetailContent />
     </React.Suspense>
   );
@@ -85,6 +91,7 @@ export default function ShipmentDetailPage() {
 function ShipmentDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const shipmentId = params.id as string;
 
   const [shipment, setShipment] = React.useState<Shipment | null>(null);
@@ -95,13 +102,14 @@ function ShipmentDetailContent() {
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
   const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-  const [copiedTrackingCode, setCopiedTrackingCode] = React.useState<boolean>(false);
+  const [copiedTrackingCode, setCopiedTrackingCode] =
+    React.useState<boolean>(false);
 
   const handleCopyTrackingCode = (code: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(code);
       setCopiedTrackingCode(true);
-      setToastMessage({ text: `Tracking code ${code} copied to clipboard`, type: "success" });
+      toast.success(`Tracking code ${code} copied to clipboard`);
       setTimeout(() => setCopiedTrackingCode(false), 2000);
     }
   };
@@ -123,10 +131,10 @@ function ShipmentDetailContent() {
       (error) => {
         console.error(`Failed to subscribe to shipment ${shipmentId}:`, error);
         setLoadError(
-          "Unable to reach the shipment database. Check the connection and try again."
+          "Unable to reach the shipment database. Check the connection and try again.",
         );
         setIsLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -151,7 +159,7 @@ function ShipmentDetailContent() {
 
   const progressPercent = React.useMemo(
     () => (shipment ? computeProgressPercent(shipment) : 0),
-    [shipment]
+    [shipment],
   );
 
   // ── Actions ────────────────────────────────────────────
@@ -184,10 +192,7 @@ function ShipmentDetailContent() {
       const updated = approveMilestoneHold(shipment, milestoneId);
       await replaceShipmentRecord(shipment.id, updated);
       setShipment(updated);
-      setToastMessage({
-        text: "Milestone cleared! Remaining timeline recalculated.",
-        type: "success",
-      });
+      toast.success("Milestone cleared! Remaining timeline recalculated.");
     } catch (error) {
       console.error("Failed to approve milestone hold:", error);
       setActionError("Could not release hold on milestone. Please try again.");
@@ -206,10 +211,7 @@ function ShipmentDetailContent() {
       const updated = advanceMilestoneImmediately(shipment, milestoneId);
       await replaceShipmentRecord(shipment.id, updated);
       setShipment(updated);
-      setToastMessage({
-        text: "Checkpoint completed! Next checkpoint started & timeline recalculated.",
-        type: "success",
-      });
+      toast.success("Checkpoint completed! Next checkpoint started & timeline recalculated.");
     } catch (error) {
       console.error("Failed to advance milestone:", error);
       setActionError("Could not advance milestone. Please try again.");
@@ -236,7 +238,6 @@ function ShipmentDetailContent() {
   // ── Editing States & Handlers ────────────────────────────
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const [isSaving, setIsSaving] = React.useState<boolean>(false);
-  const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
 
   const [editFormData, setEditFormData] = React.useState({
     mode: "ocean" as TransportMode,
@@ -266,15 +267,23 @@ function ShipmentDetailContent() {
     clientName: "",
   });
 
-  const [editMilestones, setEditMilestones] = React.useState<TrackingMilestone[]>([]);
+  const [editMilestones, setEditMilestones] = React.useState<
+    TrackingMilestone[]
+  >([]);
   const snapshotMilestonesRef = React.useRef<TrackingMilestone[]>([]);
-  const baselineMilestoneRef = React.useRef<{ index: number; value: string } | null>(null);
+  const baselineMilestoneRef = React.useRef<{
+    index: number;
+    value: string;
+  } | null>(null);
   const baselineDepartureRef = React.useRef<string | null>(null);
   const baselineDeliveryRef = React.useRef<string | null>(null);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 4500);
+    if (type === "error") {
+      toast.destructive(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   const handleStartEdit = () => {
@@ -320,7 +329,7 @@ function ShipmentDetailContent() {
   const handleMilestoneChange = (
     index: number,
     field: keyof TrackingMilestone,
-    value: TrackingMilestone[keyof TrackingMilestone]
+    value: TrackingMilestone[keyof TrackingMilestone],
   ) => {
     setEditMilestones((prev) => {
       const copy = [...prev];
@@ -332,10 +341,14 @@ function ShipmentDetailContent() {
   const commitMilestoneTimestampShift = (index: number) => {
     const currentStr = editMilestones[index]?.timestamp;
     const baseline = baselineMilestoneRef.current;
-    const previousList = snapshotMilestonesRef.current.length === editMilestones.length
-      ? snapshotMilestonesRef.current
-      : editMilestones;
-    const prevStr = baseline && baseline.index === index ? baseline.value : previousList[index]?.timestamp;
+    const previousList =
+      snapshotMilestonesRef.current.length === editMilestones.length
+        ? snapshotMilestonesRef.current
+        : editMilestones;
+    const prevStr =
+      baseline && baseline.index === index
+        ? baseline.value
+        : previousList[index]?.timestamp;
 
     if (!currentStr || currentStr === prevStr) {
       baselineMilestoneRef.current = null;
@@ -365,21 +378,38 @@ function ShipmentDetailContent() {
   // Reactive Delivery Date change: shifts Departure Date and refactors all milestones
   const applyDeliveryShift = (newDeliveryStr: string) => {
     if (!newDeliveryStr) {
-      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: newDeliveryStr }));
+      setEditFormData((prev) => ({
+        ...prev,
+        estimatedDeliveryDate: newDeliveryStr,
+      }));
       return;
     }
 
-    const newDelMs = new Date(fromLocalInput(newDeliveryStr) || newDeliveryStr).getTime();
+    const newDelMs = new Date(
+      fromLocalInput(newDeliveryStr) || newDeliveryStr,
+    ).getTime();
     if (Number.isNaN(newDelMs)) {
-      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: newDeliveryStr }));
+      setEditFormData((prev) => ({
+        ...prev,
+        estimatedDeliveryDate: newDeliveryStr,
+      }));
       return;
     }
 
-    const curDepMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
-    const curDelMs = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || editFormData.estimatedDeliveryDate).getTime();
+    const curDepMs = new Date(
+      fromLocalInput(editFormData.departureDate) || editFormData.departureDate,
+    ).getTime();
+    const curDelMs = new Date(
+      fromLocalInput(editFormData.estimatedDeliveryDate) ||
+        editFormData.estimatedDeliveryDate,
+    ).getTime();
 
     let durationMs = 14 * 24 * 3600 * 1000;
-    if (!Number.isNaN(curDepMs) && !Number.isNaN(curDelMs) && curDelMs > curDepMs) {
+    if (
+      !Number.isNaN(curDepMs) &&
+      !Number.isNaN(curDelMs) &&
+      curDelMs > curDepMs
+    ) {
       durationMs = curDelMs - curDepMs;
     }
 
@@ -391,12 +421,17 @@ function ShipmentDetailContent() {
       ...prev,
       estimatedDeliveryDate: newDeliveryStr,
       departureDate: newDepStr,
-      status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
+      status:
+        isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
       actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
     }));
 
     setEditMilestones((prev) => {
-      const regulated = autoRegulateMilestoneTimestamps(prev, newDepStr, newDeliveryStr);
+      const regulated = autoRegulateMilestoneTimestamps(
+        prev,
+        newDepStr,
+        newDeliveryStr,
+      );
       snapshotMilestonesRef.current = regulated;
       return regulated;
     });
@@ -409,21 +444,33 @@ function ShipmentDetailContent() {
       return;
     }
 
-    const newDepMs = new Date(fromLocalInput(newDepartureStr) || newDepartureStr).getTime();
+    const newDepMs = new Date(
+      fromLocalInput(newDepartureStr) || newDepartureStr,
+    ).getTime();
     if (Number.isNaN(newDepMs)) {
       setEditFormData((prev) => ({ ...prev, departureDate: newDepartureStr }));
       return;
     }
 
-    const curDelMs = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || editFormData.estimatedDeliveryDate).getTime();
+    const curDelMs = new Date(
+      fromLocalInput(editFormData.estimatedDeliveryDate) ||
+        editFormData.estimatedDeliveryDate,
+    ).getTime();
     let effectiveDelStr = editFormData.estimatedDeliveryDate;
     let effectiveDelMs = curDelMs;
 
     // Date logic self-correction: if departure >= delivery, push delivery forward
     if (Number.isNaN(curDelMs) || newDepMs >= curDelMs) {
-      const curDepMs = new Date(fromLocalInput(editFormData.departureDate) || editFormData.departureDate).getTime();
+      const curDepMs = new Date(
+        fromLocalInput(editFormData.departureDate) ||
+          editFormData.departureDate,
+      ).getTime();
       let durationMs = 7 * 24 * 3600 * 1000;
-      if (!Number.isNaN(curDepMs) && !Number.isNaN(curDelMs) && curDelMs > curDepMs) {
+      if (
+        !Number.isNaN(curDepMs) &&
+        !Number.isNaN(curDelMs) &&
+        curDelMs > curDepMs
+      ) {
         durationMs = curDelMs - curDepMs;
       }
       effectiveDelMs = newDepMs + durationMs;
@@ -436,12 +483,17 @@ function ShipmentDetailContent() {
       ...prev,
       departureDate: newDepartureStr,
       estimatedDeliveryDate: effectiveDelStr,
-      status: isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
+      status:
+        isFuture && prev.status === "delivered" ? "in_transit" : prev.status,
       actualDeliveryDate: isFuture ? "" : prev.actualDeliveryDate,
     }));
 
     setEditMilestones((prev) => {
-      const regulated = autoRegulateMilestoneTimestamps(prev, newDepartureStr, effectiveDelStr);
+      const regulated = autoRegulateMilestoneTimestamps(
+        prev,
+        newDepartureStr,
+        effectiveDelStr,
+      );
       snapshotMilestonesRef.current = regulated;
       return regulated;
     });
@@ -450,14 +502,21 @@ function ShipmentDetailContent() {
   const handleAddMilestone = () => {
     const prevList = editMilestones;
     const lastItem = prevList[prevList.length - 1];
-    const lastMs = lastItem ? new Date(fromLocalInput(lastItem.timestamp) || lastItem.timestamp).getTime() : Date.now();
-    const fallbackMs = !Number.isNaN(lastMs) ? lastMs + 3600 * 1000 : Date.now();
+    const lastMs = lastItem
+      ? new Date(
+          fromLocalInput(lastItem.timestamp) || lastItem.timestamp,
+        ).getTime()
+      : Date.now();
+    const fallbackMs = !Number.isNaN(lastMs)
+      ? lastMs + 3600 * 1000
+      : Date.now();
 
     const newMs: TrackingMilestone = {
       id: `ms-manual-${Date.now()}`,
       code: "CHECKPOINT",
       title: "Transit Checkpoint",
-      description: "Shipment reached an operational waypoint in the route schedule.",
+      description:
+        "Shipment reached an operational waypoint in the route schedule.",
       locationName: shipment?.destinationName || "Transit Hub",
       timestamp: toLocalInput(new Date(fallbackMs)),
       isCompleted: false,
@@ -490,9 +549,18 @@ function ShipmentDetailContent() {
   };
 
   const handleMoveMilestone = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= editMilestones.length || fromIndex === toIndex) return;
+    if (
+      toIndex < 0 ||
+      toIndex >= editMilestones.length ||
+      fromIndex === toIndex
+    )
+      return;
     setEditMilestones((prev) => {
-      const updated = swapMilestonesWithTimestampInheritance(prev, fromIndex, toIndex);
+      const updated = swapMilestonesWithTimestampInheritance(
+        prev,
+        fromIndex,
+        toIndex,
+      );
       snapshotMilestonesRef.current = updated;
       return updated;
     });
@@ -505,36 +573,41 @@ function ShipmentDetailContent() {
 
     try {
       const now = new Date();
-      const depDate = new Date(fromLocalInput(editFormData.departureDate) || shipment.departureDate);
-      const estDelDate = new Date(fromLocalInput(editFormData.estimatedDeliveryDate) || shipment.estimatedDeliveryDate);
+      const depDate = new Date(
+        fromLocalInput(editFormData.departureDate) || shipment.departureDate,
+      );
+      const estDelDate = new Date(
+        fromLocalInput(editFormData.estimatedDeliveryDate) ||
+          shipment.estimatedDeliveryDate,
+      );
       const nowMs = now.getTime();
 
       // Determine status fresh from schedule like /new with zero stale past status
-      const determinedStatus = deriveShipmentStatus(
-        depDate,
-        estDelDate,
-        { now: nowMs }
-      );
+      const determinedStatus = deriveShipmentStatus(depDate, estDelDate, {
+        now: nowMs,
+      });
 
       // Timeline checkpoints: Wipe out past completion and re-evaluate strictly from timestamps
-      const formattedMilestones: TrackingMilestone[] = editMilestones.map((m) => {
-        const rawTime = fromLocalInput(m.timestamp) || m.timestamp;
-        const mTime = new Date(rawTime).getTime();
-        const hasPassed = !Number.isNaN(mTime) && mTime <= nowMs;
-        return {
-          ...m,
-          timestamp: rawTime,
-          isCompleted: hasPassed,
-          status: hasPassed ? "completed" : "pending",
-          isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
-        };
-      });
+      const formattedMilestones: TrackingMilestone[] = editMilestones.map(
+        (m) => {
+          const rawTime = fromLocalInput(m.timestamp) || m.timestamp;
+          const mTime = new Date(rawTime).getTime();
+          const hasPassed = !Number.isNaN(mTime) && mTime <= nowMs;
+          return {
+            ...m,
+            timestamp: rawTime,
+            isCompleted: hasPassed,
+            status: hasPassed ? "completed" : "pending",
+            isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
+          };
+        },
+      );
 
       const updatedWaypoints = synchronizeWaypoints(
         shipment.waypoints || [],
         depDate,
         estDelDate,
-        { now: nowMs }
+        { now: nowMs },
       );
 
       const updatedShipment: Shipment = {
@@ -543,7 +616,11 @@ function ShipmentDetailContent() {
         status: determinedStatus,
         departureDate: depDate.toISOString(),
         estimatedDeliveryDate: estDelDate.toISOString(),
-        actualDeliveryDate: determinedStatus === "delivered" ? (fromLocalInput(editFormData.actualDeliveryDate) || now.toISOString()) : null,
+        actualDeliveryDate:
+          determinedStatus === "delivered"
+            ? fromLocalInput(editFormData.actualDeliveryDate) ||
+              now.toISOString()
+            : null,
         isPaused: false,
         pausedReason: null,
         pausedLocationName: null,
@@ -563,7 +640,9 @@ function ShipmentDetailContent() {
         sealNumber: editFormData.sealNumber?.trim() || null,
         totalPieces: Number(editFormData.totalPieces) || 0,
         grossWeightKg: Number(editFormData.grossWeightKg) || 0,
-        volumeCbm: editFormData.volumeCbm ? Number(editFormData.volumeCbm) : null,
+        volumeCbm: editFormData.volumeCbm
+          ? Number(editFormData.volumeCbm)
+          : null,
         goodsDescription: editFormData.goodsDescription,
         clientName: editFormData.clientName?.trim() || null,
         waypoints: updatedWaypoints,
@@ -625,7 +704,8 @@ function ShipmentDetailContent() {
           Shipment Not Found
         </h1>
         <p className="text-sm text-slate-400">
-          No shipment exists with ID: <span className="font-mono">{shipmentId}</span>
+          No shipment exists with ID:{" "}
+          <span className="font-mono">{shipmentId}</span>
         </p>
         <Link
           href="/admin/shipments"
@@ -639,35 +719,13 @@ function ShipmentDetailContent() {
 
   return (
     <div>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={cn(
-            "fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-semibold transition-all border-0",
-            toastMessage.type === "success"
-              ? "bg-[#0D5C46] text-white"
-              : "bg-[#BA1C20] text-white"
-          )}
-        >
-          {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-          ) : (
-            <AlertTriangle className="w-4 h-4 text-white/90" />
-          )}
-          <span>{toastMessage.text}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-75">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Unified Top Header Card */}
       <div
         className={cn(
           "rounded-3xl p-6 mb-6 border-0 shadow-none transition-colors",
           shipment.isPaused
             ? "bg-amber-500/10 dark:bg-amber-950/30"
-            : "bg-slate-50 dark:bg-slate-900/50"
+            : "bg-slate-50 dark:bg-slate-900/50",
         )}
       >
         {/* Top Navigation Row: Back Link on Left, Destructive Delete on Right */}
@@ -679,15 +737,26 @@ function ShipmentDetailContent() {
             ← Back to Shipments
           </Link>
 
-          <button
-            type="button"
-            onClick={() => setShowDeleteModal(true)}
-            className="p-2 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white transition-colors border-0 shadow-sm"
-            title="Delete Shipment"
-            aria-label="Delete Shipment"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-8">
+            <Link
+              href={`/admin/new?cloneFrom=${shipment.id}`}
+              className="inline-flex items-center gap-1.5 text-[#0F313A] dark:text-white hover:opacity-80 text-sm font-bold uppercase tracking-wider underline underline-offset-4 transition-opacity"
+              title="Clone this shipment"
+            >
+              <CopyPlus className="w-4 h-4" />
+              <span>clone this shipment</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="p-2 rounded-xl bg-[#BA1C20] hover:bg-[#9c171a] text-white transition-colors border-0 shadow-sm"
+              title="Delete Shipment"
+              aria-label="Delete Shipment"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Header Details & Actions */}
@@ -717,7 +786,7 @@ function ShipmentDetailContent() {
                 <span
                   className={cn(
                     "inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
-                    statusColor(shipment.status)
+                    statusColor(shipment.status),
                   )}
                 >
                   {formatStatus(shipment.status)}
@@ -751,7 +820,9 @@ function ShipmentDetailContent() {
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm"
               >
                 <PlayCircle className="w-4 h-4" />
-                <span>{isActionPending ? "Resuming..." : "Resume Tracking"}</span>
+                <span>
+                  {isActionPending ? "Resuming..." : "Resume Tracking"}
+                </span>
               </button>
             )}
           </div>
@@ -764,7 +835,9 @@ function ShipmentDetailContent() {
               On Hold
             </span>
             <p className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">
-              A milestone requires administrative approval before shipment progression can continue. Scroll down to the milestones section below to review and approve.
+              A milestone requires administrative approval before shipment
+              progression can continue. Scroll down to the milestones section
+              below to review and approve.
             </p>
           </div>
         )}
@@ -792,7 +865,8 @@ function ShipmentDetailContent() {
                 {shipment.trackingCode}
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Modify cargo specifications, route schedule, milestone checkpoints, or dispatch client updates.
+                Modify cargo specifications, route schedule, milestone
+                checkpoints, or dispatch client updates.
               </p>
             </div>
             <div className="flex items-center gap-3 self-end sm:self-center">
@@ -929,7 +1003,10 @@ function ShipmentDetailContent() {
                     value={editFormData.departureDate}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setEditFormData((prev) => ({ ...prev, departureDate: val }));
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        departureDate: val,
+                      }));
                       if (val && !Number.isNaN(new Date(val).getTime())) {
                         applyDepartureShift(val);
                       }
@@ -951,7 +1028,10 @@ function ShipmentDetailContent() {
                     value={editFormData.estimatedDeliveryDate}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setEditFormData((prev) => ({ ...prev, estimatedDeliveryDate: val }));
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        estimatedDeliveryDate: val,
+                      }));
                       if (val && !Number.isNaN(new Date(val).getTime())) {
                         applyDeliveryShift(val);
                       }
@@ -1235,7 +1315,8 @@ function ShipmentDetailContent() {
                   Milestone Checkpoints
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Update milestone titles, locations, timestamps, completion states, and pause gates.
+                  Update milestone titles, locations, timestamps, completion
+                  states, and pause gates.
                 </p>
               </div>
               <button
@@ -1289,7 +1370,7 @@ function ShipmentDetailContent() {
                             handleMilestoneChange(
                               index,
                               "isHoldGate",
-                              e.target.checked
+                              e.target.checked,
                             )
                           }
                           className="w-3.5 h-3.5 rounded text-amber-500"
@@ -1350,7 +1431,7 @@ function ShipmentDetailContent() {
                           handleMilestoneChange(
                             index,
                             "locationName",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
@@ -1364,13 +1445,16 @@ function ShipmentDetailContent() {
                         type="datetime-local"
                         value={ms.timestamp}
                         onFocus={() => {
-                          baselineMilestoneRef.current = { index, value: ms.timestamp };
+                          baselineMilestoneRef.current = {
+                            index,
+                            value: ms.timestamp,
+                          };
                         }}
                         onChange={(e) =>
                           handleMilestoneChange(
                             index,
                             "timestamp",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         onBlur={() => commitMilestoneTimestampShift(index)}
@@ -1390,7 +1474,7 @@ function ShipmentDetailContent() {
                         handleMilestoneChange(
                           index,
                           "description",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
@@ -1441,7 +1525,6 @@ function ShipmentDetailContent() {
         <>
           {/* Bento Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-
             {/* Route Progress */}
             <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-900/50 rounded-3xl overflow-hidden flex flex-col">
               <div className="p-6 pb-3">
@@ -1449,9 +1532,15 @@ function ShipmentDetailContent() {
                   Route Progress
                 </h2>
                 <div className="flex items-baseline justify-between mb-3">
-                  <span className="font-mono text-sm text-slate-500">{shipment.originCode}</span>
-                  <span className="text-2xl font-black text-black dark:text-white">{progressPercent}%</span>
-                  <span className="font-mono text-sm text-slate-500">{shipment.destinationCode}</span>
+                  <span className="font-mono text-sm text-slate-500">
+                    {shipment.originCode}
+                  </span>
+                  <span className="text-2xl font-black text-black dark:text-white">
+                    {progressPercent}%
+                  </span>
+                  <span className="font-mono text-sm text-slate-500">
+                    {shipment.destinationCode}
+                  </span>
                 </div>
                 <div className="h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                   <div
@@ -1477,16 +1566,35 @@ function ShipmentDetailContent() {
                 Cargo Manifest
               </h2>
               <div className="space-y-4">
-                <ManifestRow label="Conveyance" value={shipment.conveyanceName} />
+                <ManifestRow
+                  label="Conveyance"
+                  value={shipment.conveyanceName}
+                />
                 {shipment.conveyanceIdentifier && (
-                  <ManifestRow label="Identifier" value={shipment.conveyanceIdentifier} mono />
+                  <ManifestRow
+                    label="Identifier"
+                    value={shipment.conveyanceIdentifier}
+                    mono
+                  />
                 )}
                 {shipment.voyageNumber && (
-                  <ManifestRow label="Voyage" value={shipment.voyageNumber} mono />
+                  <ManifestRow
+                    label="Voyage"
+                    value={shipment.voyageNumber}
+                    mono
+                  />
                 )}
-                <ManifestRow label="Reference" value={shipment.consignmentReference} mono />
+                <ManifestRow
+                  label="Reference"
+                  value={shipment.consignmentReference}
+                  mono
+                />
                 {shipment.containerNumber && (
-                  <ManifestRow label="Container" value={shipment.containerNumber} mono />
+                  <ManifestRow
+                    label="Container"
+                    value={shipment.containerNumber}
+                    mono
+                  />
                 )}
                 {shipment.sealNumber && (
                   <ManifestRow label="Seal" value={shipment.sealNumber} mono />
@@ -1494,17 +1602,22 @@ function ShipmentDetailContent() {
                 <div className="h-px bg-slate-200 dark:bg-slate-700" />
                 <ManifestRow
                   label="Departure"
-                  value={new Date(shipment.departureDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  value={new Date(shipment.departureDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  )}
                 />
                 <ManifestRow
                   label="Est. Delivery"
-                  value={new Date(shipment.estimatedDeliveryDate).toLocaleDateString("en-US", {
+                  value={new Date(
+                    shipment.estimatedDeliveryDate,
+                  ).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
@@ -1515,7 +1628,9 @@ function ShipmentDetailContent() {
                 {shipment.actualDeliveryDate && (
                   <ManifestRow
                     label="Actual Delivery"
-                    value={new Date(shipment.actualDeliveryDate).toLocaleDateString("en-US", {
+                    value={new Date(
+                      shipment.actualDeliveryDate,
+                    ).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
@@ -1526,21 +1641,35 @@ function ShipmentDetailContent() {
                 )}
                 <div className="h-px bg-slate-200 dark:bg-slate-700" />
                 <ManifestRow label="Pieces" value={`${shipment.totalPieces}`} />
-                <ManifestRow label="Gross Weight" value={`${shipment.grossWeightKg.toLocaleString()} kg`} />
+                <ManifestRow
+                  label="Gross Weight"
+                  value={`${shipment.grossWeightKg.toLocaleString()} kg`}
+                />
                 {shipment.volumeCbm && (
-                  <ManifestRow label="Volume" value={`${shipment.volumeCbm} CBM`} />
+                  <ManifestRow
+                    label="Volume"
+                    value={`${shipment.volumeCbm} CBM`}
+                  />
                 )}
                 <div className="h-px bg-slate-200 dark:bg-slate-700" />
                 <div>
-                  <span className="block text-xs text-slate-400 mb-1">Goods</span>
-                  <span className="text-sm text-black dark:text-white">{shipment.goodsDescription}</span>
+                  <span className="block text-xs text-slate-400 mb-1">
+                    Goods
+                  </span>
+                  <span className="text-sm text-black dark:text-white">
+                    {shipment.goodsDescription}
+                  </span>
                 </div>
                 {shipment.clientName && (
                   <>
                     <div className="h-px bg-slate-200 dark:bg-slate-700" />
                     <div>
-                      <span className="block text-xs text-slate-400 mb-1">Consignee</span>
-                      <span className="text-sm text-black dark:text-white">{shipment.clientName}</span>
+                      <span className="block text-xs text-slate-400 mb-1">
+                        Consignee
+                      </span>
+                      <span className="text-sm text-black dark:text-white">
+                        {shipment.clientName}
+                      </span>
                     </div>
                   </>
                 )}
@@ -1555,23 +1684,35 @@ function ShipmentDetailContent() {
               <div className="space-y-0">
                 {(() => {
                   const nowMs = Date.now();
-                  const activeMilestoneIndex = shipment.milestones.findIndex((m) => !m.isCompleted);
+                  const activeMilestoneIndex = shipment.milestones.findIndex(
+                    (m) => !m.isCompleted,
+                  );
 
                   return shipment.milestones.map((ms, i) => {
                     const mTime = new Date(ms.timestamp).getTime();
                     const hasReachedTime = !isNaN(mTime) && mTime <= nowMs;
                     const isCurrentActive = i === activeMilestoneIndex;
                     // Hold gate is pending approval ONLY for the currently active milestone if it has reached its scheduled time or shipment is paused
-                    const isPendingHold = isCurrentActive && Boolean(ms.isHoldGate) && !ms.isCompleted && (hasReachedTime || Boolean(shipment.isPaused));
+                    const isPendingHold =
+                      isCurrentActive &&
+                      Boolean(ms.isHoldGate) &&
+                      !ms.isCompleted &&
+                      (hasReachedTime || Boolean(shipment.isPaused));
                     // Active playing milestone: currently active, not held, shipment not paused, and not delivered
-                    const isActivePlaying = isCurrentActive && !isPendingHold && !shipment.isPaused && shipment.status !== "delivered";
+                    const isActivePlaying =
+                      isCurrentActive &&
+                      !isPendingHold &&
+                      !shipment.isPaused &&
+                      shipment.status !== "delivered";
 
                     return (
                       <div
                         key={ms.id}
                         className={cn(
                           "flex gap-4 p-3 transition-colors rounded-none border-0 shadow-none",
-                          isPendingHold ? "bg-amber-500/10 dark:bg-amber-950/30" : ""
+                          isPendingHold
+                            ? "bg-amber-500/10 dark:bg-amber-950/30"
+                            : "",
                         )}
                       >
                         {/* Timeline Indicator */}
@@ -1582,8 +1723,8 @@ function ShipmentDetailContent() {
                               ms.isCompleted
                                 ? "bg-[#0F313A] dark:bg-white"
                                 : isPendingHold
-                                ? "bg-amber-500"
-                                : "bg-slate-300 dark:bg-slate-600"
+                                  ? "bg-amber-500"
+                                  : "bg-slate-300 dark:bg-slate-600",
                             )}
                           />
                           {i < shipment.milestones.length - 1 && (
@@ -1600,8 +1741,8 @@ function ShipmentDetailContent() {
                                 ms.isCompleted
                                   ? "text-[#0F313A] dark:text-white"
                                   : isPendingHold
-                                  ? "text-amber-700 dark:text-amber-400"
-                                  : "text-slate-400"
+                                    ? "text-amber-700 dark:text-amber-400"
+                                    : "text-slate-400",
                               )}
                             >
                               {ms.code}
@@ -1612,8 +1753,8 @@ function ShipmentDetailContent() {
                                 ms.isCompleted
                                   ? "text-black dark:text-white"
                                   : isPendingHold
-                                  ? "text-amber-900 dark:text-amber-200"
-                                  : "text-slate-400"
+                                    ? "text-amber-900 dark:text-amber-200"
+                                    : "text-slate-400",
                               )}
                             >
                               {ms.title}
@@ -1624,7 +1765,7 @@ function ShipmentDetailContent() {
                               "text-xs mt-0.5",
                               isPendingHold
                                 ? "text-amber-800/80 dark:text-amber-300/80"
-                                : "text-slate-400"
+                                : "text-slate-400",
                             )}
                           >
                             {ms.description}
@@ -1634,16 +1775,19 @@ function ShipmentDetailContent() {
                               "text-xs mt-0.5",
                               isPendingHold
                                 ? "text-amber-800/70 dark:text-amber-300/70"
-                                : "text-slate-400"
+                                : "text-slate-400",
                             )}
                           >
                             {ms.locationName} ·{" "}
-                            {new Date(ms.timestamp).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(ms.timestamp).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </p>
 
                           {/* Action Button for Admin Hold Gate Approval */}
@@ -1669,12 +1813,18 @@ function ShipmentDetailContent() {
                                 onClick={() => handleAdvanceMilestone(ms.id)}
                                 disabled={isActionPending}
                                 className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-[#0F313A] dark:hover:border-white flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#0F313A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                                title={ms.isHoldGate ? "Mark checkpoint complete & hold" : "Mark checkpoint complete & move to next"}
+                                title={
+                                  ms.isHoldGate
+                                    ? "Mark checkpoint complete & hold"
+                                    : "Mark checkpoint complete & move to next"
+                                }
                               >
                                 <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                               </button>
                               <span className="text-[11px] text-slate-400 font-medium">
-                                {ms.isHoldGate ? "Mark complete & hold" : "Mark as Completed"}
+                                {ms.isHoldGate
+                                  ? "Mark complete & hold"
+                                  : "Mark as Completed"}
                               </span>
                             </div>
                           )}
@@ -1697,12 +1847,16 @@ function ShipmentDetailContent() {
                     key={wp.id}
                     className={cn(
                       "flex items-center justify-between py-2",
-                      wp.isCompleted ? "opacity-100" : "opacity-50"
+                      wp.isCompleted ? "opacity-100" : "opacity-50",
                     )}
                   >
                     <div>
-                      <span className="text-sm font-semibold text-black dark:text-white block">{wp.name}</span>
-                      <span className="text-xs text-slate-400">{wp.country}</span>
+                      <span className="text-sm font-semibold text-black dark:text-white block">
+                        {wp.name}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {wp.country}
+                      </span>
                     </div>
                     {wp.isCompleted && (
                       <span className="text-xs font-bold text-[#0F313A] dark:text-white uppercase tracking-wider">
@@ -1725,7 +1879,8 @@ function ShipmentDetailContent() {
               Delete Shipment {shipment.trackingCode}?
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              This will permanently delete the shipment from the registry and immediately unlink it from all connected client accounts.
+              This will permanently delete the shipment from the registry and
+              immediately unlink it from all connected client accounts.
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -1756,11 +1911,24 @@ function ShipmentDetailContent() {
 // Manifest Row
 // ──────────────────────────────────────────────
 
-function ManifestRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function ManifestRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-xs text-slate-400 shrink-0">{label}</span>
-      <span className={cn("text-sm text-black dark:text-white text-right", mono && "font-mono")}>
+      <span
+        className={cn(
+          "text-sm text-black dark:text-white text-right",
+          mono && "font-mono",
+        )}
+      >
         {value}
       </span>
     </div>

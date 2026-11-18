@@ -27,17 +27,18 @@ import {
   Check,
 } from "lucide-react";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
+import { useToast } from "@/shared/components/toast";
 
 type FilterMode = "all" | TransportMode;
 type TabStatus = "all" | "in_transit" | "paused_hold" | "delivered" | "exceptions";
 
 export default function ShipmentsPage() {
+  const toast = useToast();
   const [shipments, setShipments] = React.useState<Shipment[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [modeFilter, setModeFilter] = React.useState<FilterMode>("all");
   const [activeTab, setActiveTab] = React.useState<TabStatus>("all");
-  const [toastMessage, setToastMessage] = React.useState<{ text: string; type: "success" | "error" } | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
 
@@ -45,7 +46,7 @@ export default function ShipmentsPage() {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(code);
       setCopiedCode(code);
-      setToastMessage({ text: `Tracking code ${code} copied to clipboard`, type: "success" });
+      toast.success(`Tracking code ${code} copied to clipboard`);
       setTimeout(() => setCopiedCode(null), 2000);
     }
   };
@@ -99,10 +100,11 @@ export default function ShipmentsPage() {
   }, []);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
-    setToastMessage({ text, type });
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4500);
+    if (type === "error") {
+      toast.destructive(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   // Delete Shipment & Cascade Unlink across users
@@ -221,23 +223,6 @@ export default function ShipmentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold transition-all ${
-            toastMessage.type === "success"
-              ? "bg-emerald-600 text-white"
-              : "bg-red-600 text-white"
-          }`}
-        >
-          {toastMessage.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
-          <span>{toastMessage.text}</span>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-80">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Database Connection Error */}
       {loadError && (
         <div className="px-5 py-4 rounded-2xl bg-[#BA1C20]/10 text-[#BA1C20] text-sm font-semibold">
