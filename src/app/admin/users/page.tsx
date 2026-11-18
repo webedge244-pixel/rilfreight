@@ -59,7 +59,6 @@ export default function UsersPage() {
     email: "",
     phone: "",
     company: "",
-    emailUpdatesEnabled: true,
   });
   const [isSubmittingUser, setIsSubmittingUser] = React.useState(false);
 
@@ -153,7 +152,6 @@ export default function UsersPage() {
         name: newUserForm.name.trim(),
         email: newUserForm.email.trim().toLowerCase(),
         connectionStatus: "pending",
-        emailUpdatesEnabled: newUserForm.emailUpdatesEnabled,
         linkedShipmentIds: [],
         status: "active",
       };
@@ -173,7 +171,6 @@ export default function UsersPage() {
         email: "",
         phone: "",
         company: "",
-        emailUpdatesEnabled: true,
       });
     } catch (err: unknown) {
       console.error("Failed to create user:", err);
@@ -182,29 +179,6 @@ export default function UsersPage() {
       showToast(message, "error");
     } finally {
       setIsSubmittingUser(false);
-    }
-  };
-
-  // Toggle Email Updates
-  const handleToggleEmailUpdates = async (user: PlatformUser) => {
-    const nextState = !user.emailUpdatesEnabled;
-    // Optimistic UI update
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, emailUpdatesEnabled: nextState } : u))
-    );
-
-    try {
-      await updatePlatformUserRecord(user.id, { emailUpdatesEnabled: nextState });
-      showToast(
-        `Milestone updates ${nextState ? "enabled" : "disabled"} for ${user.name}.`
-      );
-    } catch (err) {
-      // Revert on failure
-      setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, emailUpdatesEnabled: !nextState } : u))
-      );
-      console.error("Failed to toggle email updates:", err);
-      showToast("Failed to update notification settings.", "error");
     }
   };
 
@@ -345,27 +319,6 @@ export default function UsersPage() {
                     )}
                   </div>
                 </Link>
-
-                {/* Milestone Toggle */}
-                <button
-                  type="button"
-                  onClick={() => handleToggleEmailUpdates(user)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors shrink-0",
-                    user.emailUpdatesEnabled
-                      ? "bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      : "bg-slate-200/40 dark:bg-slate-800/40 text-slate-400"
-                  )}
-                  title="Toggle automated email milestones"
-                >
-                  <span
-                    className={cn(
-                      "w-1.5 h-1.5 rounded-full",
-                      user.emailUpdatesEnabled ? "bg-[#0F313A] dark:bg-white" : "bg-slate-300 dark:bg-slate-600"
-                    )}
-                  />
-                  <span>{user.emailUpdatesEnabled ? "Emails On" : "Emails Off"}</span>
-                </button>
               </div>
 
               {/* Contact Info */}
@@ -434,9 +387,6 @@ export default function UsersPage() {
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">
                 Contact Info
               </th>
-              <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 pr-4">
-                Milestone Emails
-              </th>
               <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">
                 Actions
               </th>
@@ -498,29 +448,6 @@ export default function UsersPage() {
                         </span>
                       )}
                     </Link>
-                  </td>
-
-                  {/* Milestone Updates Toggle */}
-                  <td className="py-4 pr-4">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleEmailUpdates(user)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-colors",
-                        user.emailUpdatesEnabled
-                          ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      )}
-                      title="Click to toggle automated email milestone updates"
-                    >
-                      <span
-                        className={cn(
-                          "w-2 h-2 rounded-full",
-                          user.emailUpdatesEnabled ? "bg-[#0F313A] dark:bg-white" : "bg-slate-300 dark:bg-slate-600"
-                        )}
-                      />
-                      <span>{user.emailUpdatesEnabled ? "Enabled" : "Disabled"}</span>
-                    </button>
                   </td>
 
                   {/* Actions */}
@@ -640,29 +567,6 @@ export default function UsersPage() {
                   placeholder="e.g. Global Trade Group"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm text-black dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30 border-0"
                 />
-              </div>
-
-              <div className="pt-2 flex items-center justify-between">
-                <span className="text-xs text-slate-600 dark:text-slate-400">
-                  Send milestone updates via email
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setNewUserForm({
-                      ...newUserForm,
-                      emailUpdatesEnabled: !newUserForm.emailUpdatesEnabled,
-                    })
-                  }
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors",
-                    newUserForm.emailUpdatesEnabled
-                      ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-400"
-                  )}
-                >
-                  {newUserForm.emailUpdatesEnabled ? "Enabled" : "Disabled"}
-                </button>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">

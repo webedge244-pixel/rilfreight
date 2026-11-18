@@ -465,7 +465,6 @@ export async function createPlatformUserRecord(
     ...userData,
     id: userRef.id,
     connectionStatus: userData.connectionStatus || "pending",
-    emailUpdatesEnabled: userData.emailUpdatesEnabled ?? true,
     linkedShipmentIds: userData.linkedShipmentIds || [],
     status: userData.status || "active",
     createdAt: new Date().toISOString(),

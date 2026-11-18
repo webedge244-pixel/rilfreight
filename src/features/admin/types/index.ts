@@ -30,7 +30,7 @@ export interface PlatformUser {
   status: "active" | "inactive";
   connectionStatus: "pending" | "connected";
   firstConnectedAt?: string;
-  emailUpdatesEnabled: boolean;
+  emailUpdatesEnabled?: boolean;
   createdAt: string;
   lastLoginAt?: string;
 }

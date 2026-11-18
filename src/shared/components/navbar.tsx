@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
-  User,
   Menu,
   X,
 } from "lucide-react";
@@ -222,15 +221,6 @@ export function Navbar() {
 
       {/* Right Side: Utility Action Icons + Secondary Red Double-Sized CTA Button */}
       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        {/* User Profile */}
-        <Link
-          href="/#account"
-          className="w-12 h-12 hidden sm:flex items-center justify-center rounded-full text-slate-700 hover:text-[#0F313A] bg-slate-100/80 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BA1C20]"
-          aria-label="User Account"
-        >
-          <User className="w-5 h-5" />
-        </Link>
-
         {/* Secondary Crimson Red (#BA1C20) CTA "Track Your Shipment" Button (Twice as big) - Desktop only (lg+) */}
         <Link
           href="/tracking"

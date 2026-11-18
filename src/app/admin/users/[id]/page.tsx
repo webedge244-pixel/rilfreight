@@ -129,20 +129,6 @@ function UserDetailContent() {
     return () => unsubscribe();
   }, []);
 
-  // Toggle Email Updates
-  const handleToggleEmailUpdates = async () => {
-    if (!user) return;
-    const nextState = !user.emailUpdatesEnabled;
-    try {
-      await updatePlatformUserRecord(user.id, { emailUpdatesEnabled: nextState });
-      setUser((prev) => (prev ? { ...prev, emailUpdatesEnabled: nextState } : null));
-      showToast(`Milestone updates ${nextState ? "enabled" : "disabled"}.`);
-    } catch (err) {
-      console.error("Failed to toggle email updates:", err);
-      showToast("Failed to update notification settings.", "error");
-    }
-  };
-
   // Link Shipment Handler
   const handleLinkShipment = async (shipmentIdOrCode: string) => {
     if (!user) return;
@@ -350,32 +336,6 @@ function UserDetailContent() {
                 Client has not yet opened their personalized tracking link.
               </p>
             )}
-          </div>
-
-          <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="block text-xs font-bold text-black dark:text-white">
-                  Milestone Alerts
-                </span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
-                  Automated email dispatch
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleToggleEmailUpdates}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors",
-                  user.emailUpdatesEnabled
-                    ? "bg-[#0F313A] text-white dark:bg-white dark:text-black"
-                    : "bg-slate-200 dark:bg-slate-800 text-slate-400"
-                )}
-              >
-                {user.emailUpdatesEnabled ? "Enabled" : "Disabled"}
-              </button>
-            </div>
           </div>
         </div>
 
