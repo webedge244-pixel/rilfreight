@@ -2,12 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Menu,
-  X,
-} from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/shared/lib/utils";
 
@@ -52,7 +49,9 @@ const NAV_ITEMS: NavItem[] = [
 export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
+  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
+    null,
+  );
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Scroll detection: determine when natural navbar has scrolled off-screen
@@ -110,7 +109,11 @@ export function Navbar() {
   const isActive = (item: NavItem) => {
     if (item.href === "/" && pathname === "/") return true;
     if (item.href === "/contact" && pathname === "/contact") return true;
-    if (item.href !== "/" && item.href !== "/contact" && pathname.startsWith(item.href)) {
+    if (
+      item.href !== "/" &&
+      item.href !== "/contact" &&
+      pathname.startsWith(item.href)
+    ) {
       return true;
     }
     return false;
@@ -118,12 +121,20 @@ export function Navbar() {
 
   const renderNavContent = () => (
     <div className="max-w-[1760px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-28 sm:h-32 flex items-center justify-between gap-4 sm:gap-6">
-      {/* Left Branding Mark: Pure Text Wordmark */}
+      {/* Left Branding Mark: Emblem Logo + Wordmark */}
       <Link
         href="/"
-        className="flex items-center group select-none shrink-0"
+        className="flex items-center gap-2 group select-none shrink-0"
         aria-label="RILFREIGHT Homepage"
       >
+        <Image
+          src="/images/rilfreight-logo.svg"
+          alt="RILFREIGHT Logistics Emblem"
+          width={50}
+          height={53}
+          priority
+          className="w-12 sm:w-14 lg:w-16 h-auto object-contain transition-transform group-hover:scale-105"
+        />
         <div className="flex flex-col">
           <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#0F313A] flex items-center leading-none">
             RILFREIGHT
@@ -164,14 +175,14 @@ export function Navbar() {
                         "relative px-5 py-2 text-base lg:text-[17px] font-semibold transition-colors flex items-center gap-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#0F313A]",
                         active
                           ? "text-[#0F313A] font-bold"
-                          : "text-slate-700 hover:text-[#0F313A]"
+                          : "text-slate-700 hover:text-[#0F313A]",
                       )}
                     >
                       {item.label}
                       <ChevronDown
                         className={cn(
                           "w-4 h-4 text-slate-400 transition-transform duration-200",
-                          isOpen && "rotate-180 text-[#0F313A]"
+                          isOpen && "rotate-180 text-[#0F313A]",
                         )}
                       />
                       {active && (
@@ -204,7 +215,7 @@ export function Navbar() {
                       "relative px-5 py-2 text-base lg:text-[17px] font-semibold transition-colors flex items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#0F313A]",
                       active
                         ? "text-[#0F313A] font-bold"
-                        : "text-slate-700 hover:text-[#0F313A]"
+                        : "text-slate-700 hover:text-[#0F313A]",
                     )}
                   >
                     {item.label}
@@ -277,14 +288,14 @@ export function Navbar() {
                             }
                             className={cn(
                               "w-full flex items-center justify-between py-3 px-2 font-black uppercase tracking-tight text-2xl sm:text-3xl transition-colors relative leading-none",
-                              active ? "text-[#0F313A]" : "text-slate-900"
+                              active ? "text-[#0F313A]" : "text-slate-900",
                             )}
                           >
                             <span>{item.label}</span>
                             <ChevronDown
                               className={cn(
                                 "w-6 h-6 text-slate-400 transition-transform",
-                                isOpen && "rotate-180 text-[#0F313A]"
+                                isOpen && "rotate-180 text-[#0F313A]",
                               )}
                             />
                             {active && (
@@ -313,7 +324,7 @@ export function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                           className={cn(
                             "block py-3 px-2 font-black uppercase tracking-tight text-2xl sm:text-3xl transition-colors relative leading-none",
-                            active ? "text-[#0F313A]" : "text-slate-900"
+                            active ? "text-[#0F313A]" : "text-slate-900",
                           )}
                         >
                           {item.label}
@@ -352,7 +363,7 @@ export function Navbar() {
           "w-full bg-white transition-colors",
           mobileMenuOpen
             ? "fixed top-0 left-0 right-0 z-50 border-b border-slate-100"
-            : "relative z-40"
+            : "relative z-40",
         )}
       >
         {renderNavContent()}
