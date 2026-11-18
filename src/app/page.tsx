@@ -1588,7 +1588,7 @@ export default function HomePage() {
                     rel="noopener noreferrer"
                     className="text-[#BA1C20] hover:underline"
                   >
-                    Message us on WhatsApp at +1 (920) 417-3547
+                    WhatsApp us at +1 (920) 417-3547
                   </a>
                 </h2>
               </div>
