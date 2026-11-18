@@ -69,6 +69,7 @@ export interface TrackingMilestone {
   dwellHours?: number; // Operational turnaround / dwell time in hours
   isHoldGate?: boolean; // Pause gate flag (customs hold for international shipments)
   status?: string;
+  isCustom?: boolean; // True if manually created or edited by admin
 }
 
 /**

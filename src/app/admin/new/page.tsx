@@ -4,7 +4,7 @@ import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
-import { ArrowDown, PackagePlus } from "lucide-react";
+import { ArrowDown, PackagePlus, X } from "lucide-react";
 import type {
   TransportMode,
   Shipment,
@@ -110,6 +110,35 @@ export default function NewShipmentPage() {
   // Any edit that requires a new route flips this back to false.
   const [hasValidRoute, setHasValidRoute] = React.useState(false);
 
+  interface PendingRouteChange {
+    title: string;
+    description: string;
+    applyFormState: Partial<typeof formState>;
+    applyMode?: TransportMode;
+  }
+  const [pendingChange, setPendingChange] = React.useState<PendingRouteChange | null>(null);
+
+  // Active route snapshot used to revert when cancelling a change
+  const activeRouteSnapshot = React.useRef({
+    originName: formState.originName,
+    originCode: formState.originCode,
+    originCountry: formState.originCountry,
+    originCountryCode: formState.originCountryCode,
+    originCoordinates: formState.originCoordinates,
+    destinationName: formState.destinationName,
+    destinationCode: formState.destinationCode,
+    destinationCountry: formState.destinationCountry,
+    destinationCountryCode: formState.destinationCountryCode,
+    destinationCoordinates: formState.destinationCoordinates,
+    departureDate: formState.departureDate,
+    estimatedDeliveryDate: formState.estimatedDeliveryDate,
+    mode,
+  });
+
+  const hasCustomMilestones = React.useMemo(() => {
+    return milestones.some((m) => m.isCustom || m.id.startsWith("ms-manual-"));
+  }, [milestones]);
+
   /**
    * Fields whose change invalidates a previously computed route.
    * Cargo particulars (pieces, weight, volume, consignee, description)
@@ -139,16 +168,214 @@ export default function NewShipmentPage() {
     setTrackingCode("");
   }, []);
 
+  const requestRouteChange = React.useCallback(
+    (change: {
+      title: string;
+      description: string;
+      applyFormState: Partial<typeof formState>;
+      applyMode?: TransportMode;
+    }) => {
+      if (hasCustomMilestones) {
+        setPendingChange(change);
+      } else {
+        setFormState((prev) => ({ ...prev, ...change.applyFormState }));
+        if (change.applyMode) setMode(change.applyMode);
+        invalidateRoute();
+      }
+    },
+    [hasCustomMilestones, invalidateRoute]
+  );
+
+  const handleCancelChange = React.useCallback(() => {
+    if (!pendingChange) return;
+    setFormState((prev) => ({
+      ...prev,
+      originName: activeRouteSnapshot.current.originName,
+      originCode: activeRouteSnapshot.current.originCode,
+      originCountry: activeRouteSnapshot.current.originCountry,
+      originCountryCode: activeRouteSnapshot.current.originCountryCode,
+      originCoordinates: activeRouteSnapshot.current.originCoordinates,
+      destinationName: activeRouteSnapshot.current.destinationName,
+      destinationCode: activeRouteSnapshot.current.destinationCode,
+      destinationCountry: activeRouteSnapshot.current.destinationCountry,
+      destinationCountryCode: activeRouteSnapshot.current.destinationCountryCode,
+      destinationCoordinates: activeRouteSnapshot.current.destinationCoordinates,
+      departureDate: activeRouteSnapshot.current.departureDate,
+      estimatedDeliveryDate: activeRouteSnapshot.current.estimatedDeliveryDate,
+    }));
+    setMode(activeRouteSnapshot.current.mode);
+    setPendingChange(null);
+  }, [pendingChange]);
+
+  const handleProceedClear = React.useCallback(() => {
+    if (!pendingChange) return;
+    setFormState((prev) => ({ ...prev, ...pendingChange.applyFormState }));
+    if (pendingChange.applyMode) setMode(pendingChange.applyMode);
+    invalidateRoute();
+    setPendingChange(null);
+  }, [pendingChange, invalidateRoute]);
+
+  const handleRecalculateWithEdited = React.useCallback(async () => {
+    if (!pendingChange) return;
+
+    const nextFormState = { ...formState, ...pendingChange.applyFormState };
+    const nextMode = pendingChange.applyMode || mode;
+
+    setFormState(nextFormState);
+    if (pendingChange.applyMode) setMode(pendingChange.applyMode);
+    setPendingChange(null);
+
+    setIsCalculatingRoute(true);
+    setErrorMessage(null);
+
+    // Keep existing custom milestones
+    const existingCustomMilestones = milestones.filter(
+      (m) => m.isCustom || m.id.startsWith("ms-manual-")
+    );
+
+    const oldDepMs = Date.parse(formState.departureDate) || Date.now();
+    const oldDelMs = Date.parse(formState.estimatedDeliveryDate) || oldDepMs + 86400000 * 14;
+    const oldDuration = Math.max(oldDelMs - oldDepMs, 3600000);
+
+    const newDepMs = Date.parse(nextFormState.departureDate) || Date.now();
+    const newDelMs = Date.parse(nextFormState.estimatedDeliveryDate) || newDepMs + 86400000 * 14;
+    const newDuration = Math.max(newDelMs - newDepMs, 3600000);
+
+    try {
+      const res = await fetch("/api/route/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: nextMode,
+          originQuery: nextFormState.originName,
+          destQuery: nextFormState.destinationName,
+          originCoords: nextFormState.originCoordinates,
+          destCoords: nextFormState.destinationCoordinates,
+          departureDate: new Date(nextFormState.departureDate).toISOString(),
+          estimatedDeliveryDate: nextFormState.estimatedDeliveryDate
+            ? new Date(nextFormState.estimatedDeliveryDate).toISOString()
+            : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to calculate realistic route");
+      }
+
+      setRouteCoordinates(data.coordinates || data.routeCoordinates || []);
+      setWaypoints(data.waypoints || []);
+      setTrackingCode(data.trackingCode || data.carrierTrackingCode || "");
+      setRouteSummary({
+        distanceKm: data.distanceKm,
+        durationHours: data.durationHours,
+        passages: data.passages,
+      });
+
+      if (data.logisticsDefaults || data.conveyanceDefaults) {
+        const d = data.logisticsDefaults || data.conveyanceDefaults;
+        setFormState((prev) => ({
+          ...prev,
+          conveyanceName: d.conveyanceName || prev.conveyanceName,
+          conveyanceIdentifier: d.conveyanceIdentifier || prev.conveyanceIdentifier,
+          voyageNumber: d.voyageCode || prev.voyageNumber,
+          consignmentReference: d.consignmentReference || prev.consignmentReference,
+          containerNumber: d.containerNumber || prev.containerNumber,
+          sealNumber: d.sealNumber || prev.sealNumber,
+        }));
+      }
+
+      if (data.originGateway) {
+        setFormState((prev) => ({
+          ...prev,
+          originCode: data.originGateway.code || prev.originCode,
+          originCountry: data.originGateway.country || prev.originCountry,
+          originCountryCode: data.originGateway.countryCode || prev.originCountryCode,
+        }));
+      }
+      if (data.destGateway) {
+        setFormState((prev) => ({
+          ...prev,
+          destinationCode: data.destGateway.code || prev.destinationCode,
+          destinationCountry: data.destGateway.country || prev.destinationCountry,
+          destinationCountryCode: data.destGateway.countryCode || prev.destinationCountryCode,
+        }));
+      }
+
+      const generatedMilestones: TrackingMilestone[] = data.milestones || [];
+
+      // Scale custom milestones into the new timeline window
+      const scaledCustom = existingCustomMilestones.map((m, cIdx) => {
+        const mMs = Date.parse(m.timestamp);
+        const fraction = Number.isFinite(mMs)
+          ? Math.min(Math.max((mMs - oldDepMs) / oldDuration, 0.05), 0.95)
+          : 0.5;
+        const targetMs = newDepMs + fraction * newDuration;
+        const uniqueId = m.id.startsWith("ms-manual-")
+          ? m.id
+          : `ms-custom-${cIdx}-${Date.now()}`;
+        return {
+          ...m,
+          id: uniqueId,
+          isCustom: true,
+          timestamp: new Date(targetMs).toISOString(),
+        };
+      });
+
+      const merged = [...generatedMilestones, ...scaledCustom];
+      merged.sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+
+      const normalized = normalizeMilestones(merged, {
+        departureMs: newDepMs,
+        deliveryMs: newDelMs,
+      });
+
+      setMilestones(normalized);
+      setHasValidRoute(true);
+
+      activeRouteSnapshot.current = {
+        originName: nextFormState.originName,
+        originCode: nextFormState.originCode,
+        originCountry: nextFormState.originCountry,
+        originCountryCode: nextFormState.originCountryCode,
+        originCoordinates: nextFormState.originCoordinates,
+        destinationName: nextFormState.destinationName,
+        destinationCode: nextFormState.destinationCode,
+        destinationCountry: nextFormState.destinationCountry,
+        destinationCountryCode: nextFormState.destinationCountryCode,
+        destinationCoordinates: nextFormState.destinationCoordinates,
+        departureDate: nextFormState.departureDate,
+        estimatedDeliveryDate: nextFormState.estimatedDeliveryDate,
+        mode: nextMode,
+      };
+    } catch (err: unknown) {
+      console.error("Route calculation error:", err);
+      setErrorMessage(
+        err instanceof Error ? err.message : "Route calculation error"
+      );
+    } finally {
+      setIsCalculatingRoute(false);
+    }
+  }, [pendingChange, formState, mode, milestones]);
+
   const handleChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
     if (ROUTE_FIELDS.has(field)) {
-      invalidateRoute();
+      if (hasCustomMilestones) {
+        requestRouteChange({
+          title: `Changing ${field}`,
+          description: `Changing this field will affect your edited timeline.`,
+          applyFormState: { [field]: value },
+        });
+      } else {
+        invalidateRoute();
+      }
     }
   };
 
   const handleToggleHoldGate = (index: number) => {
     setMilestones((prev) =>
-      prev.map((m, i) => (i === index ? { ...m, isHoldGate: !m.isHoldGate } : m))
+      prev.map((m, i) => (i === index ? { ...m, isHoldGate: !m.isHoldGate, isCustom: true } : m))
     );
   };
 
@@ -207,7 +434,7 @@ export default function NewShipmentPage() {
    */
   const handleAddMilestone = (milestone: TrackingMilestone) => {
     setMilestones((prev) =>
-      normalizeMilestones([...prev, milestone], { departureMs, deliveryMs })
+      normalizeMilestones([...prev, { ...milestone, isCustom: true }], { departureMs, deliveryMs })
     );
   };
 
@@ -216,7 +443,7 @@ export default function NewShipmentPage() {
    */
   const handleDeleteMilestone = (index: number) => {
     setMilestones((prev) => {
-      return prev.filter((_, idx) => idx !== index);
+      return prev.filter((_, idx) => idx !== index).map((m) => ({ ...m, isCustom: true }));
     });
   };
 
@@ -239,7 +466,7 @@ export default function NewShipmentPage() {
     patch: Partial<TrackingMilestone>
   ) => {
     setMilestones((prev) => {
-      let next = prev.map((m, i) => (i === index ? { ...m, ...patch } : m));
+      let next = prev.map((m, i) => (i === index ? { ...m, ...patch, isCustom: true } : m));
 
       // If timestamp changed, cascade adjacent gaps sequentially to all downstream milestones
       if (patch.timestamp && patch.timestamp !== prev[index]?.timestamp) {
@@ -285,12 +512,24 @@ export default function NewShipmentPage() {
    */
   const handleReorderMilestone = (fromIndex: number, toIndex: number) => {
     setMilestones((prev) => {
-      return swapMilestonesWithTimestampInheritance(prev, fromIndex, toIndex);
+      return swapMilestonesWithTimestampInheritance(prev, fromIndex, toIndex).map((m) => ({
+        ...m,
+        isCustom: true,
+      }));
     });
   };
 
   // Route Calculation Trigger
   const handleGenerateRoute = async () => {
+    if (hasCustomMilestones) {
+      setPendingChange({
+        title: "Regenerating Route",
+        description: "Recalculating route for the selected locations and dates.",
+        applyFormState: {},
+      });
+      return;
+    }
+
     setIsCalculatingRoute(true);
     setErrorMessage(null);
 
@@ -360,6 +599,22 @@ export default function NewShipmentPage() {
 
       // Route is now in sync with the route inputs — downstream stage unlocked.
       setHasValidRoute(true);
+
+      activeRouteSnapshot.current = {
+        originName: formState.originName,
+        originCode: data.originGateway?.code || formState.originCode,
+        originCountry: data.originGateway?.country || formState.originCountry,
+        originCountryCode: data.originGateway?.countryCode || formState.originCountryCode,
+        originCoordinates: formState.originCoordinates,
+        destinationName: formState.destinationName,
+        destinationCode: data.destGateway?.code || formState.destinationCode,
+        destinationCountry: data.destGateway?.country || formState.destinationCountry,
+        destinationCountryCode: data.destGateway?.countryCode || formState.destinationCountryCode,
+        destinationCoordinates: formState.destinationCoordinates,
+        departureDate: formState.departureDate,
+        estimatedDeliveryDate: formState.estimatedDeliveryDate,
+        mode,
+      };
     } catch (err: unknown) {
       console.error("Route calculation error:", err);
       setErrorMessage(
@@ -600,8 +855,13 @@ export default function NewShipmentPage() {
                 id="transport-mode"
                 value={mode}
                 onChange={(e) => {
-                  setMode(e.target.value as TransportMode);
-                  invalidateRoute();
+                  const newMode = e.target.value as TransportMode;
+                  requestRouteChange({
+                    title: "Changing Transport Mode",
+                    description: `Switching to ${newMode} freight will affect your timeline corridor.`,
+                    applyFormState: {},
+                    applyMode: newMode,
+                  });
                 }}
                 className="h-14 border-0 bg-[#0F313A] px-5 py-4 text-base font-semibold text-white focus:ring-2 focus:ring-white/30 dark:border-0 dark:bg-[#0F313A] dark:text-white dark:focus:ring-white/30"
                 chevronClassName="text-white [&>svg]:h-5 [&>svg]:w-5"
@@ -626,17 +886,24 @@ export default function NewShipmentPage() {
                 codeValue={formState.originCode}
                 mode={mode}
                 placeholder="Search origin port, airport, or hub..."
-                onChangeText={(v) => handleChange("originName", v)}
+                onChangeText={(v) => {
+                  setFormState((prev) => ({ ...prev, originName: v }));
+                  if (!hasCustomMilestones) {
+                    invalidateRoute();
+                  }
+                }}
                 onSelect={(loc) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    originName: loc.name,
-                    originCode: loc.code || "",
-                    originCountry: loc.country,
-                    originCountryCode: loc.countryCode || "US",
-                    originCoordinates: loc.coordinates,
-                  }));
-                  invalidateRoute();
+                  requestRouteChange({
+                    title: "Changing Origin Location",
+                    description: `Switching origin to ${loc.name} will recalculate the route corridor.`,
+                    applyFormState: {
+                      originName: loc.name,
+                      originCode: loc.code || "",
+                      originCountry: loc.country,
+                      originCountryCode: loc.countryCode || "US",
+                      originCoordinates: loc.coordinates,
+                    },
+                  });
                 }}
               />
 
@@ -646,17 +913,24 @@ export default function NewShipmentPage() {
                 codeValue={formState.destinationCode}
                 mode={mode}
                 placeholder="Search destination facility..."
-                onChangeText={(v) => handleChange("destinationName", v)}
+                onChangeText={(v) => {
+                  setFormState((prev) => ({ ...prev, destinationName: v }));
+                  if (!hasCustomMilestones) {
+                    invalidateRoute();
+                  }
+                }}
                 onSelect={(loc) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    destinationName: loc.name,
-                    destinationCode: loc.code || "",
-                    destinationCountry: loc.country,
-                    destinationCountryCode: loc.countryCode || "US",
-                    destinationCoordinates: loc.coordinates,
-                  }));
-                  invalidateRoute();
+                  requestRouteChange({
+                    title: "Changing Destination Location",
+                    description: `Switching destination to ${loc.name} will recalculate the route corridor.`,
+                    applyFormState: {
+                      destinationName: loc.name,
+                      destinationCode: loc.code || "",
+                      destinationCountry: loc.country,
+                      destinationCountryCode: loc.countryCode || "US",
+                      destinationCoordinates: loc.coordinates,
+                    },
+                  });
                 }}
               />
             </div>
@@ -670,7 +944,14 @@ export default function NewShipmentPage() {
                 <input
                   type="datetime-local"
                   value={formState.departureDate}
-                  onChange={(e) => handleChange("departureDate", e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    requestRouteChange({
+                      title: "Changing Departure Date",
+                      description: "Changing dates will affect your edited timeline.",
+                      applyFormState: { departureDate: val },
+                    });
+                  }}
                   className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                 />
               </div>
@@ -681,7 +962,14 @@ export default function NewShipmentPage() {
                 <input
                   type="datetime-local"
                   value={formState.estimatedDeliveryDate}
-                  onChange={(e) => handleChange("estimatedDeliveryDate", e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    requestRouteChange({
+                      title: "Changing Delivery Date",
+                      description: "Changing dates will affect your edited timeline.",
+                      applyFormState: { estimatedDeliveryDate: val },
+                    });
+                  }}
                   className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F313A] dark:focus:ring-white/30"
                 />
               </div>
@@ -895,6 +1183,51 @@ export default function NewShipmentPage() {
           </div>
         </div>
       </form>
+
+      {/* Route Change Confirmation Modal for Edited Timeline */}
+      {pendingChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            {/* Close / Cancel Button */}
+            <button
+              type="button"
+              onClick={handleCancelChange}
+              className="absolute top-5 right-5 p-2 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-950/40 transition-colors"
+              aria-label="Cancel and close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Information (2 lines) */}
+            <div className="pr-8 space-y-1.5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Changing dates or location will affect your edited timeline
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Do you want to clear and recreate, or create with your edited timeline?
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleProceedClear}
+                className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              >
+                Clear &amp; Recreate
+              </button>
+              <button
+                type="button"
+                onClick={handleRecalculateWithEdited}
+                className="flex-1 px-4 py-3 rounded-xl bg-[#0F313A] dark:bg-emerald-500 text-white dark:text-slate-950 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity shadow-md"
+              >
+                Create with edited timeline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

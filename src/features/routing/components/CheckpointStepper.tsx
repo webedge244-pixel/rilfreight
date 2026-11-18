@@ -92,6 +92,7 @@ export default function CheckpointStepper({
       isCompleted: false,
       dwellHours: 0,
       status: "pending",
+      isCustom: true,
     };
 
     // Snapshot is taken before the insert so cancelling removes the draft.
@@ -167,7 +168,7 @@ export default function CheckpointStepper({
             : "";
 
           return (
-            <React.Fragment key={m.id || `ms-${idx}`}>
+            <React.Fragment key={`${m.id || "ms"}-${idx}`}>
               {idx > 0 && (
                 <div className="border-t border-slate-200/60 dark:border-slate-800/60" />
               )}
