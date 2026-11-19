@@ -81,6 +81,7 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
           const isCompleted = m.isCompleted;
           const isActive = m.id === milestones[activeMilestoneIndex]?.id && !isCompleted;
           const last = idx === visibleMilestones.length - 1;
+          const isWarningActive = last && Boolean(m.showAsWarning);
 
           const dateStr = m.timestamp
             ? new Date(m.timestamp).toLocaleString(undefined, {
@@ -95,20 +96,26 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
           return (
             <div
               key={m.id || `ms-${idx}`}
-              className={cn("relative pt-4", last ? "pb-0" : "pb-5")}
+              className={cn(
+                "relative pt-4 transition-colors",
+                last ? "pb-0" : "pb-5",
+                isWarningActive ? "bg-amber-500/10 dark:bg-amber-950/30 rounded-2xl p-3 -ml-3" : ""
+              )}
             >
               {/* Minimal Node Marker */}
               <div
                 className={cn(
                   "absolute -left-7 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[10px] font-bold transition-colors",
-                  isCompleted
+                  isWarningActive
+                    ? "border-amber-500 bg-amber-500 text-white"
+                    : isCompleted
                     ? "border-emerald-500 bg-emerald-500 text-white"
                     : isActive
                     ? "border-[#0F313A] bg-[#0F313A] text-white dark:border-white dark:bg-white dark:text-black ring-2 ring-sky-400/30"
                     : "border-slate-300 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500"
                 )}
               >
-                {isCompleted ? (
+                {isCompleted && !isWarningActive ? (
                   <Check className="h-3 w-3 stroke-[3]" />
                 ) : (
                   <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -122,28 +129,59 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
                   <h4
                     className={cn(
                       "text-sm font-semibold transition-colors",
-                      isCompleted || isActive
+                      isWarningActive
+                        ? "text-amber-900 dark:text-amber-200"
+                        : isCompleted || isActive
                         ? "text-slate-900 dark:text-white"
                         : "text-slate-400 dark:text-slate-500"
                     )}
                   >
                     {getMilestoneTitle(m)}
                   </h4>
-                  <span className="whitespace-nowrap font-mono text-[11px] text-slate-400 dark:text-slate-500">
+                  <span
+                    className={cn(
+                      "whitespace-nowrap font-mono text-[11px]",
+                      isWarningActive
+                        ? "text-amber-700 dark:text-amber-400"
+                        : "text-slate-400 dark:text-slate-500"
+                    )}
+                  >
                     {dateStr}
                   </span>
                 </div>
 
                 {/* Technical Metadata Row (Code, Location Code) */}
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] font-mono">
-                  <span className="font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <span
+                    className={cn(
+                      "font-bold uppercase tracking-wider",
+                      isWarningActive
+                        ? "text-amber-700 dark:text-amber-400"
+                        : "text-slate-400 dark:text-slate-500"
+                    )}
+                  >
                     {m.code}
                   </span>
 
                   {m.locationCode ? (
                     <>
-                      <span className="text-slate-300 dark:text-slate-600">&middot;</span>
-                      <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      <span
+                        className={cn(
+                          isWarningActive
+                            ? "text-amber-400 dark:text-amber-600"
+                            : "text-slate-300 dark:text-slate-600"
+                        )}
+                      >
+                        &middot;
+                      </span>
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          isWarningActive
+                            ? "text-amber-800 dark:text-amber-300"
+                            : "text-slate-500 dark:text-slate-400"
+                        )}
+                      >
                         {m.locationCode}
                       </span>
                     </>
@@ -152,14 +190,28 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
 
                 {/* Location Name */}
                 {m.locationName && (
-                  <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                  <p
+                    className={cn(
+                      "mt-1 text-xs font-medium",
+                      isWarningActive
+                        ? "text-amber-800/80 dark:text-amber-300/80"
+                        : "text-slate-600 dark:text-slate-300"
+                    )}
+                  >
                     {m.locationName}
                   </p>
                 )}
 
                 {/* Description */}
                 {m.description && (
-                  <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p
+                    className={cn(
+                      "mt-0.5 text-xs leading-relaxed",
+                      isWarningActive
+                        ? "text-amber-800/70 dark:text-amber-300/70"
+                        : "text-slate-500 dark:text-slate-400"
+                    )}
+                  >
                     {m.description}
                   </p>
                 )}

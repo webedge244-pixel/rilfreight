@@ -532,6 +532,12 @@ function NewShipmentContent() {
     );
   };
 
+  const handleToggleShowAsWarning = (index: number) => {
+    setMilestones((prev) =>
+      prev.map((m, i) => (i === index ? { ...m, showAsWarning: !m.showAsWarning, isCustom: true } : m))
+    );
+  };
+
   /* ------------------------------------------------------------------ *
    * Milestone timeline guardrails
    * ------------------------------------------------------------------ */
@@ -884,6 +890,7 @@ function NewShipmentContent() {
             ...m,
             isCompleted: hasPassed,
             isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
+            showAsWarning: Boolean(m.showAsWarning),
           };
         }),
 
@@ -1310,6 +1317,7 @@ function NewShipmentContent() {
             <CheckpointStepper
               milestones={milestones}
               onToggleHoldGate={handleToggleHoldGate}
+              onToggleShowAsWarning={handleToggleShowAsWarning}
               onUpdateMilestone={handleUpdateMilestone}
               onReorder={handleReorderMilestone}
               onRestoreMilestones={handleRestoreMilestones}

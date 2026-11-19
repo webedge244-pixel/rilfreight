@@ -599,6 +599,7 @@ function ShipmentDetailContent() {
             isCompleted: hasPassed,
             status: hasPassed ? "completed" : "pending",
             isHoldGate: hasPassed ? false : Boolean(m.isHoldGate),
+            showAsWarning: Boolean(m.showAsWarning),
           };
         },
       );
@@ -1362,6 +1363,23 @@ function ShipmentDetailContent() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          checked={Boolean(ms.showAsWarning)}
+                          onClick={() =>
+                            handleMilestoneChange(
+                              index,
+                              "showAsWarning",
+                              !ms.showAsWarning,
+                            )
+                          }
+                          readOnly
+                          className="w-3.5 h-3.5 text-amber-500 cursor-pointer"
+                        />
+                        <span className="font-semibold">show as warning</span>
+                      </label>
+
                       <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1688,6 +1706,14 @@ function ShipmentDetailContent() {
                     (m) => !m.isCompleted,
                   );
 
+                  let lastOccurredIndex = -1;
+                  shipment.milestones.forEach((m, idx) => {
+                    const mTime = new Date(m.timestamp).getTime();
+                    if (m.isCompleted || (!isNaN(mTime) && mTime <= nowMs)) {
+                      lastOccurredIndex = idx;
+                    }
+                  });
+
                   return shipment.milestones.map((ms, i) => {
                     const mTime = new Date(ms.timestamp).getTime();
                     const hasReachedTime = !isNaN(mTime) && mTime <= nowMs;
@@ -1698,6 +1724,9 @@ function ShipmentDetailContent() {
                       Boolean(ms.isHoldGate) &&
                       !ms.isCompleted &&
                       (hasReachedTime || Boolean(shipment.isPaused));
+                    const isWarningActive =
+                      i === lastOccurredIndex && Boolean(ms.showAsWarning);
+                    const isHeldOrWarning = isPendingHold || isWarningActive;
                     // Active playing milestone: currently active, not held, shipment not paused, and not delivered
                     const isActivePlaying =
                       isCurrentActive &&
@@ -1710,7 +1739,7 @@ function ShipmentDetailContent() {
                         key={ms.id}
                         className={cn(
                           "flex gap-4 p-3 transition-colors rounded-none border-0 shadow-none",
-                          isPendingHold
+                          isHeldOrWarning
                             ? "bg-amber-500/10 dark:bg-amber-950/30"
                             : "",
                         )}
@@ -1720,10 +1749,10 @@ function ShipmentDetailContent() {
                           <div
                             className={cn(
                               "w-3 h-3 rounded-full shrink-0 mt-1",
-                              ms.isCompleted
-                                ? "bg-[#0F313A] dark:bg-white"
-                                : isPendingHold
-                                  ? "bg-amber-500"
+                              isHeldOrWarning
+                                ? "bg-amber-500"
+                                : ms.isCompleted
+                                  ? "bg-[#0F313A] dark:bg-white"
                                   : "bg-slate-300 dark:bg-slate-600",
                             )}
                           />
@@ -1738,10 +1767,10 @@ function ShipmentDetailContent() {
                             <span
                               className={cn(
                                 "font-mono text-xs font-bold uppercase tracking-wider",
-                                ms.isCompleted
-                                  ? "text-[#0F313A] dark:text-white"
-                                  : isPendingHold
-                                    ? "text-amber-700 dark:text-amber-400"
+                                isHeldOrWarning
+                                  ? "text-amber-700 dark:text-amber-400"
+                                  : ms.isCompleted
+                                    ? "text-[#0F313A] dark:text-white"
                                     : "text-slate-400",
                               )}
                             >
@@ -1750,10 +1779,10 @@ function ShipmentDetailContent() {
                             <span
                               className={cn(
                                 "text-sm font-semibold",
-                                ms.isCompleted
-                                  ? "text-black dark:text-white"
-                                  : isPendingHold
-                                    ? "text-amber-900 dark:text-amber-200"
+                                isHeldOrWarning
+                                  ? "text-amber-900 dark:text-amber-200"
+                                  : ms.isCompleted
+                                    ? "text-black dark:text-white"
                                     : "text-slate-400",
                               )}
                             >
@@ -1763,7 +1792,7 @@ function ShipmentDetailContent() {
                           <p
                             className={cn(
                               "text-xs mt-0.5",
-                              isPendingHold
+                              isHeldOrWarning
                                 ? "text-amber-800/80 dark:text-amber-300/80"
                                 : "text-slate-400",
                             )}
@@ -1773,7 +1802,7 @@ function ShipmentDetailContent() {
                           <p
                             className={cn(
                               "text-xs mt-0.5",
-                              isPendingHold
+                              isHeldOrWarning
                                 ? "text-amber-800/70 dark:text-amber-300/70"
                                 : "text-slate-400",
                             )}

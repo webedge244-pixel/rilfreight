@@ -15,6 +15,7 @@ import {
 export interface CheckpointStepperProps {
   milestones: TrackingMilestone[];
   onToggleHoldGate: (index: number) => void;
+  onToggleShowAsWarning?: (index: number) => void;
   /** Applies a patch to a single milestone (used by the inline editor). */
   onUpdateMilestone?: (index: number, patch: Partial<TrackingMilestone>) => void;
   /** Moves a milestone to a new position in the timeline. */
@@ -46,6 +47,7 @@ function fromLocalInput(value: string): string {
 export default function CheckpointStepper({
   milestones,
   onToggleHoldGate,
+  onToggleShowAsWarning,
   onUpdateMilestone,
   onReorder,
   onRestoreMilestones,
@@ -516,6 +518,20 @@ export default function CheckpointStepper({
                             Continuous Transit
                           </span>
                         )}
+                      </div>
+
+                      {/* Show as warning radio control */}
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                          <input
+                            type="radio"
+                            checked={Boolean(m.showAsWarning)}
+                            onClick={() => onToggleShowAsWarning?.(idx)}
+                            readOnly
+                            className="w-3.5 h-3.5 text-amber-500 cursor-pointer"
+                          />
+                          <span className="font-semibold text-xs">show as warning</span>
+                        </label>
                       </div>
                     </>
                   )}
