@@ -50,15 +50,15 @@ import {
   CopyPlus,
 } from "lucide-react";
 
-// SSR-safe dynamic import for the MapLibre GL vector map
-const LiveTrackingMap = dynamic(
-  () => import("@/features/tracking/components/LiveTrackingMapLibre"),
+// SSR-safe dynamic import for the timeline-driven MapLibre map
+const TimelineRouteMap = dynamic(
+  () => import("@/features/tracking/components/TimelineRouteMap"),
   {
     ssr: false,
     loading: () => (
       <div className="h-[280px] sm:h-[360px] rounded-2xl bg-slate-900 flex items-center justify-center">
         <span className="text-sm text-slate-300 font-semibold">
-          Loading Vector Route Map...
+          Loading timeline route map...
         </span>
       </div>
     ),
@@ -1568,12 +1568,35 @@ function ShipmentDetailContent() {
                 </div>
               </div>
 
-              {/* Live Route Map (Snug under progress bar and flexes to fill container height) */}
+              {/* Timeline-driven route map (fills the card height) */}
               <div className="w-full flex-1 min-h-[380px]">
-                <LiveTrackingMap
-                  shipment={shipment}
+                <TimelineRouteMap
+                  mode={shipment.mode}
+                  milestones={shipment.milestones}
+                  origin={{
+                    name: shipment.originName,
+                    code: shipment.originCode,
+                    country: shipment.originCountry,
+                    coordinates: shipment.originCoordinates,
+                  }}
+                  destination={{
+                    name: shipment.destinationName,
+                    code: shipment.destinationCode,
+                    country: shipment.destinationCountry,
+                    coordinates: shipment.destinationCoordinates,
+                  }}
+                  waypoints={shipment.waypoints}
+                  routeCoordinates={shipment.routeCoordinates}
+                  paused={shipment.isPaused}
+                  pausedCoordinates={shipment.pausedCoordinates}
+                  vehicleTitle={shipment.conveyanceName}
+                  vehicleSubtitle={
+                    shipment.voyageNumber
+                      ? `Voyage ${shipment.voyageNumber}`
+                      : shipment.conveyanceIdentifier || undefined
+                  }
                   height="100%"
-                  className="rounded-3xl border-0"
+                  className="rounded-3xl"
                 />
               </div>
             </div>

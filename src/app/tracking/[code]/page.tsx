@@ -25,15 +25,15 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-// Dynamically load LiveTrackingMapLibre with SSR disabled to prevent window reference errors
-const LiveTrackingMap = dynamic(
-  () => import("@/features/tracking/components/LiveTrackingMapLibre"),
+// Dynamically load the timeline-driven map with SSR disabled
+const TimelineRouteMap = dynamic(
+  () => import("@/features/tracking/components/TimelineRouteMap"),
   {
     ssr: false,
     loading: () => (
       <div className="w-full h-[620px] rounded-3xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3">
         <div className="w-10 h-10 border-3 border-[#0284c7] border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm font-semibold tracking-wide text-slate-300">Initializing High-Definition Vector Telemetry...</p>
+        <p className="text-sm font-semibold tracking-wide text-slate-300">Mapping cleared checkpoints...</p>
       </div>
     ),
   }
@@ -296,6 +296,7 @@ function TrackingDetailContent() {
   const formatStatus = (s: string) => s.replace(/_/g, " ").toUpperCase();
 
   const isDelivered = shipment.status === "delivered";
+  const isGroundMode = shipment.mode === "rail" || shipment.mode === "road";
   const etaDate = shipment.actualDeliveryDate || shipment.estimatedDeliveryDate;
 
   return (
@@ -381,20 +382,47 @@ function TrackingDetailContent() {
               <div className="absolute top-4 left-4 right-4 z-[400] flex items-center justify-between pointer-events-none">
                 <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-sm">
                   <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-black dark:text-white">
-                    Live Geodesic Trajectory
+                    {isGroundMode ? "Timeline Checkpoints" : "Timeline Checkpoint Route"}
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Real-time AIS / ADS-B vessel positioning & corridor partition
+                    {isGroundMode
+                      ? "Recorded checkpoints marked as each timeline event clears"
+                      : "Path built from cleared checkpoints, pinned at the last event"}
                   </p>
                 </div>
                 <div className="hidden sm:block bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl font-mono text-[11px] text-slate-600 dark:text-slate-300 shadow-sm">
-                  GPS Lat/Lon Tracking
+                  Timeline Synced
                 </div>
               </div>
 
               {/* Interactive Vector Map */}
-              <LiveTrackingMap
-                shipment={shipment}
+              <TimelineRouteMap
+                mode={shipment.mode}
+                milestones={shipment.milestones}
+                origin={{
+                  name: shipment.originName,
+                  code: shipment.originCode,
+                  country: shipment.originCountry,
+                  coordinates: shipment.originCoordinates,
+                }}
+                destination={{
+                  name: shipment.destinationName,
+                  code: shipment.destinationCode,
+                  country: shipment.destinationCountry,
+                  coordinates: shipment.destinationCoordinates,
+                }}
+                waypoints={shipment.waypoints}
+                routeCoordinates={shipment.routeCoordinates}
+                paused={shipment.isPaused}
+                pausedCoordinates={shipment.pausedCoordinates}
+                vehicleTitle={shipment.conveyanceName}
+                vehicleSubtitle={
+                  shipment.voyageNumber
+                    ? `Voyage ${shipment.voyageNumber}`
+                    : shipment.conveyanceIdentifier || undefined
+                }
+                fitPadding={{ top: 104, bottom: 280, left: 56, right: 56 }}
+                legendClassName="bottom-[42%] left-3"
                 height="620px"
                 className="border border-slate-200 dark:border-slate-800 shadow-inner"
               />

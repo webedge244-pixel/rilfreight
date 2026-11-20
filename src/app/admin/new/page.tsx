@@ -35,14 +35,14 @@ import { Button } from "@/shared/components/button";
 import { PrimaryActionButton } from "@/shared/components/primaryActionButton";
 import { useToast } from "@/shared/components/toast";
 
-// SSR-safe dynamic import for Vector RouteMiniMapLibre
-const RouteMiniMap = dynamic(
-  () => import("@/features/routing/components/RouteMiniMapLibre"),
+// SSR-safe dynamic import for the timeline-driven MapLibre route preview
+const TimelineRouteMap = dynamic(
+  () => import("@/features/tracking/components/TimelineRouteMap"),
   {
     ssr: false,
     loading: () => (
       <div className="h-[380px] w-full rounded-2xl bg-slate-900 flex items-center justify-center text-slate-500 text-xs font-mono">
-        Loading Interactive Vector Route Map...
+        Loading timeline route preview...
       </div>
     ),
   }
@@ -1279,7 +1279,9 @@ function NewShipmentContent() {
             <div className="absolute top-3 left-3 right-3 z-[400] flex items-center justify-between pointer-events-none">
               <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-sm">
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-                  Interactive Corridor Preview
+                  {mode === "rail" || mode === "road"
+                    ? "Timeline Checkpoint Preview"
+                    : "Timeline Route Preview"}
                 </h3>
               </div>
               {routeSummary && (
@@ -1292,22 +1294,25 @@ function NewShipmentContent() {
               )}
             </div>
 
-            <RouteMiniMap
-              routeCoordinates={
-                routeCoordinates.length > 0
-                  ? routeCoordinates
-                  : [formState.originCoordinates, formState.destinationCoordinates]
-              }
+            <TimelineRouteMap
+              mode={mode}
+              milestones={milestones}
               origin={{
                 name: formState.originName,
+                code: formState.originCode,
+                country: formState.originCountry,
                 coordinates: formState.originCoordinates,
               }}
               destination={{
                 name: formState.destinationName,
+                code: formState.destinationCode,
+                country: formState.destinationCountry,
                 coordinates: formState.destinationCoordinates,
               }}
               waypoints={waypoints}
-              mode={mode}
+              routeCoordinates={routeCoordinates}
+              preview
+              showVehicle={false}
               height="380px"
             />
           </div>

@@ -16,8 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const schedule =
         window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 300));
       schedule(() => {
-        void import("@/features/tracking/components/LiveTrackingMapLibre");
-        void import("@/features/routing/components/RouteMiniMapLibre");
+        void import("@/features/tracking/components/TimelineRouteMap");
       });
     }
   }, []);
