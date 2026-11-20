@@ -230,11 +230,14 @@ function buildStopFromEvents(
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
   const allCompleted = sorted.every((event) => event.isCompleted);
+  // Events without a recorded coordinate (e.g. "Interstate route") share the
+  // next stop's coordinate and would otherwise lend their generic label to it.
+  const named = sorted.find((event) => event.locationCode) || first;
 
   return {
     id: `stop-${first?.id || `${coordinates[0]},${coordinates[1]}`}`,
-    name: first?.locationName || (isOrigin ? "Origin" : isDestination ? "Destination" : "Checkpoint"),
-    code: sorted.find((event) => event.locationCode)?.locationCode,
+    name: named?.locationName || (isOrigin ? "Origin" : isDestination ? "Destination" : "Checkpoint"),
+    code: named?.locationCode,
     coordinates,
     events: sorted,
     status: allCompleted ? "completed" : "upcoming",
@@ -353,6 +356,12 @@ export function resolveTimelineMapState(
       currentStop.latestMs = Math.max(currentStop.latestMs, event.timestampMs);
       currentStop.isHoldGate = currentStop.isHoldGate || event.isHoldGate;
       currentStop.inferred = currentStop.inferred && inferred;
+      // A coord-less transit event can open a group at the next stop's
+      // coordinate; let the first event with a recorded location name it.
+      if (!currentStop.code && event.locationCode) {
+        currentStop.name = event.locationName || currentStop.name;
+        currentStop.code = event.locationCode;
+      }
       return;
     }
 

@@ -152,10 +152,12 @@ function createStopPopup(stop: TimelineStop): HTMLElement {
   return root;
 }
 
-function createStopElement(stop: TimelineStop): HTMLElement {  const root = document.createElement("div");
-  root.style.cssText = "cursor:pointer;display:flex;align-items:center;justify-content:center;";
-
+function createStopElement(stop: TimelineStop): HTMLElement {
   const size = stop.isOrigin || stop.isDestination ? 24 : 18;
+
+  const root = document.createElement("div");
+  root.style.cssText = `width:${size}px;height:${size}px;cursor:pointer;display:flex;align-items:center;justify-content:center;`;
+
   const dot = document.createElement("div");
   const base = `width:${size}px;height:${size}px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(15,23,42,.28);transition:background .2s;`;
 
@@ -189,7 +191,6 @@ function createStopElement(stop: TimelineStop): HTMLElement {  const root = docu
     badge.textContent = String(stop.events.length);
     badge.style.cssText =
       "position:absolute;transform:translate(13px,13px);min-width:15px;height:15px;padding:0 3px;border-radius:9999px;background:#F0F2F5;border:1px solid #cbd5e1;color:#0f172a;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;";
-    root.style.position = "relative";
     root.appendChild(badge);
   }
 
@@ -202,11 +203,11 @@ function createStopElement(stop: TimelineStop): HTMLElement {  const root = docu
  * checkpoint and labels it in place.
  */
 function createGroundCheckpointElement(stop: TimelineStop): HTMLElement {
-  const root = document.createElement("div");
-  root.style.cssText =
-    "position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;";
-
   const size = stop.isOrigin || stop.isDestination ? 24 : 20;
+
+  const root = document.createElement("div");
+  root.style.cssText = `width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;cursor:pointer;`;
+
   const base = `width:${size}px;height:${size}px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 8px rgba(15,23,42,.32);`;
 
   const dot = document.createElement("div");
@@ -706,11 +707,20 @@ export default function TimelineRouteMap({
     didFitRef.current = true;
     fitKeyRef.current = fitKey;
     map.fitBounds(bounds, {
-      padding: fitPadding,
+      // Ground checkpoints carry labels that extend to the right of the dot,
+      // and the bottom-left legend overlaps the map, so reserve room for both.
+      padding: isGroundMode
+        ? {
+            ...fitPadding,
+            top: fitPadding.top + 16,
+            right: fitPadding.right + 170,
+            bottom: fitPadding.bottom + 72,
+          }
+        : fitPadding,
       maxZoom: 12,
       duration: isFirstFit ? 0 : 700,
     });
-  }, [fitKey, fitPoints, mapLoaded, fitPadding]);
+  }, [fitKey, fitPoints, mapLoaded, fitPadding, isGroundMode]);
 
   // Rebuild markers from the current timeline state.
   React.useEffect(() => {
@@ -797,7 +807,7 @@ export default function TimelineRouteMap({
       const vehicleMarker = new maplibregl.Marker({
         element: createVehicleElement(mode, state.isPaused && !state.isDelivered),
         anchor: "center",
-        offset: isGroundMode ? [0, -26] : [0, 0],
+        offset: isGroundMode ? [0, -40] : [0, 0],
       })
         .setLngLat(wrapNear(state.vehicleCoordinate, centerLng))
         .setPopup(vehiclePopup)
