@@ -1,5 +1,5 @@
 import type { Shipment, ShipmentStatus, TrackingMilestone } from "@/shared/types";
-import { approveMilestoneHold } from "@/shared/lib/shipmentLogic";
+import { approveMilestoneHold, releaseShipmentPause } from "@/shared/lib/shipmentLogic";
 
 export interface PolylinePartitionResult {
   completedPolyline: [number, number][];
@@ -173,32 +173,31 @@ export function partitionRoutePolyline(
 
 /**
  * Quick Action 1: "Release Gate"
- * Unpauses the shipment, resolves active hold gates to completed, displaces all subsequent
- * milestones by the elapsed paused duration, sets status to 'in_transit', and clears pause fields.
- * Returns the clean updated Shipment object.
+ * Unpauses the shipment. A legacy pause that still sits on an uncompleted,
+ * already-due hold gate completes that gate first; otherwise the gate has
+ * already happened and releasing only shifts the remaining schedule by the
+ * paused duration. No following milestone is completed by a release.
  */
 export function releaseShipmentGate(
   shipment: Shipment,
   now: number | Date = Date.now()
 ): Shipment {
+  if (!shipment.isPaused) return shipment;
+
   const nowMs = typeof now === "number" ? now : new Date(now).getTime();
   const milestones = shipment.milestones || [];
-  const activeHoldIdx = milestones.findIndex((m) => m.isHoldGate && !m.isCompleted);
-  const targetIdx = activeHoldIdx !== -1 ? activeHoldIdx : milestones.findIndex((m) => !m.isCompleted);
+  const firstIncompleteIdx = milestones.findIndex((m) => !m.isCompleted);
+  const pendingGate =
+    firstIncompleteIdx !== -1 ? milestones[firstIncompleteIdx] : null;
 
-  if (targetIdx !== -1) {
-    return approveMilestoneHold(shipment, milestones[targetIdx].id, nowMs);
+  if (pendingGate?.isHoldGate) {
+    const gateTime = new Date(pendingGate.timestamp).getTime();
+    if (!Number.isNaN(gateTime) && gateTime <= nowMs) {
+      return approveMilestoneHold(shipment, pendingGate.id, nowMs);
+    }
   }
 
-  return {
-    ...shipment,
-    isPaused: false,
-    pausedReason: null,
-    pausedAtTimestamp: null,
-    pausedCoordinates: null,
-    pausedLocationName: null,
-    updatedAt: new Date(nowMs).toISOString(),
-  };
+  return releaseShipmentPause(shipment, nowMs);
 }
 
 /**
@@ -250,17 +249,20 @@ export function evaluateShipmentProgression(
       break; // Sequential schedule: stop at the first milestone whose time has not arrived
     }
 
-    if (m.isHoldGate) {
-      hitHoldGate = m;
-      break; // Hit active hold gate whose time arrived: pause pipeline here
-    }
-
     updatedMilestones[i] = { ...m, isCompleted: true, status: "completed" };
     hasChanged = true;
+
+    if (m.isHoldGate) {
+      hitHoldGate = updatedMilestones[i];
+      break; // The gate itself has happened; pause before the next milestone
+    }
   }
 
-  if (hitHoldGate) {
-    const coords = hitHoldGate.coordinates || getLiveShipmentCoordinates(shipment, now);
+  if (hitHoldGate && updatedMilestones.some((m) => !m.isCompleted)) {
+    const gateTimeMs = new Date(hitHoldGate.timestamp).getTime();
+    const coords =
+      hitHoldGate.coordinates ||
+      getLiveShipmentCoordinates(shipment, Number.isNaN(gateTimeMs) ? now : gateTimeMs);
     return {
       updatedShipment: {
         ...shipment,
@@ -269,7 +271,9 @@ export function evaluateShipmentProgression(
         pausedReason: hitHoldGate.description || "Awaiting administrative clearance",
         pausedLocationName: hitHoldGate.locationName || null,
         pausedCoordinates: coords || null,
-        pausedAtTimestamp: new Date(now).toISOString(),
+        // The shipment has been held since the gate happened, not since it
+        // was first noticed, so the release shifts the full elapsed delay.
+        pausedAtTimestamp: hitHoldGate.timestamp,
         updatedAt: new Date(now).toISOString(),
         milestones: updatedMilestones,
       },

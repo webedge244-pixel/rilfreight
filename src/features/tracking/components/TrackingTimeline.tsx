@@ -10,6 +10,13 @@ export interface TrackingTimelineProps {
 }
 
 export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
+  const [nowMs, setNowMs] = React.useState(() => Date.now());
+
+  React.useEffect(() => {
+    const interval = window.setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const milestones = React.useMemo(() => {
     const list = [...(shipment.milestones || [])];
     return list.sort(
@@ -27,14 +34,24 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
     return firstUncompleted === -1 ? milestones.length - 1 : firstUncompleted;
   }, [milestones, shipment.isPaused]);
 
+  // Legacy paused shipments hold on an uncompleted gate; that gate must stay
+  // visible. New-style pauses already show the gate as completed, so while
+  // paused no later checkpoint is revealed until the hold is released.
+  const legacyHoldGateId = React.useMemo(() => {
+    if (!shipment.isPaused) return null;
+    const firstUncompleted = milestones.find((m) => !m.isCompleted);
+    return firstUncompleted?.isHoldGate ? firstUncompleted.id : null;
+  }, [shipment.isPaused, milestones]);
+
   // Filter visible milestones:
   // 1. Completed checkpoints always display
   // 2. Currently active checkpoint (including held gates) shows once its scheduled time has arrived
   // 3. Next future timelines do not show at all until their time to show reaches
   const visibleMilestones = React.useMemo(() => {
-    const nowMs = Date.now();
     return milestones.filter((m, idx) => {
       if (m.isCompleted) return true;
+
+      if (shipment.isPaused) return m.id === legacyHoldGateId;
 
       // If shipment has not departed yet, do not show uncompleted milestones
       if (new Date(shipment.departureDate).getTime() > nowMs) return false;
@@ -49,7 +66,7 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
       // Future timelines remain hidden until their time arrives
       return false;
     });
-  }, [milestones, shipment.departureDate]);
+  }, [milestones, shipment.departureDate, shipment.isPaused, legacyHoldGateId, nowMs]);
 
   const getMilestoneTitle = (m: TrackingMilestone) => {
     return m.title;
@@ -74,6 +91,20 @@ export default function TrackingTimeline({ shipment }: TrackingTimelineProps) {
           Sequential route progression and transit checkpoints
         </p>
       </div>
+
+      {/* Pause notice: the cleared hold gate is visible above; the next
+          checkpoint will not occur until the hold is released. */}
+      {shipment.isPaused && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Shipment on hold
+          </p>
+          <p className="mt-0.5 text-xs text-amber-900/80 dark:text-amber-200/80">
+            {shipment.pausedReason ||
+              "Awaiting administrative release before the next checkpoint can occur."}
+          </p>
+        </div>
+      )}
 
       {/* Vertical Stepper Timeline (Inspired by CheckpointStepper in New Shipments) */}
       <div className="relative pl-7 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-800">

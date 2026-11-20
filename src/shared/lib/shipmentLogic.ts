@@ -130,8 +130,10 @@ export function deriveShipmentStatus(
  *
  * Contract:
  * - targetMs = Math.round(depMs + ratio * (delMs - depMs)), where ratio = idx / (total - 1).
- * - isCompleted is true ONLY IF targetMs <= now AND !milestone.isHoldGate.
- * - Hold gates (isHoldGate: true) NEVER auto-complete, even if timestamp <= now.
+ * - isCompleted follows the target timestamp.
+ * - A hold gate clears its flag once its own time has passed; runtime
+ *   progression (gate completes, then the shipment pauses before the next
+ *   event) is handled by evaluateShipmentProgression.
  * - If delivery <= departure or invalid, milestones retain their existing timestamps
  *   with completion evaluated against now (hold gates protected).
  * - Formats timestamps as ISO 8601 UTC (or local YYYY-MM-DDTHH:mm if outputFormat === "local").
@@ -328,12 +330,11 @@ export function approveMilestoneHold(
     : targetTimeMs;
   const pausedDurationMs = Math.max(0, nowMs - pausedAtMs);
 
-  // 2. Mark the held milestone completed and clear the hold gate flag
+  // 2. Mark the held milestone completed; the gate flag stays as history
   milestones[targetIndex] = {
     ...targetMilestone,
     isCompleted: true,
     status: "completed",
-    isHoldGate: false,
   };
 
   // 3. Displace all subsequent uncompleted milestones forward by pausedDurationMs
@@ -379,6 +380,74 @@ export function approveMilestoneHold(
     status: allCompleted ? "delivered" : "in_transit",
     estimatedDeliveryDate: new Date(newDelMs).toISOString(),
     milestones: shiftedMilestones,
+    waypoints: updatedWaypoints,
+    updatedAt: new Date(nowMs).toISOString(),
+  };
+}
+
+/**
+ * Releases a paused shipment without completing any milestone.
+ *
+ * Used when the pause anchor is already completed (the hold gate itself has
+ * happened) or when the pause came from a manual exception. Uncompleted
+ * milestones and the ETA are displaced by the exact pause duration so nothing
+ * present in history is rewritten and the schedule absorbs the delay.
+ */
+export function releaseShipmentPause(
+  shipment: Shipment,
+  now: number | Date = Date.now()
+): Shipment {
+  if (!shipment.isPaused) return shipment;
+
+  const nowMs = typeof now === "number" ? now : new Date(now).getTime();
+  const depMs = new Date(shipment.departureDate).getTime();
+  const pausedAtMs = shipment.pausedAtTimestamp
+    ? new Date(shipment.pausedAtTimestamp).getTime()
+    : nowMs;
+  const pausedDurationMs = Math.max(
+    0,
+    nowMs - (Number.isNaN(pausedAtMs) ? nowMs : pausedAtMs)
+  );
+
+  const milestones = (shipment.milestones || []).map((m) => {
+    if (m.isCompleted) return m;
+    const origMs = new Date(m.timestamp).getTime();
+    if (Number.isNaN(origMs)) return m;
+    return {
+      ...m,
+      timestamp: new Date(origMs + pausedDurationMs).toISOString(),
+      isCompleted: false,
+      status: "pending",
+    };
+  });
+
+  const origDelMs = new Date(shipment.estimatedDeliveryDate).getTime();
+  const newDelMs = Number.isNaN(origDelMs)
+    ? origDelMs
+    : origDelMs + pausedDurationMs;
+
+  const progressRatio =
+    newDelMs > depMs
+      ? Math.min(1, Math.max(0, (nowMs - depMs) / (newDelMs - depMs)))
+      : 0;
+  const updatedWaypoints = (shipment.waypoints || []).map((wp, idx, arr) => {
+    const wpRatio = arr.length > 1 ? idx / (arr.length - 1) : 0;
+    return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
+  });
+
+  const allCompleted = milestones.every((m) => m.isCompleted);
+
+  return {
+    ...shipment,
+    isPaused: false,
+    pausedReason: null,
+    pausedLocationName: null,
+    pausedAtTimestamp: null,
+    pausedCoordinates: null,
+    totalPausedDurationMs: (shipment.totalPausedDurationMs || 0) + pausedDurationMs,
+    status: allCompleted ? "delivered" : "in_transit",
+    estimatedDeliveryDate: new Date(newDelMs).toISOString(),
+    milestones,
     waypoints: updatedWaypoints,
     updatedAt: new Date(nowMs).toISOString(),
   };
@@ -515,8 +584,8 @@ export function advanceMilestoneImmediately(
     outputFormat: "iso",
   });
 
-  // 2. Mark preceding milestones completed.
-  // If the target milestone is a hold gate, it holds at nowMs until admin approves.
+  // 2. Mark preceding milestones completed. The target milestone always
+  // completes; if it is a hold gate, the shipment pauses before the next one.
   const updatedMilestones = cascaded.map((m, idx) => {
     if (idx < targetIndex) {
       return {
@@ -529,8 +598,8 @@ export function advanceMilestoneImmediately(
     if (idx === targetIndex) {
       return {
         ...m,
-        isCompleted: targetIsHoldGate ? false : true,
-        status: targetIsHoldGate ? "pending" : "completed",
+        isCompleted: true,
+        status: "completed",
         isHoldGate: targetIsHoldGate,
       };
     }
@@ -554,8 +623,8 @@ export function advanceMilestoneImmediately(
     return { ...wp, isCompleted: progressRatio >= wpRatio && progressRatio > 0 };
   });
 
-  // If this target milestone was flagged as a hold gate, engage the hold gate at this checkpoint
-  if (targetIsHoldGate) {
+  // The gate itself is complete; pause before the milestone that follows it.
+  if (targetIsHoldGate && !allCompleted) {
     return {
       ...shipment,
       isPaused: true,

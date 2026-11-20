@@ -751,10 +751,20 @@ export default function TimelineRouteMap({
     if (showVehicle) {
       const activeStop =
         state.activeStopIndex >= 0 ? state.stops[state.activeStopIndex] : null;
-      const etaLine = activeStop
-        ? state.isPaused
-          ? `Holding at ${activeStop.name} until the hold gate is released.`
-          : `Next: ${activeStop.events.find((event) => !event.isCompleted)?.title || activeStop.name}`
+      // With the new pause semantics the gate itself is completed, so anchor
+      // the hold copy on the last cleared hold gate rather than the next stop.
+      const clearedGateStop = state.isPaused
+        ? [...state.stops]
+            .reverse()
+            .find((stop) =>
+              stop.events.some((event) => event.isCompleted && event.isHoldGate)
+            ) || null
+        : null;
+      const holdStop = clearedGateStop || activeStop;
+      const etaLine = state.isPaused
+        ? `Holding at ${holdStop?.name || "the current checkpoint"} until the hold is released.`
+        : activeStop
+        ? `Next: ${activeStop.events.find((event) => !event.isCompleted)?.title || activeStop.name}`
         : state.isDelivered
         ? "All timeline checkpoints cleared."
         : "Awaiting departure.";

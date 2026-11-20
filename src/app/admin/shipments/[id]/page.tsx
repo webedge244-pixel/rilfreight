@@ -836,9 +836,9 @@ function ShipmentDetailContent() {
               On Hold
             </span>
             <p className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">
-              A milestone requires administrative approval before shipment
-              progression can continue. Scroll down to the milestones section
-              below to review and approve.
+              The hold checkpoint is cleared and the shipment is paused before
+              the next milestone. Use Resume Tracking above to release the hold
+              and continue the timeline.
             </p>
           </div>
         )}

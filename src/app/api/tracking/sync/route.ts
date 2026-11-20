@@ -30,6 +30,14 @@ export async function POST(request: Request) {
       await updateShipmentRecord(updatedShipment.id, {
         milestones: updatedShipment.milestones,
         status: updatedShipment.status,
+        isPaused: updatedShipment.isPaused,
+        pausedAtTimestamp: updatedShipment.pausedAtTimestamp,
+        pausedLocationName: updatedShipment.pausedLocationName,
+        pausedCoordinates: updatedShipment.pausedCoordinates,
+        pausedReason: updatedShipment.pausedReason,
+        totalPausedDurationMs: updatedShipment.totalPausedDurationMs ?? 0,
+        estimatedDeliveryDate: updatedShipment.estimatedDeliveryDate,
+        waypoints: updatedShipment.waypoints,
       });
     }
 
